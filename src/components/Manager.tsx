@@ -3,23 +3,23 @@ import React from 'react';
 
 const Manager = () => {
   return (
-    <section id="team" className="py-20 bg-white">
+    <section id="team" className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
+        <div className="mb-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Conheça Nosso Gerente</h2>
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
         </div>
         
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-8 bg-gray-50 rounded-xl overflow-hidden shadow-lg">
-            <div className="md:w-1/2">
+            <div className="md:w-2/5">
               <img 
                 src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop" 
                 alt="Gerente da Loja" 
                 className="w-full h-full object-cover object-center"
               />
             </div>
-            <div className="p-8 md:w-1/2">
+            <div className="p-8 md:w-3/5">
               <h3 className="text-2xl font-bold text-primary mb-2">João Silva</h3>
               <p className="text-gray-500 mb-4">Gerente da Loja e Especialista em Design de Interiores</p>
               <p className="text-gray-700 mb-6 leading-relaxed">
@@ -34,7 +34,6 @@ const Manager = () => {
                 que contem sua história e tragam alegria para seu dia a dia."
               </p>
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <span className="text-sm text-gray-500">Conecte-se com João:</span>
                 <div className="flex space-x-4 mt-2">
                   <a href="#" className="text-gray-500 hover:text-furniture-green">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 448 512">

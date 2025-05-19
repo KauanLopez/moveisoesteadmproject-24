@@ -19,7 +19,7 @@ const Location = () => {
           <div className="lg:col-span-2 overflow-hidden rounded-lg shadow-md">
             <div className="h-full w-full min-h-[400px]">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.9899460231326!2d-9.182932624280492!3d38.70308838278064!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1ecb40e6c0e0b3%3A0x4a7e2fb2161d8aca!2sLisbon%2C%20Portugal!5e0!3m2!1sen!2sus!4v1716330938150!5m2!1sen!2sus" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3658.2773509598815!2d-47.30372242370787!3d-23.521613560378063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cf5d75f7b31f4f%3A0xaa27bece7bf51de7!2sAv.+Jo%C3%A3o+Teot%C3%B4nio+Moreira+S%C3%A1les+Neto%2C+877+-+Neto%2C+819!5e0!3m2!1spt-BR!2sbr!4v1716339587063!5m2!1spt-BR!2sbr" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
@@ -42,8 +42,8 @@ const Location = () => {
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-1">Endereço</h4>
                   <p className="text-gray-600">
-                    Avenida da Liberdade, 120<br />
-                    1250-142 Lisboa, Portugal
+                    Av. João Teotônio Moreira Sáles Neto, 877 – Neto, 819<br />
+                    São Paulo, Brasil
                   </p>
                 </div>
               </div>
@@ -68,7 +68,7 @@ const Location = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-1">Telefone</h4>
-                  <p className="text-gray-600">+351 21 123 4567</p>
+                  <p className="text-gray-600">+55 11 9123 4567</p>
                 </div>
               </div>
               
@@ -78,7 +78,7 @@ const Location = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-1">Email</h4>
-                  <p className="text-gray-600">info@moveisooeste.pt</p>
+                  <p className="text-gray-600">info@moveisooeste.com.br</p>
                 </div>
               </div>
             </div>

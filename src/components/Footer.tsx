@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Instagram } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -26,13 +26,6 @@ const Footer = () => {
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a 
-                href="#" 
-                className="bg-gray-800 p-2 rounded-full hover:bg-furniture-yellow hover:text-gray-900 transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -82,10 +75,10 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Fale Conosco</h4>
             <address className="text-gray-400 not-italic">
-              <p className="mb-2">Avenida da Liberdade, 120</p>
-              <p className="mb-4">1250-142 Lisboa, Portugal</p>
-              <p className="mb-2">Telefone: +351 21 123 4567</p>
-              <p>Email: info@moveisooeste.pt</p>
+              <p className="mb-2">Av. João Teotônio Moreira Sáles Neto, 877</p>
+              <p className="mb-4">Neto, 819 - São Paulo, Brasil</p>
+              <p className="mb-2">Telefone: +55 11 9123 4567</p>
+              <p>Email: info@moveisooeste.com.br</p>
             </address>
           </div>
         </div>

@@ -47,9 +47,9 @@ const Navbar = () => {
           </Button>
         </div>
         
-        {/* Mobile menu button */}
+        {/* Mobile menu button - alterado para ficar branco */}
         <div className="md:hidden">
-          <button onClick={toggleMenu} className="text-gray-700">
+          <button onClick={toggleMenu} className={`${isScrolled ? 'text-gray-700' : 'text-white'}`}>
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
