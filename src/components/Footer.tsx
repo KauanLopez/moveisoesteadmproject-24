@@ -8,9 +8,9 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           <div>
-            <h3 className="text-xl font-bold text-furniture-green mb-4">Moveis Oeste</h3>
+            <h3 className="text-xl font-bold text-furniture-green mb-4">Móveis Oeste</h3>
             <p className="text-gray-400 mb-6">
-              Crafting quality furniture that brings comfort and style to your home.
+              Fabricando móveis de qualidade que trazem conforto e estilo para sua casa.
             </p>
             <div className="flex space-x-4">
               <a 
@@ -38,63 +38,63 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+            <h4 className="text-lg font-semibold mb-4">Links Rápidos</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Home</a>
+                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Início</a>
               </li>
               <li>
-                <a href="#about" className="text-gray-400 hover:text-furniture-yellow transition-colors">About Us</a>
+                <a href="#about" className="text-gray-400 hover:text-furniture-yellow transition-colors">Sobre Nós</a>
               </li>
               <li>
-                <a href="#projects" className="text-gray-400 hover:text-furniture-yellow transition-colors">Our Work</a>
+                <a href="#projects" className="text-gray-400 hover:text-furniture-yellow transition-colors">Nosso Trabalho</a>
               </li>
               <li>
-                <a href="#team" className="text-gray-400 hover:text-furniture-yellow transition-colors">Our Team</a>
+                <a href="#team" className="text-gray-400 hover:text-furniture-yellow transition-colors">Nossa Equipe</a>
               </li>
               <li>
-                <a href="#location" className="text-gray-400 hover:text-furniture-yellow transition-colors">Contact</a>
+                <a href="#location" className="text-gray-400 hover:text-furniture-yellow transition-colors">Contato</a>
               </li>
             </ul>
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold mb-4">Products</h4>
+            <h4 className="text-lg font-semibold mb-4">Produtos</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Sofas</a>
+                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Sofás</a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Beds</a>
+                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Camas</a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Dining Tables</a>
+                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Mesas de Jantar</a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Office Furniture</a>
+                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Móveis de Escritório</a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Storage Solutions</a>
+                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Soluções de Armazenamento</a>
               </li>
             </ul>
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
+            <h4 className="text-lg font-semibold mb-4">Fale Conosco</h4>
             <address className="text-gray-400 not-italic">
               <p className="mb-2">Avenida da Liberdade, 120</p>
               <p className="mb-4">1250-142 Lisboa, Portugal</p>
-              <p className="mb-2">Phone: +351 21 123 4567</p>
+              <p className="mb-2">Telefone: +351 21 123 4567</p>
               <p>Email: info@moveisooeste.pt</p>
             </address>
           </div>
         </div>
         
         <div className="border-t border-gray-800 pt-8 mt-8 text-center text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} Moveis Oeste. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Móveis Oeste. Todos os direitos reservados.</p>
           <div className="mt-2 space-x-4">
-            <a href="#" className="hover:text-furniture-yellow transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-furniture-yellow transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-furniture-yellow transition-colors">Política de Privacidade</a>
+            <a href="#" className="hover:text-furniture-yellow transition-colors">Termos de Serviço</a>
           </div>
         </div>
       </div>

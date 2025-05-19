@@ -8,10 +8,10 @@ const Location = () => {
     <section id="location" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Come and Meet Us</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Venha nos Conhecer</h2>
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
           <p className="max-w-2xl mx-auto text-gray-600">
-            Visit our showroom to explore our collection and get personalized assistance.
+            Visite nossa loja para explorar nossa coleção e receber assistência personalizada.
           </p>
         </div>
         
@@ -26,13 +26,13 @@ const Location = () => {
                 allowFullScreen 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Moveis Oeste Location"
+                title="Localização Móveis Oeste"
               ></iframe>
             </div>
           </div>
           
           <div className="bg-white p-8 rounded-lg shadow-md">
-            <h3 className="text-2xl font-semibold text-primary mb-6">Store Information</h3>
+            <h3 className="text-2xl font-semibold text-primary mb-6">Informações da Loja</h3>
             
             <div className="space-y-6">
               <div className="flex items-start">
@@ -40,7 +40,7 @@ const Location = () => {
                   <MapPin className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-700 mb-1">Address</h4>
+                  <h4 className="font-semibold text-gray-700 mb-1">Endereço</h4>
                   <p className="text-gray-600">
                     Avenida da Liberdade, 120<br />
                     1250-142 Lisboa, Portugal
@@ -53,11 +53,11 @@ const Location = () => {
                   <Clock className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-700 mb-1">Store Hours</h4>
+                  <h4 className="font-semibold text-gray-700 mb-1">Horário de Funcionamento</h4>
                   <p className="text-gray-600">
-                    Monday - Friday: 9:00 AM - 7:00 PM<br />
-                    Saturday: 10:00 AM - 6:00 PM<br />
-                    Sunday: Closed
+                    Segunda - Sexta: 9:00 - 19:00<br />
+                    Sábado: 10:00 - 18:00<br />
+                    Domingo: Fechado
                   </p>
                 </div>
               </div>
@@ -67,7 +67,7 @@ const Location = () => {
                   <Phone className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-700 mb-1">Phone</h4>
+                  <h4 className="font-semibold text-gray-700 mb-1">Telefone</h4>
                   <p className="text-gray-600">+351 21 123 4567</p>
                 </div>
               </div>
@@ -84,7 +84,7 @@ const Location = () => {
             </div>
             
             <Button className="w-full mt-8 bg-furniture-green hover:bg-furniture-green/90 text-white">
-              Schedule a Visit
+              Agendar uma Visita
             </Button>
           </div>
         </div>
