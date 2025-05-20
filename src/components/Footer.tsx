@@ -11,7 +11,7 @@ const Footer = () => {
     <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <div>
+          <div className="flex flex-col">
             <h3 className="text-xl font-bold text-furniture-green mb-4">Móveis Oeste</h3>
             <p className="text-gray-400 mb-6">
               Fabricando móveis de qualidade que trazem conforto e estilo para sua casa.
@@ -34,7 +34,7 @@ const Footer = () => {
             </div>
           </div>
           
-          <div>
+          <div className="flex flex-col">
             <h4 className="text-lg font-semibold mb-4">Links Rápidos</h4>
             <ul className="space-y-2">
               <li>
@@ -52,7 +52,7 @@ const Footer = () => {
             </ul>
           </div>
           
-          <div>
+          <div className="flex flex-col">
             <h4 className="text-lg font-semibold mb-4">Fale Conosco</h4>
             <address className="text-gray-400 not-italic">
               <p className="mb-2">Av. João Teotônio Moreira Sáles Neto, 877</p>
