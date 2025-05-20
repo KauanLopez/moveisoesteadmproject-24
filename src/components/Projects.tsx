@@ -40,11 +40,14 @@ const projects = [
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "center",
+    dragFree: true
+  });
   
   React.useEffect(() => {
     if (emblaApi) {
-      // Atualizar o índice atual quando o slide mudar
       const onSelect = () => {
         setCurrentIndex(emblaApi.selectedScrollSnap());
       };
@@ -73,11 +76,29 @@ const Projects = () => {
           </p>
         </div>
         
-        <div className="relative max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto px-10 md:px-16 relative">
+          {/* Botões de navegação posicionados fora das imagens */}
+          <Button 
+            onClick={() => emblaApi?.scrollPrev()}
+            className="absolute top-1/2 -left-14 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
+            aria-label="Slide anterior"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          
+          <Button 
+            onClick={() => emblaApi?.scrollNext()}
+            className="absolute top-1/2 -right-14 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
+            aria-label="Próximo slide"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
+          
+          {/* Carrossel centralizado */}
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
               {projects.map((project) => (
-                <div key={project.id} className="flex-[0_0_100%] min-w-0 pl-4">
+                <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4">
                   <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
                     <img 
                       src={project.image} 
@@ -94,30 +115,15 @@ const Projects = () => {
             </div>
           </div>
           
-          {/* Botões de navegação nas laterais */}
-          <Button 
-            onClick={() => emblaApi?.scrollPrev()}
-            className="absolute top-1/2 left-4 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          
-          <Button 
-            onClick={() => emblaApi?.scrollNext()}
-            className="absolute top-1/2 right-4 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-          
           {/* Indicadores (bolinhas) */}
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center mt-8">
             {projects.map((_, index) => (
               <button
                 key={index}
                 onClick={() => scrollTo(index)}
-                className={`w-3 h-3 rounded-full mx-1 ${
+                className={`w-3 h-3 rounded-full mx-2 transition-colors ${
                   currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
-                } transition-colors`}
+                }`}
                 aria-label={`Ir para slide ${index + 1}`}
               />
             ))}
