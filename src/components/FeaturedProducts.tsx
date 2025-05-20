@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -45,7 +44,6 @@ const FeaturedProducts = () => {
   const carouselApi = useRef<{ scrollNext: () => void } | null>(null);
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Verifica se está em um dispositivo móvel
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -59,7 +57,6 @@ const FeaturedProducts = () => {
     };
   }, []);
 
-  // Gerencia o autoscroll com pausa/continuação
   useEffect(() => {
     const startAutoScroll = () => {
       if (carouselApi.current && !isPaused) {
@@ -97,9 +94,9 @@ const FeaturedProducts = () => {
   };
 
   return (
-    <section id="featured-products" className="py-20 bg-white">
+    <section id="featured-products" className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
+        <div className="mb-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Produtos em Destaque</h2>
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
         </div>

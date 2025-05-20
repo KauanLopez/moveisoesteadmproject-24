@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 const CTA = () => {
   return (
-    <section className="py-20 bg-furniture-green">
+    <section className="py-16 bg-furniture-green">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Pronto para Transformar seu Espaço?</h2>
         <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">

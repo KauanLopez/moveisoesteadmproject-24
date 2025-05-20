@@ -35,8 +35,8 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Scroll Indicator - ajustado para ficar mais acima */}
-      <div className="absolute bottom-16 md:bottom-20 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
+      {/* Scroll Indicator - adjusted position */}
+      <div className="absolute bottom-8 md:bottom-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
         <p className="text-white mb-2">Role para descobrir</p>
         <div className="w-1 h-8 bg-white/50 rounded-full flex justify-center">
           <div className="w-1/2 h-3 bg-white rounded-full animate-bounce mt-1"></div>
