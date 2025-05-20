@@ -30,7 +30,7 @@ const products = [
   {
     id: 6,
     name: "Mesa de Centro",
-    image: "https://images.unsplash.com/photo-1565191999331-a08e3526028e?q=80&w=1974&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?q=80&w=1974&auto=format&fit=crop"
   }
 ];
 
