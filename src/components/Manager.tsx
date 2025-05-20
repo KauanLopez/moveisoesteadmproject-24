@@ -20,18 +20,10 @@ const Manager = () => {
               />
             </div>
             <div className="p-8 w-full md:w-3/5">
-              <h3 className="text-2xl font-bold text-primary mb-2">João Silva</h3>
-              <p className="text-gray-500 mb-4">Gerente da Loja e Especialista em Design de Interiores</p>
+              <h3 className="text-2xl font-bold text-primary mb-2">Adriana Marconi</h3>
+              <p className="text-gray-500 mb-4">Gerente da Loja</p>
               <p className="text-gray-700 mb-6 leading-relaxed">
-                Com mais de 15 anos de experiência em design de móveis e gerenciamento de varejo, 
-                João traz paixão e expertise para cada interação com o cliente. Seu olhar atento 
-                aos detalhes e compreensão da utilização do espaço já ajudou inúmeros 
-                clientes a encontrar as peças perfeitas para suas casas.
-              </p>
-              <p className="text-gray-700 leading-relaxed">
-                "Acredito que os móveis devem ser não apenas bonitos, mas também funcionais e 
-                representativos de quem vive com eles. Meu objetivo é ajudar você a criar espaços 
-                que contem sua história e tragam alegria para seu dia a dia."
+Adriana é a gerente responsável por conduzir a Móveis Oeste com dedicação, carinho e um olhar apurado para o que há de melhor em móveis planejados e peças avulsas. Com anos de experiência no setor moveleiro, ela acompanha de perto cada etapa, desde o atendimento ao cliente até a entrega do produto final, garantindo que cada ambiente seja pensado com funcionalidade, beleza e personalidade. 
               </p>
             </div>
           </div>
