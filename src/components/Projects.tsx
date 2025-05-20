@@ -9,6 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import useEmblaCarousel from 'embla-carousel-react';
 
 const projects = [
   {
@@ -39,6 +40,27 @@ const projects = [
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: true });
+  
+  React.useEffect(() => {
+    if (emblaApi) {
+      // Atualizar o índice atual quando o slide mudar
+      const onSelect = () => {
+        setCurrentIndex(emblaApi.selectedScrollSnap());
+      };
+      
+      emblaApi.on('select', onSelect);
+      return () => {
+        emblaApi.off('select', onSelect);
+      };
+    }
+  }, [emblaApi]);
+
+  const scrollTo = (index: number) => {
+    if (emblaApi) {
+      emblaApi.scrollTo(index);
+    }
+  };
   
   return (
     <section id="projects" className="py-20 bg-gray-50">
@@ -51,18 +73,11 @@ const Projects = () => {
           </p>
         </div>
         
-        <div className="relative">
-          <Carousel
-            className="w-full max-w-5xl mx-auto"
-            setApi={undefined}
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-          >
-            <CarouselContent>
+        <div className="relative max-w-5xl mx-auto">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex">
               {projects.map((project) => (
-                <CarouselItem key={project.id} className="md:basis-1/1">
+                <div key={project.id} className="flex-[0_0_100%] min-w-0 pl-4">
                   <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
                     <img 
                       src={project.image} 
@@ -74,26 +89,39 @@ const Projects = () => {
                       <p className="text-white/80 mt-2">{project.description}</p>
                     </div>
                   </div>
-                </CarouselItem>
+                </div>
               ))}
-            </CarouselContent>
-            <div className="flex justify-center gap-2 mt-8">
-              <CarouselPrevious className="relative inset-0 translate-y-0 left-0 right-auto bg-white text-gray-800 hover:bg-gray-100 rounded-full" />
-              <div className="flex justify-center space-x-2">
-                {projects.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={`w-3 h-3 rounded-full mx-1 ${
-                      currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
-                    }`}
-                    aria-label={`Ir para slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-              <CarouselNext className="relative inset-0 translate-y-0 right-0 left-auto bg-white text-gray-800 hover:bg-gray-100 rounded-full" />
             </div>
-          </Carousel>
+          </div>
+          
+          {/* Botões de navegação nas laterais */}
+          <Button 
+            onClick={() => emblaApi?.scrollPrev()}
+            className="absolute top-1/2 left-4 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          
+          <Button 
+            onClick={() => emblaApi?.scrollNext()}
+            className="absolute top-1/2 right-4 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
+          
+          {/* Indicadores (bolinhas) */}
+          <div className="flex justify-center mt-6">
+            {projects.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => scrollTo(index)}
+                className={`w-3 h-3 rounded-full mx-1 ${
+                  currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
+                } transition-colors`}
+                aria-label={`Ir para slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
