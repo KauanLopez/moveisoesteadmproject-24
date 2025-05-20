@@ -9,10 +9,7 @@ const About = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Sobre a Móveis Oeste</h2>
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
           <p className="max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed">
-            Na Móveis Oeste, combinamos artesanato com design moderno para criar móveis 
-            que valorizam seus espaços. Há mais de 15 anos, somos dedicados à 
-            qualidade, durabilidade e criação de peças que contam a sua história. Cada item é 
-            cuidadosamente fabricado com materiais sustentáveis e atenção a cada detalhe.
+            Com 22 anos de experiência, a Móveis Oeste oferece móveis planejados e peças avulsas que unem elegância, funcionalidade e qualidade. Nosso compromisso é transformar ambientes em espaços únicos, com produtos selecionados cuidadosamente para refletir o estilo e as necessidades de cada cliente. Mais do que móveis, entregamos confiança, bom gosto e um atendimento próximo, construído ao longo de duas décadas de dedicação.
           </p>
         </div>
       </div>
