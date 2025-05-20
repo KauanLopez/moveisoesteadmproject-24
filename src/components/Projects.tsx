@@ -2,13 +2,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import useEmblaCarousel from 'embla-carousel-react';
 
 const projects = [
@@ -43,7 +36,8 @@ const Projects = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "center",
-    dragFree: true
+    snapToCenter: true,
+    containScroll: "trimSnaps"
   });
   
   React.useEffect(() => {
@@ -53,8 +47,17 @@ const Projects = () => {
       };
       
       emblaApi.on('select', onSelect);
+      
+      // Adiciona um ouvinte para quando o usuário parar de rolar
+      const onSettled = () => {
+        emblaApi.scrollTo(emblaApi.selectedScrollSnap());
+      };
+      
+      emblaApi.on('settle', onSettled);
+      
       return () => {
         emblaApi.off('select', onSelect);
+        emblaApi.off('settle', onSettled);
       };
     }
   }, [emblaApi]);
@@ -98,7 +101,7 @@ const Projects = () => {
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
               {projects.map((project) => (
-                <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4">
+                <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4 transition-transform duration-300">
                   <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
                     <img 
                       src={project.image} 
