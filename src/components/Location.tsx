@@ -42,8 +42,7 @@ const Location = () => {
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-1">Endereço</h4>
                   <p className="text-gray-600">
-                    Av. João Teotônio Moreira Sáles Neto, 877 – Neto, 819<br />
-                    São Paulo, Brasil
+                   Av. João Teotônio Moreira Sáles Neto, 877 - Neto, 819 - Centro, Moreira Sales - PR, 87370-000
                   </p>
                 </div>
               </div>
@@ -55,8 +54,8 @@ const Location = () => {
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-1">Horário de Funcionamento</h4>
                   <p className="text-gray-600">
-                    Segunda - Sexta: 9:00 - 19:00<br />
-                    Sábado: 10:00 - 18:00<br />
+                    Segunda - Sexta: 8:00 - 18:00<br />
+                    Sábado: 08:00 - 12:00<br />
                     Domingo: Fechado
                   </p>
                 </div>
@@ -68,7 +67,7 @@ const Location = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-1">Telefone</h4>
-                  <p className="text-gray-600">+55 11 9123 4567</p>
+                  <p className="text-gray-600">+55 (44) 3532-1521</p>
                 </div>
               </div>
               
@@ -78,7 +77,7 @@ const Location = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-1">Email</h4>
-                  <p className="text-gray-600">info@moveisooeste.com.br</p>
+                  <p className="text-gray-600">moveisoestems@gmail.com</p>
                 </div>
               </div>
             </div>
