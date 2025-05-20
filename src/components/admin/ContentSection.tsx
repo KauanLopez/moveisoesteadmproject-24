@@ -1,12 +1,16 @@
 
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ImageContent, useContent } from '@/context/ContentContext';
 import ImageEditor from './image-editor/ImageEditor';
 import { useToast } from '@/components/ui/use-toast';
-import { Plus } from 'lucide-react';
+
+// Import the new components
+import SectionHeader from './content-section/SectionHeader';
+import TabNavigation from './content-section/TabNavigation';
+import ContentForm from './content-section/ContentForm';
+import EmptySection from './content-section/EmptySection';
+import SaveButton from './content-section/SaveButton';
 
 interface ContentSectionProps {
   title: string;
@@ -79,47 +83,22 @@ const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
   };
 
   if (sectionContent.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-        <p className="text-gray-500 mb-4">Nenhum conteúdo encontrado nesta seção</p>
-        <Button onClick={handleAddNewItem}>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Novo Item
-        </Button>
-      </div>
-    );
+    return <EmptySection onAddItem={handleAddNewItem} />;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-2xl font-bold mb-1">{title}</h2>
-            <p className="text-gray-600">
-              Edite o conteúdo desta seção do site.
-            </p>
-          </div>
-          <Button onClick={handleAddNewItem} className="flex-shrink-0">
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Item
-          </Button>
-        </div>
+        <SectionHeader 
+          title={title} 
+          section={section} 
+          onAddItem={handleAddNewItem} 
+        />
         
         {/* Content tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="relative">
-            <TabsList className="w-full overflow-x-auto flex whitespace-nowrap pb-2" style={{ scrollbarWidth: 'none' }}>
-              {sectionContent.map(item => (
-                <TabsTrigger 
-                  key={item.id}
-                  value={item.id}
-                  className="flex-shrink-0"
-                >
-                  {item.title || `Item ${item.id}`}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <TabNavigation items={sectionContent} activeTab={activeTab} />
           </div>
 
           {sectionContent.map(item => (
@@ -127,40 +106,20 @@ const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left column: Text content */}
                 <div className="space-y-6">
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-4">Informações</h3>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Título
-                        </label>
-                        <Input
-                          type="text"
-                          value={item.title}
-                          onChange={handleTitleChange}
-                          placeholder="Título"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Descrição
-                        </label>
-                        <textarea
-                          value={item.description}
-                          onChange={handleDescriptionChange}
-                          placeholder="Descrição"
-                          className="w-full min-h-[100px] p-2 border rounded-md"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <ContentForm
+                    item={item}
+                    onTitleChange={handleTitleChange}
+                    onDescriptionChange={handleDescriptionChange}
+                  />
                 </div>
                 
                 {/* Right column: Image editor */}
                 <div>
-                  <ImageEditor content={item} onUpdate={handleUpdateImage} section={section} />
+                  <ImageEditor 
+                    content={item} 
+                    onUpdate={handleUpdateImage} 
+                    section={section} 
+                  />
                 </div>
               </div>
             </TabsContent>
@@ -168,15 +127,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
         </Tabs>
       </div>
       
-      <div className="flex justify-end">
-        <Button 
-          onClick={handleSaveChanges} 
-          className="bg-furniture-green hover:bg-furniture-green/90 px-8"
-          disabled={isSaving}
-        >
-          {isSaving ? "Salvando..." : "Salvar Alterações"}
-        </Button>
-      </div>
+      <SaveButton isSaving={isSaving} onSave={handleSaveChanges} />
     </div>
   );
 };
