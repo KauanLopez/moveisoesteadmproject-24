@@ -35,7 +35,10 @@ const Manager = () => {
                 src={manager.image} 
                 alt="Gerente da Loja" 
                 className="w-full h-64 md:h-full object-cover object-center rounded-lg md:rounded-none"
-                style={{ objectPosition: manager.objectPosition || 'center' }}
+                style={{ 
+                  objectPosition: manager.objectPosition || 'center',
+                  transform: manager.scale ? `scale(${manager.scale})` : 'scale(1)'
+                }}
               />
             </div>
             <div className="p-8 w-full md:w-3/5">

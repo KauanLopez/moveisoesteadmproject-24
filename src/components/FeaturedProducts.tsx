@@ -7,6 +7,11 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const FeaturedProducts = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageData, setSelectedImageData] = useState<{
+    src: string;
+    position: string;
+    scale: number;
+  } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [products, setProducts] = useState([]);
@@ -72,6 +77,15 @@ const FeaturedProducts = () => {
     }
   };
 
+  const handleImageClick = (product: any) => {
+    setSelectedImage(product.image);
+    setSelectedImageData({
+      src: product.image,
+      position: product.objectPosition || 'center',
+      scale: product.scale || 1
+    });
+  };
+
   return (
     <section id="featured-products" className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -104,10 +118,13 @@ const FeaturedProducts = () => {
                           src={product.image} 
                           alt={product.name} 
                           className="w-full h-full object-cover"
-                          style={{ objectPosition: product.objectPosition || 'center' }}
+                          style={{ 
+                            objectPosition: product.objectPosition || 'center',
+                            transform: product.scale ? `scale(${product.scale})` : 'scale(1)'
+                          }}
                         />
                         <button 
-                          onClick={() => setSelectedImage(product.image)}
+                          onClick={() => handleImageClick(product)}
                           className="absolute top-2 right-2 bg-white/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                           aria-label="Ver em tela cheia"
                         >
@@ -137,6 +154,10 @@ const FeaturedProducts = () => {
               src={selectedImage || ''} 
               alt="Visualização em tela cheia" 
               className="max-w-full max-h-[80vh] object-contain"
+              style={selectedImageData ? {
+                objectPosition: selectedImageData.position,
+                transform: `scale(${selectedImageData.scale})`
+              } : {}}
             />
           </div>
         </DialogContent>

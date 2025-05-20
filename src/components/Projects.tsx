@@ -93,7 +93,10 @@ const Projects = () => {
                         src={project.image} 
                         alt={project.title} 
                         className="w-full h-full object-cover"
-                        style={{ objectPosition: project.objectPosition || 'center' }}
+                        style={{ 
+                          objectPosition: project.objectPosition || 'center',
+                          transform: project.scale ? `scale(${project.scale})` : 'scale(1)'
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-8">
                         <h3 className="text-2xl font-bold text-white">{project.title}</h3>
