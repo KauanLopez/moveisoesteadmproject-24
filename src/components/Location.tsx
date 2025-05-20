@@ -19,7 +19,7 @@ const Location = () => {
           <div className="lg:col-span-2 overflow-hidden rounded-lg shadow-md">
             <div className="h-full w-full min-h-[400px]">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3658.2773509598815!2d-47.30372242370787!3d-23.521613560378063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cf5d75f7b31f4f%3A0xaa27bece7bf51de7!2sAv.+Jo%C3%A3o+Teot%C3%B4nio+Moreira+S%C3%A1les+Neto%2C+877+-+Neto%2C+819!5e0!3m2!1spt-BR!2sbr!4v1716339587063!5m2!1spt-BR!2sbr" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3643.4422198224024!2d-53.01357242465488!3d-24.050726978466596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94f292fba2531207%3A0x646ce8edaafefdd2!2sM%C3%B3veis%20Oeste!5e0!3m2!1spt-BR!2sbr!4v1747766612823!5m2!1spt-BR!2sbr" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

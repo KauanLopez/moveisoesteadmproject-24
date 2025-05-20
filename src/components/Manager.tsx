@@ -6,7 +6,7 @@ const Manager = () => {
     <section id="team" className="pt-8 pb-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Conheça Nosso Gerente</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Conheça Nossa Gerente</h2>
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
         </div>
         
