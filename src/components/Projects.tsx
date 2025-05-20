@@ -76,22 +76,22 @@ const Projects = () => {
           </p>
         </div>
         
-        <div className="max-w-5xl mx-auto px-10 md:px-16 relative">
-          {/* Botões de navegação posicionados fora das imagens */}
+        <div className="max-w-5xl mx-auto px-4 md:px-16 relative">
+          {/* Botões de navegação posicionados fora das imagens, visíveis em todos os dispositivos */}
           <Button 
             onClick={() => emblaApi?.scrollPrev()}
-            className="absolute top-1/2 -left-14 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
+            className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
             aria-label="Slide anterior"
           >
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
           </Button>
           
           <Button 
             onClick={() => emblaApi?.scrollNext()}
-            className="absolute top-1/2 -right-14 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
+            className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
             aria-label="Próximo slide"
           >
-            <ChevronRight className="h-6 w-6" />
+            <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
           </Button>
           
           {/* Carrossel centralizado */}
