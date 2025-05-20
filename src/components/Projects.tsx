@@ -1,7 +1,14 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const projects = [
   {
@@ -32,26 +39,6 @@ const projects = [
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const maxIndex = projects.length - 1;
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  const goToNext = () => {
-    setCurrentIndex(prevIndex => 
-      prevIndex === maxIndex ? 0 : prevIndex + 1
-    );
-  };
-  
-  const goToPrev = () => {
-    setCurrentIndex(prevIndex => 
-      prevIndex === 0 ? maxIndex : prevIndex - 1
-    );
-  };
-
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.style.transform = `translateX(-${currentIndex * 100}%)`;
-    }
-  }, [currentIndex]);
   
   return (
     <section id="projects" className="py-20 bg-gray-50">
@@ -65,18 +52,17 @@ const Projects = () => {
         </div>
         
         <div className="relative">
-          <div className="carousel-container overflow-hidden">
-            <div 
-              ref={containerRef}
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{ width: `${projects.length * 100}%` }}
-            >
-              {projects.map((project, index) => (
-                <div 
-                  key={project.id} 
-                  className="w-full md:px-4"
-                  style={{ width: `${100 / projects.length}%` }}
-                >
+          <Carousel
+            className="w-full max-w-5xl mx-auto"
+            setApi={undefined}
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+          >
+            <CarouselContent>
+              {projects.map((project) => (
+                <CarouselItem key={project.id} className="md:basis-1/1">
                   <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
                     <img 
                       src={project.image} 
@@ -88,38 +74,26 @@ const Projects = () => {
                       <p className="text-white/80 mt-2">{project.description}</p>
                     </div>
                   </div>
-                </div>
+                </CarouselItem>
               ))}
+            </CarouselContent>
+            <div className="flex justify-center gap-2 mt-8">
+              <CarouselPrevious className="relative inset-0 translate-y-0 left-0 right-auto bg-white text-gray-800 hover:bg-gray-100 rounded-full" />
+              <div className="flex justify-center space-x-2">
+                {projects.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`w-3 h-3 rounded-full mx-1 ${
+                      currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
+                    }`}
+                    aria-label={`Ir para slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+              <CarouselNext className="relative inset-0 translate-y-0 right-0 left-auto bg-white text-gray-800 hover:bg-gray-100 rounded-full" />
             </div>
-          </div>
-          
-          <Button 
-            onClick={goToPrev}
-            className="absolute top-1/2 left-4 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          
-          <Button 
-            onClick={goToNext}
-            className="absolute top-1/2 right-4 -translate-y-1/2 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-          
-          {/* Dots */}
-          <div className="flex justify-center mt-6">
-            {projects.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full mx-1 ${
-                  currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
-                }`}
-                aria-label={`Ir para slide ${index + 1}`}
-              />
-            ))}
-          </div>
+          </Carousel>
         </div>
       </div>
     </section>
