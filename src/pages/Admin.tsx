@@ -10,21 +10,9 @@ const Admin = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
-  // Redirect to home if trying to access the path directly without being logged in
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      // This delay gives time for auth state to initialize
-      if (!isAuthenticated && window.location.pathname === '/admin') {
-        // Add a small delay before redirecting
-        setTimeout(() => {
-          navigate('/');
-        }, 2000);
-      }
-    }, 1000);
-    
-    return () => clearTimeout(timeoutId);
-  }, [isAuthenticated, navigate]);
-
+  // We're removing the auto-redirect that was causing the login page to close too quickly
+  // This allows users to see and interact with the login form
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {!isAuthenticated ? (
