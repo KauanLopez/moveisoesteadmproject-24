@@ -33,13 +33,13 @@ const Carousel = React.forwardRef<
     const [canScrollNext, setCanScrollNext] = React.useState(false);
     const autoPlayIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
-    const onSelect = React.useCallback((api: typeof api) => {
-      if (!api) {
+    const onSelect = React.useCallback((emblaApi: ReturnType<typeof useEmblaCarousel>[1]) => {
+      if (!emblaApi) {
         return;
       }
 
-      setCanScrollPrev(api.canScrollPrev());
-      setCanScrollNext(api.canScrollNext());
+      setCanScrollPrev(emblaApi.canScrollPrev());
+      setCanScrollNext(emblaApi.canScrollNext());
     }, []);
 
     const scrollPrev = React.useCallback(() => {
