@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Facebook, Instagram } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const [privacyOpen, setPrivacyOpen] = React.useState(false);
@@ -49,6 +50,9 @@ const Footer = () => {
               <li>
                 <a href="#location" className="text-gray-400 hover:text-furniture-yellow transition-colors">Contato</a>
               </li>
+              <li>
+                <Link to="/admin" className="text-gray-400 hover:text-furniture-yellow transition-colors">Área Administrativa</Link>
+              </li>
             </ul>
           </div>
           
@@ -87,6 +91,9 @@ const Footer = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Política de Privacidade</DialogTitle>
+            <DialogDescription>
+              Este site respeita a sua privacidade.
+            </DialogDescription>
           </DialogHeader>
           <div className="mt-4 text-gray-700">
             <p>Este site respeita a sua privacidade. As informações fornecidas por você, como nome, e-mail e telefone, são utilizadas apenas para fins de contato e atendimento, sem serem compartilhadas com terceiros. Dados de navegação podem ser coletados de forma automática para melhorar sua experiência, sempre respeitando a legislação vigente. Ao utilizar este site, você concorda com esta política de privacidade.</p>
@@ -99,6 +106,9 @@ const Footer = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Termos de Serviço</DialogTitle>
+            <DialogDescription>
+              Termos e condições de uso do site.
+            </DialogDescription>
           </DialogHeader>
           <div className="mt-4 text-gray-700">
             <p>Ao acessar este site, o usuário declara estar de acordo com os presentes Termos de Serviço. Todo o conteúdo disponibilizado tem finalidade informativa e está sujeito a alterações sem aviso prévio. É vedada a reprodução, distribuição ou modificação de qualquer parte deste site sem autorização expressa. Reservamo-nos o direito de suspender, modificar ou encerrar, a qualquer momento, qualquer funcionalidade ou conteúdo, bem como de atualizar os termos aqui estabelecidos, cuja continuidade de uso implicará na aceitação integral das novas condições.</p>
