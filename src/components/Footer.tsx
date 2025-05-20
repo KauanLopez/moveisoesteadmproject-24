@@ -56,8 +56,8 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Fale Conosco</h4>
             <address className="text-gray-400 not-italic">
               <p className="mb-2">Av. João Teotônio Moreira Sáles Neto, 877</p>
-              <p className="mb-4">Neto, 819 - São Paulo, Brasil</p>
-              <p className="mb-2">Telefone: +55 11 9123 4567</p>
+              <p className="mb-4">Neto, 819 - Moreira Sales-PR</p>
+              <p className="mb-2">Telefone: +55 (44) 3532-1521</p>
               <p>Email: moveisoestems@gmail.com</p>
             </address>
           </div>
