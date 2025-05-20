@@ -1,12 +1,16 @@
 
 import React from 'react';
 import { Facebook, Instagram } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Footer = () => {
+  const [privacyOpen, setPrivacyOpen] = React.useState(false);
+  const [termsOpen, setTermsOpen] = React.useState(false);
+
   return (
     <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <div>
             <h3 className="text-xl font-bold text-furniture-green mb-4">Móveis Oeste</h3>
             <p className="text-gray-400 mb-6">
@@ -43,31 +47,7 @@ const Footer = () => {
                 <a href="#projects" className="text-gray-400 hover:text-furniture-yellow transition-colors">Nosso Trabalho</a>
               </li>
               <li>
-                <a href="#team" className="text-gray-400 hover:text-furniture-yellow transition-colors">Nossa Equipe</a>
-              </li>
-              <li>
                 <a href="#location" className="text-gray-400 hover:text-furniture-yellow transition-colors">Contato</a>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Produtos</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Sofás</a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Camas</a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Mesas de Jantar</a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Móveis de Escritório</a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-furniture-yellow transition-colors">Soluções de Armazenamento</a>
               </li>
             </ul>
           </div>
@@ -86,11 +66,45 @@ const Footer = () => {
         <div className="border-t border-gray-800 pt-8 mt-8 text-center text-sm text-gray-500">
           <p>© {new Date().getFullYear()} Móveis Oeste. Todos os direitos reservados.</p>
           <div className="mt-2 space-x-4">
-            <a href="#" className="hover:text-furniture-yellow transition-colors">Política de Privacidade</a>
-            <a href="#" className="hover:text-furniture-yellow transition-colors">Termos de Serviço</a>
+            <button 
+              className="hover:text-furniture-yellow transition-colors"
+              onClick={() => setPrivacyOpen(true)}
+            >
+              Política de Privacidade
+            </button>
+            <button 
+              className="hover:text-furniture-yellow transition-colors"
+              onClick={() => setTermsOpen(true)}
+            >
+              Termos de Serviço
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Privacy Policy Dialog */}
+      <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Política de Privacidade</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 text-gray-700">
+            <p>Este site respeita a sua privacidade. As informações fornecidas por você, como nome, e-mail e telefone, são utilizadas apenas para fins de contato e atendimento, sem serem compartilhadas com terceiros. Dados de navegação podem ser coletados de forma automática para melhorar sua experiência, sempre respeitando a legislação vigente. Ao utilizar este site, você concorda com esta política de privacidade.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Terms of Service Dialog */}
+      <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Termos de Serviço</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 text-gray-700">
+            <p>Ao acessar este site, o usuário declara estar de acordo com os presentes Termos de Serviço. Todo o conteúdo disponibilizado tem finalidade informativa e está sujeito a alterações sem aviso prévio. É vedada a reprodução, distribuição ou modificação de qualquer parte deste site sem autorização expressa. Reservamo-nos o direito de suspender, modificar ou encerrar, a qualquer momento, qualquer funcionalidade ou conteúdo, bem como de atualizar os termos aqui estabelecidos, cuja continuidade de uso implicará na aceitação integral das novas condições.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 };

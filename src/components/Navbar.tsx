@@ -37,7 +37,6 @@ const Navbar = () => {
         <div className="hidden md:flex space-x-8">
           <a href="#about" className="text-gray-700 hover:text-primary font-medium">Sobre Nós</a>
           <a href="#projects" className="text-gray-700 hover:text-primary font-medium">Nosso Trabalho</a>
-          <a href="#team" className="text-gray-700 hover:text-primary font-medium">Nossa Equipe</a>
           <a href="#location" className="text-gray-700 hover:text-primary font-medium">Localização</a>
         </div>
         
@@ -61,7 +60,6 @@ const Navbar = () => {
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             <a href="#about" className="text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>Sobre Nós</a>
             <a href="#projects" className="text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>Nosso Trabalho</a>
-            <a href="#team" className="text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>Nossa Equipe</a>
             <a href="#location" className="text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>Localização</a>
             <Button className="bg-furniture-green hover:bg-furniture-green/90 text-white w-full">
               Fale Conosco
