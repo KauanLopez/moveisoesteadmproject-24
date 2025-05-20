@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageContent, useContent } from '@/context/ContentContext';
-import ImageEditor from './ImageEditor';
+import ImageEditor from './image-editor/ImageEditor';
 import { useToast } from '@/components/ui/use-toast';
 import { Plus } from 'lucide-react';
 
