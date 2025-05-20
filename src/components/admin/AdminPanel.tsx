@@ -1,67 +1,32 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/context/AuthContext';
-import ContentSection from './ContentSection';
-import UserManagement from './UserManagement';
+import { Tabs } from "@/components/ui/tabs";
+import AdminHeader from './panel/AdminHeader';
+import AdminTabs from './panel/AdminTabs';
+import AdminContent from './panel/AdminContent';
 
 const AdminPanel = () => {
-  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState('projects');
+
+  const adminTabs = [
+    { id: 'projects', label: 'Trabalhos em Residências' },
+    { id: 'products', label: 'Produtos em Destaque' },
+    { id: 'manager', label: 'Gerente' },
+    { id: 'users', label: 'Gerenciar Usuários' },
+  ];
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Painel Administrativo</h1>
-        <Button 
-          onClick={logout}
-          variant="outline"
-        >
-          Sair
-        </Button>
-      </div>
+      <AdminHeader title="Painel Administrativo" />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full mb-8 grid grid-cols-4 gap-2">
-          <TabsTrigger value="projects" className="text-sm md:text-base">
-            Trabalhos em Residências
-          </TabsTrigger>
-          <TabsTrigger value="products" className="text-sm md:text-base">
-            Produtos em Destaque
-          </TabsTrigger>
-          <TabsTrigger value="manager" className="text-sm md:text-base">
-            Gerente
-          </TabsTrigger>
-          <TabsTrigger value="users" className="text-sm md:text-base">
-            Gerenciar Usuários
-          </TabsTrigger>
-        </TabsList>
+        <AdminTabs 
+          tabs={adminTabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
         
-        <TabsContent value="projects" className="space-y-8">
-          <ContentSection 
-            title="Nosso Trabalho em Residências" 
-            section="projects" 
-          />
-        </TabsContent>
-        
-        <TabsContent value="products" className="space-y-8">
-          <ContentSection 
-            title="Produtos em Destaque" 
-            section="products" 
-          />
-        </TabsContent>
-        
-        <TabsContent value="manager" className="space-y-8">
-          <ContentSection 
-            title="Gerente" 
-            section="manager" 
-          />
-        </TabsContent>
-        
-        <TabsContent value="users" className="space-y-8">
-          <UserManagement />
-        </TabsContent>
+        <AdminContent activeTab={activeTab} />
       </Tabs>
     </div>
   );
