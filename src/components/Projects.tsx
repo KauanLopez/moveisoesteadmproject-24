@@ -36,7 +36,8 @@ const Projects = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "center",
-    snapToCenter: true,
+    skipSnaps: false,
+    dragFree: false,
     containScroll: "trimSnaps"
   });
   
