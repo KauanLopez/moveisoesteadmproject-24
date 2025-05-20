@@ -14,7 +14,7 @@ const Footer = () => {
           <div className="flex flex-col">
             <h3 className="text-xl font-bold text-furniture-green mb-4">Móveis Oeste</h3>
             <p className="text-gray-400 mb-6">
-              Fabricando móveis de qualidade que trazem conforto e estilo para sua casa.
+              O cliente em primeiro lugar!
             </p>
             <div className="flex space-x-4">
               <a 
@@ -58,7 +58,7 @@ const Footer = () => {
               <p className="mb-2">Av. João Teotônio Moreira Sáles Neto, 877</p>
               <p className="mb-4">Neto, 819 - São Paulo, Brasil</p>
               <p className="mb-2">Telefone: +55 11 9123 4567</p>
-              <p>Email: info@moveisooeste.com.br</p>
+              <p>Email: moveisoestems@gmail.com</p>
             </address>
           </div>
         </div>

@@ -17,7 +17,7 @@ const Hero = () => {
             Transforme Sua Casa Com <span className="text-furniture-yellow">Móveis de Qualidade</span>
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8">
-            Fabricados com excelência, projetados para conforto e elegância.
+            Conforto e elegância para transformar qualquer espaço.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <a href="#projects" className="w-full sm:w-auto">
