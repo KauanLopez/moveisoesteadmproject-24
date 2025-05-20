@@ -1,8 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Maximize2 } from 'lucide-react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const products = [
   {
@@ -39,8 +40,10 @@ const products = [
 
 const FeaturedProducts = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const autoScrollRef = useRef<NodeJS.Timeout | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const carouselApi = useRef<{ scrollNext: () => void } | null>(null);
+  const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Verifica se está em um dispositivo móvel
   useEffect(() => {
@@ -56,6 +59,43 @@ const FeaturedProducts = () => {
     };
   }, []);
 
+  // Gerencia o autoscroll com pausa/continuação
+  useEffect(() => {
+    const startAutoScroll = () => {
+      if (carouselApi.current && !isPaused) {
+        autoScrollTimerRef.current = setInterval(() => {
+          if (document.visibilityState === 'visible') {
+            carouselApi.current?.scrollNext();
+          }
+        }, isMobile ? 2000 : 4000);
+      }
+    };
+
+    const clearAutoScroll = () => {
+      if (autoScrollTimerRef.current) {
+        clearInterval(autoScrollTimerRef.current);
+        autoScrollTimerRef.current = null;
+      }
+    };
+
+    clearAutoScroll(); // Limpa timer existente
+    startAutoScroll(); // Inicia novo timer se não estiver pausado
+
+    return clearAutoScroll;
+  }, [isPaused, isMobile]);
+
+  const handleCarouselApiChange = (api: any) => {
+    carouselApi.current = api;
+    
+    if (api) {
+      // Adiciona eventos para pausar/continuar autoscroll durante drag
+      api.on('pointerDown', () => setIsPaused(true));
+      api.on('pointerUp', () => setIsPaused(false));
+      api.on('dragStart', () => setIsPaused(true));
+      api.on('dragEnd', () => setIsPaused(false));
+    }
+  };
+
   return (
     <section id="featured-products" className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -67,14 +107,13 @@ const FeaturedProducts = () => {
         <div className="relative px-4">
           <Carousel 
             opts={{
-              align: "start",
+              align: "center", // Centraliza os itens
               loop: true,
-              dragFree: true,
+              dragFree: false, // Desativa dragFree para obter efeito magnético
               containScroll: "trimSnaps",
             }}
             className="w-full"
-            autoPlay={true}
-            autoInterval={isMobile ? 2000 : 4000} // Mais rápido em dispositivos móveis
+            setApi={handleCarouselApiChange}
           >
             <CarouselContent>
               {products.map((product) => (
@@ -110,13 +149,15 @@ const FeaturedProducts = () => {
 
       {/* Modal de imagem em tela cheia */}
       <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
-        <DialogContent className="sm:max-w-[90vw] max-h-[90vh] p-0 border-none bg-transparent" aria-describedby="image-fullscreen">
+        <DialogContent className="sm:max-w-[90vw] max-h-[90vh] p-0 border-none bg-transparent">
+          <DialogTitle>
+            <VisuallyHidden>Visualização em tela cheia</VisuallyHidden>
+          </DialogTitle>
           <div className="relative w-full h-full flex items-center justify-center">
             <img 
               src={selectedImage || ''} 
               alt="Visualização em tela cheia" 
               className="max-w-full max-h-[80vh] object-contain"
-              id="image-fullscreen"
             />
           </div>
         </DialogContent>
