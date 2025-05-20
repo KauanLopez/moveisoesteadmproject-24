@@ -19,13 +19,16 @@ const Hero = () => {
           <p className="text-xl md:text-2xl text-white/90 mb-8">
             Fabricados com excelência, projetados para conforto e elegância.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a href="#projects">
-              <Button className="text-lg py-6 px-8 bg-furniture-green hover:bg-furniture-green/90 text-white">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <a href="#projects" className="w-full sm:w-auto">
+              <Button className="text-lg py-6 px-8 bg-furniture-green hover:bg-furniture-green/90 text-white w-full sm:w-auto">
                 Ver Coleção
               </Button>
             </a>
-            <Button variant="outline" className="text-lg py-6 px-8 bg-transparent border-2 border-white text-white hover:bg-white/20">
+            <Button 
+              variant="outline" 
+              className="text-lg py-6 px-8 bg-transparent border-2 border-white text-white hover:bg-white/20 w-full sm:w-auto"
+            >
               Fale Conosco
             </Button>
           </div>
