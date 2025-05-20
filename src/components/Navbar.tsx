@@ -33,11 +33,11 @@ const Navbar = () => {
           <a href="#" className="text-furniture-green font-bold text-xl md:text-2xl">Móveis Oeste</a>
         </div>
         
-        {/* Desktop Menu */}
+        {/* Desktop Menu - links alterados para branco quando não rolado */}
         <div className="hidden md:flex space-x-8">
-          <a href="#about" className="text-gray-700 hover:text-primary font-medium">Sobre Nós</a>
-          <a href="#projects" className="text-gray-700 hover:text-primary font-medium">Nosso Trabalho</a>
-          <a href="#location" className="text-gray-700 hover:text-primary font-medium">Localização</a>
+          <a href="#about" className={`${isScrolled ? 'text-gray-700' : 'text-[#eee]'} hover:text-primary font-medium`}>Sobre Nós</a>
+          <a href="#projects" className={`${isScrolled ? 'text-gray-700' : 'text-[#eee]'} hover:text-primary font-medium`}>Nosso Trabalho</a>
+          <a href="#location" className={`${isScrolled ? 'text-gray-700' : 'text-[#eee]'} hover:text-primary font-medium`}>Localização</a>
         </div>
         
         <div className="hidden md:block">
@@ -46,7 +46,7 @@ const Navbar = () => {
           </Button>
         </div>
         
-        {/* Mobile menu button - alterado para ficar branco */}
+        {/* Mobile menu button */}
         <div className="md:hidden">
           <button onClick={toggleMenu} className={`${isScrolled ? 'text-gray-700' : 'text-white'}`}>
             {isOpen ? <X size={24} /> : <Menu size={24} />}

@@ -25,12 +25,12 @@ const products = [
   {
     id: 5,
     name: "Estante",
-    image: "https://images.unsplash.com/photo-1588629565261-13f6023ed6cb?q=80&w=1974&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1594026112284-02bb6f3352fe?q=80&w=1970&auto=format&fit=crop"
   },
   {
     id: 6,
     name: "Mesa de Centro",
-    image: "https://images.unsplash.com/photo-1532372320572-cda25653a694?q=80&w=1972&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1565191999331-a08e3526028e?q=80&w=1974&auto=format&fit=crop"
   }
 ];
 
