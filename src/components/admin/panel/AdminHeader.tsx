@@ -11,11 +11,12 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title }) => {
   const { logout } = useAuth();
 
   return (
-    <div className="flex justify-between items-center mb-8">
-      <h1 className="text-3xl font-bold">{title}</h1>
+    <div className="flex justify-between items-center mb-4 md:mb-8">
+      <h1 className="text-xl md:text-3xl font-bold">{title}</h1>
       <Button 
         onClick={logout}
         variant="outline"
+        className="text-sm md:text-base"
       >
         Sair
       </Button>

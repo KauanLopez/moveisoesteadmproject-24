@@ -15,12 +15,12 @@ interface AdminTabsProps {
 
 const AdminTabs: React.FC<AdminTabsProps> = ({ tabs, activeTab, onTabChange }) => {
   return (
-    <TabsList className="w-full mb-8 grid grid-cols-4 gap-2">
+    <TabsList className="w-full mb-4 md:mb-8 grid grid-cols-2 md:grid-cols-4 gap-2">
       {tabs.map((tab) => (
         <TabsTrigger 
           key={tab.id}
           value={tab.id}
-          className="text-sm md:text-base"
+          className="text-xs md:text-sm lg:text-base px-2 py-1 md:p-2"
           onClick={() => onTabChange(tab.id)}
         >
           {tab.label}
