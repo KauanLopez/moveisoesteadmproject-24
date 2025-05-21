@@ -2,7 +2,7 @@
 import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import ContentSection from '../ContentSection';
-import UserManagement from '../UserManagement';
+import UserManagement from '../user-management';
 
 interface AdminContentProps {
   activeTab: string;
