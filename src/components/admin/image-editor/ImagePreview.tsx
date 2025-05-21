@@ -51,15 +51,17 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging && imageContainerRef.current) {
-      const deltaX = (e.clientX - dragStart.x) * 0.5;
-      const deltaY = (e.clientY - dragStart.y) * 0.5;
+      // Increase sensitivity for more responsive movement
+      const deltaX = (e.clientX - dragStart.x) * 0.8;
+      const deltaY = (e.clientY - dragStart.y) * 0.8;
       
       // Parse current position
       const [xPos, yPos] = objectPosition.includes('%') 
         ? objectPosition.split(' ').map(val => parseInt(val) || 50) 
         : ['50%', '50%'].map(val => parseInt(val) || 50);
       
-      // Allow movement beyond boundaries for maximum flexibility
+      // Allow more extended movement beyond boundaries
+      // Note: We're removing previous limits to allow free movement
       const newX = xPos - deltaX;
       const newY = yPos - deltaY;
       
@@ -88,14 +90,16 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (isDragging) {
-      const deltaX = (e.touches[0].clientX - dragStart.x) * 0.5;
-      const deltaY = (e.touches[0].clientY - dragStart.y) * 0.5;
+      // Increase sensitivity for mobile
+      const deltaX = (e.touches[0].clientX - dragStart.x) * 0.8;
+      const deltaY = (e.touches[0].clientY - dragStart.y) * 0.8;
       
       // Parse current position
       const [xPos, yPos] = objectPosition.includes('%') 
         ? objectPosition.split(' ').map(val => parseInt(val) || 50) 
         : ['50%', '50%'].map(val => parseInt(val) || 50);
       
+      // Remove limits for free positioning
       const newX = xPos - deltaX;
       const newY = yPos - deltaY;
       
@@ -153,12 +157,12 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
             </p>
           </div>
           
-          {/* Device specific guides */}
+          {/* Device specific guides - made more subtle */}
           {devicePreview === 'mobile' && (
-            <div className="absolute inset-x-0 top-1/3 border-t border-yellow-500 border-dashed opacity-50 z-10"></div>
+            <div className="absolute inset-x-0 top-1/3 border-t border-yellow-500/30 border-dashed z-10"></div>
           )}
           {devicePreview !== 'desktop' && (
-            <div className="absolute inset-y-0 left-1/3 border-l border-yellow-500 border-dashed opacity-50 z-10"></div>
+            <div className="absolute inset-y-0 left-1/3 border-l border-yellow-500/30 border-dashed z-10"></div>
           )}
         </div>
       </AspectRatio>

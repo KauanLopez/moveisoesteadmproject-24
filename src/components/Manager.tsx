@@ -30,18 +30,18 @@ const Manager = () => {
         
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-8 bg-gray-50 rounded-xl overflow-hidden shadow-lg">
-            <div className="w-full md:w-2/5 pt-6 md:pt-0 px-6 md:px-0">
+            <div className="w-full md:w-2/5 h-80 md:h-auto relative">
               <img 
                 src={manager.image} 
                 alt="Gerente da Loja" 
-                className="w-full h-64 md:h-full object-cover object-center rounded-lg md:rounded-none"
+                className="w-full h-full object-cover object-center"
                 style={{ 
                   objectPosition: manager.objectPosition || 'center',
                   transform: manager.scale ? `scale(${manager.scale})` : 'scale(1)'
                 }}
               />
             </div>
-            <div className="p-8 w-full md:w-3/5">
+            <div className="p-6 md:p-8 w-full md:w-3/5">
               <h3 className="text-2xl font-bold text-primary mb-2">{manager.title}</h3>
               <p className="text-gray-500 mb-4">Gerente da Loja</p>
               <p className="text-gray-700 mb-6 leading-relaxed">

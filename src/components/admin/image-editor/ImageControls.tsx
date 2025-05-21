@@ -17,14 +17,15 @@ const ImageControls: React.FC<ImageControlsProps> = ({
   onScaleChange,
   onReset,
   objectPosition,
-  onPositionSelect
 }) => {
   const handleZoomIn = () => {
-    const newScale = Math.min(scale + 0.1, 3);
+    // Allow more zoom for better control
+    const newScale = Math.min(scale + 0.1, 4.0);
     onScaleChange(newScale);
   };
 
   const handleZoomOut = () => {
+    // Allow more zoom out for positioning flexibility
     const newScale = Math.max(scale - 0.1, 0.5);
     onScaleChange(newScale);
   };
@@ -42,7 +43,7 @@ const ImageControls: React.FC<ImageControlsProps> = ({
           <Slider
             value={[scale]}
             min={0.5}
-            max={3}
+            max={4.0}
             step={0.1}
             onValueChange={handleSliderChange}
             className="flex-grow"

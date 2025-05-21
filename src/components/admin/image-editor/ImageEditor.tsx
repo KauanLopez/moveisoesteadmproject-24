@@ -31,12 +31,6 @@ const ImageEditor: React.FC<ImageEditorProps> = ({ content, onUpdate, section })
     onUpdate({ scale: newScale });
   };
 
-  // Handle position selection from buttons
-  const handlePositionSelect = (position: string) => {
-    setObjectPosition(position);
-    onUpdate({ objectPosition: position });
-  };
-
   // Reset position and scale
   const handleReset = () => {
     setObjectPosition('center');
@@ -63,12 +57,18 @@ const ImageEditor: React.FC<ImageEditorProps> = ({ content, onUpdate, section })
     reader.readAsDataURL(file);
   };
 
-  // Initialize scale from content if it exists
+  // Initialize from content if it exists
   useEffect(() => {
+    if (content.image) {
+      setImageUrl(content.image);
+    }
+    if (content.objectPosition) {
+      setObjectPosition(content.objectPosition);
+    }
     if (content.scale) {
       setScale(content.scale);
     }
-  }, [content.scale]);
+  }, [content.image, content.objectPosition, content.scale]);
 
   // Calculate aspect ratio based on section and device
   const aspectRatio = getAspectRatio(section, devicePreview);
@@ -107,7 +107,7 @@ const ImageEditor: React.FC<ImageEditorProps> = ({ content, onUpdate, section })
           onScaleChange={handleScaleChange}
           onReset={handleReset}
           objectPosition={objectPosition}
-          onPositionSelect={handlePositionSelect}
+          onPositionSelect={() => {}} // Position selection buttons removed as requested
         />
       </div>
       
