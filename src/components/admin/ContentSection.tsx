@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { ImageContent, useContent } from '@/context/ContentContext';
+import { useContent } from '@/context/ContentContext';
+import { ImageContent } from '@/types/customTypes';
 import ImageEditor from './image-editor/ImageEditor';
 import { useToast } from '@/components/ui/use-toast';
 

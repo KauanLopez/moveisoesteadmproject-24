@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { ImageContent, mapDbContentToImageContent, mapImageContentToDb } from '@/types/customTypes';
@@ -224,3 +223,5 @@ export const useContent = (): ContentContextType => {
   }
   return context;
 };
+
+export { ImageContent };
