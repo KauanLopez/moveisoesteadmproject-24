@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Maximize2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Maximize2, LayoutGrid } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { supabase } from "@/integrations/supabase/client";
 import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
@@ -21,7 +23,6 @@ const FeaturedProducts = () => {
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const productItemRef = useRef<HTMLDivElement>(null);
 
-  // Load content from Supabase with localStorage fallback
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -180,6 +181,16 @@ const FeaturedProducts = () => {
             </Carousel>
           </div>
         )}
+        
+        {/* New button to link to catalog page */}
+        <div className="mt-12 text-center">
+          <Link to="/catalogo">
+            <Button variant="default" className="gap-2" size="lg">
+              <LayoutGrid className="h-5 w-5" />
+              Ver Catálogo Completo
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Modal de imagem em tela cheia */}

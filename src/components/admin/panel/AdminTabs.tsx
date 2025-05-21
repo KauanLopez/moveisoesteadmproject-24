@@ -1,32 +1,35 @@
 
 import React from 'react';
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface AdminTab {
-  id: string;
-  label: string;
-}
+import { Button } from "@/components/ui/button";
 
 interface AdminTabsProps {
-  tabs: AdminTab[];
+  tabs: Array<{ id: string; label: string }>;
   activeTab: string;
-  onTabChange: (tabId: string) => void;
+  onTabChange: (tab: string) => void;
 }
 
-const AdminTabs: React.FC<AdminTabsProps> = ({ tabs, activeTab, onTabChange }) => {
+const AdminTabs: React.FC<AdminTabsProps> = ({
+  tabs,
+  activeTab,
+  onTabChange
+}) => {
   return (
-    <TabsList className="w-full mb-4 md:mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 overflow-visible">
-      {tabs.map((tab) => (
-        <TabsTrigger 
+    <div className="flex flex-nowrap overflow-x-auto pb-2 gap-2 border-b border-gray-200 mb-8">
+      {tabs.map(tab => (
+        <Button
           key={tab.id}
-          value={tab.id}
-          className="text-xs md:text-sm lg:text-base px-3 py-2 whitespace-normal text-center h-auto min-h-[40px] overflow-hidden"
+          variant={activeTab === tab.id ? "default" : "ghost"}
+          className={`rounded-lg px-4 py-2 ${
+            activeTab === tab.id
+              ? "bg-primary text-primary-foreground"
+              : "text-gray-600 hover:text-primary hover:bg-gray-100"
+          }`}
           onClick={() => onTabChange(tab.id)}
         >
           {tab.label}
-        </TabsTrigger>
+        </Button>
       ))}
-    </TabsList>
+    </div>
   );
 };
 

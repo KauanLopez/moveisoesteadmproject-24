@@ -25,6 +25,13 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeTab }) => {
         />
       </TabsContent>
       
+      <TabsContent value="catalog" className="space-y-8 overflow-x-auto">
+        <ContentSection 
+          title="Catálogo Completo" 
+          section="products" 
+        />
+      </TabsContent>
+      
       <TabsContent value="manager" className="space-y-8 overflow-x-auto">
         <ContentSection 
           title="Gerente" 
