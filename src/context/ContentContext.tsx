@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { ImageContent, mapDbContentToImageContent, mapImageContentToDb } from '@/types/customTypes';
@@ -147,9 +148,13 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           setContent(defaultContent);
           // Save default content to Supabase
           for (const item of defaultContent) {
-            await supabase
-              .from('content')
-              .upsert(mapImageContentToDb(item));
+            const mappedItem = mapImageContentToDb(item);
+            // Make sure section is always included since it's required
+            if (mappedItem && mappedItem.section) {
+              await supabase
+                .from('content')
+                .upsert(mappedItem);
+            }
           }
         }
       } catch (err) {
@@ -185,12 +190,16 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       // Save to Supabase
       for (const item of content) {
-        const { error } = await supabase
-          .from('content')
-          .upsert(mapImageContentToDb(item));
-        
-        if (error) {
-          throw error;
+        const mappedItem = mapImageContentToDb(item);
+        // Make sure section is always included since it's required
+        if (mappedItem && mappedItem.section) {
+          const { error } = await supabase
+            .from('content')
+            .upsert(mappedItem);
+          
+          if (error) {
+            throw error;
+          }
         }
       }
       
@@ -223,5 +232,3 @@ export const useContent = (): ContentContextType => {
   }
   return context;
 };
-
-export { ImageContent };

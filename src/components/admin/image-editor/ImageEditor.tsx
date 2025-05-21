@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ImageContent } from '@/context/ContentContext';
+import { ImageContent } from '@/types/customTypes';
 import DevicePreviewToggle from './DevicePreviewToggle';
 import ImagePreview from './ImagePreview';
 import ImageControls from './ImageControls';

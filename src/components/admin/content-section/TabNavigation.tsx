@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImageContent } from '@/context/ContentContext';
+import { ImageContent } from '@/types/customTypes';
 
 interface TabNavigationProps {
   items: ImageContent[];

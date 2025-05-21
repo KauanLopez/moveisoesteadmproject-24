@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Input } from '@/components/ui/input';
-import { ImageContent } from '@/context/ContentContext';
+import { ImageContent } from '@/types/customTypes';
 
 interface ContentFormProps {
   item: ImageContent;
