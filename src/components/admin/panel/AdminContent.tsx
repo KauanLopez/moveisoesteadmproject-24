@@ -3,6 +3,8 @@ import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import ContentSection from '../ContentSection';
 import UserManagement from '../user-management';
+import CatalogManagement from '../catalog/CatalogManagement';
+import CatalogDetailsPanel from '../catalog/CatalogDetailsPanel';
 
 interface AdminContentProps {
   activeTab: string;
@@ -26,10 +28,10 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeTab }) => {
       </TabsContent>
       
       <TabsContent value="catalog" className="space-y-8 overflow-x-auto">
-        <ContentSection 
-          title="Catálogo Completo" 
-          section="products" 
-        />
+        <div className="grid grid-cols-1 gap-8">
+          <CatalogManagement />
+          <CatalogDetailsPanel />
+        </div>
       </TabsContent>
       
       <TabsContent value="manager" className="space-y-8 overflow-x-auto">

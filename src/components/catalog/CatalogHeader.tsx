@@ -9,7 +9,7 @@ export const CatalogHeader = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            Catálogo Completo
+            Catálogos
           </h1>
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-6"></div>
           <p className="text-base md:text-lg text-gray-700 mb-8">
