@@ -1,7 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Catalog, CatalogCategory, CatalogItem, CatalogWithCategory } from "@/types/catalogTypes";
-import { v4 as uuidv4 } from 'uuid';
+
+// Helper function to generate a UUID using the crypto API
+const generateUUID = () => {
+  return crypto.randomUUID();
+};
 
 // Fetch all catalog categories
 export const fetchCatalogCategories = async (): Promise<CatalogCategory[]> => {
@@ -116,7 +120,7 @@ export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[
 // Upload an image to Supabase storage and return the URL
 export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'): Promise<string | null> => {
   const fileExt = file.name.split('.').pop();
-  const fileName = `${uuidv4()}.${fileExt}`;
+  const fileName = `${generateUUID()}.${fileExt}`;
   const filePath = `${folder}/${fileName}`;
 
   const { data, error } = await supabase
