@@ -1,47 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Image } from 'lucide-react';
 import { Catalog, CatalogWithCategory } from '@/types/catalogTypes';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import CatalogForm from './CatalogForm';
+import CategoryManagement from './CategoryManagement';
 import {
   fetchCatalogs,
   deleteCatalog,
-  saveCatalog
 } from '@/services/catalogService';
 import { fetchCatalogCategories } from '@/services/categoryService';
-
-const catalogFormSchema = z.object({
-  title: z.string().min(1, 'Título é obrigatório'),
-  category_id: z.string().optional(),
-});
-
-type CatalogFormValues = z.infer<typeof catalogFormSchema>;
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const CatalogManagement: React.FC = () => {
   const [catalogs, setCatalogs] = useState<CatalogWithCategory[]>([]);
   const [selectedCatalog, setSelectedCatalog] = useState<CatalogWithCategory | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('catalogs');
   
   const { toast } = useToast();
-  
-  const form = useForm<CatalogFormValues>({
-    resolver: zodResolver(catalogFormSchema),
-    defaultValues: { 
-      title: '',
-      category_id: undefined
-    }
-  });
 
   const loadCatalogs = async () => {
     setLoading(true);
@@ -79,59 +60,21 @@ const CatalogManagement: React.FC = () => {
     loadCategories();
   }, []);
 
-  const handleOpenDialog = (catalog: CatalogWithCategory | null = null) => {
+  const handleEditCatalog = (catalog: CatalogWithCategory) => {
     setSelectedCatalog(catalog);
-    if (catalog) {
-      form.reset({ 
-        title: catalog.title,
-        category_id: catalog.category_id 
-      });
-    } else {
-      form.reset({ 
-        title: '',
-        category_id: undefined 
-      });
-    }
-    setIsDialogOpen(true);
+    setShowForm(true);
   };
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    form.reset();
+  const handleCreateCatalog = () => {
+    setSelectedCatalog(null);
+    setShowForm(true);
   };
 
-  const handleSaveCatalog = async (data: CatalogFormValues) => {
-    try {
-      // Create the catalog object with the necessary fields
-      const catalogData = {
-        ...(selectedCatalog ? { id: selectedCatalog.id } : {}),
-        title: data.title,
-        category_id: data.category_id || null
-      };
-      
-      const result = await saveCatalog(catalogData);
-      
-      if (result) {
-        toast({
-          title: "Sucesso",
-          description: `Catálogo ${selectedCatalog ? 'atualizado' : 'criado'} com sucesso.`,
-        });
-        handleCloseDialog();
-        loadCatalogs();
-      } else {
-        toast({
-          title: "Erro",
-          description: `Erro ao ${selectedCatalog ? 'atualizar' : 'criar'} o catálogo.`,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Error saving catalog:', error);
-      toast({
-        title: "Erro",
-        description: `Erro ao ${selectedCatalog ? 'atualizar' : 'criar'} o catálogo.`,
-        variant: "destructive"
-      });
+  const handleCloseForm = (shouldRefresh: boolean) => {
+    setShowForm(false);
+    setSelectedCatalog(null);
+    if (shouldRefresh) {
+      loadCatalogs();
     }
   };
 
@@ -145,6 +88,8 @@ const CatalogManagement: React.FC = () => {
             description: "O catálogo foi excluído com sucesso."
           });
           loadCatalogs();
+        } else {
+          throw new Error('Failed to delete catalog');
         }
       } catch (error) {
         console.error('Error deleting catalog:', error);
@@ -157,116 +102,113 @@ const CatalogManagement: React.FC = () => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Reload appropriate data when tab changes
+    if (value === 'catalogs') {
+      loadCatalogs();
+    } else if (value === 'categories') {
+      loadCategories();
+    }
+  };
+
+  const renderCatalogContent = () => (
+    <>
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Gerenciar Catálogos</h2>
-        <Button onClick={() => handleOpenDialog()}>
+        <Button onClick={handleCreateCatalog}>
           <Plus className="mr-2 h-4 w-4" /> Novo Catálogo
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Título</TableHead>
-            <TableHead>Categoria</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
+      {showForm ? (
+        <CatalogForm 
+          catalog={selectedCatalog} 
+          categories={categories} 
+          onClose={handleCloseForm}
+        />
+      ) : (
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={3} className="text-center py-4">Carregando catálogos...</TableCell>
+              <TableHead>Capa</TableHead>
+              <TableHead>Título</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
-          ) : catalogs.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={3} className="text-center py-4">Nenhum catálogo encontrado.</TableCell>
-            </TableRow>
-          ) : (
-            catalogs.map((catalog) => (
-              <TableRow key={catalog.id}>
-                <TableCell className="font-medium">{catalog.title}</TableCell>
-                <TableCell className="font-medium">{catalog.category_name}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleOpenDialog(catalog)}>
-                      <Pencil size={16} />
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteCatalog(catalog.id)}>
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                </TableCell>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">Carregando catálogos...</TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-      
-      {/* Catalog Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedCatalog ? 'Editar Catálogo' : 'Novo Catálogo'}</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSaveCatalog)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Título do Catálogo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Título do catálogo" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            ) : catalogs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">Nenhum catálogo encontrado.</TableCell>
+              </TableRow>
+            ) : (
+              catalogs.map((catalog) => (
+                <TableRow key={catalog.id}>
+                  <TableCell>
+                    {catalog.cover_image ? (
+                      <div className="w-12 h-12 rounded-md overflow-hidden">
+                        <img 
+                          src={catalog.cover_image} 
+                          alt={catalog.title} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://via.placeholder.com/100?text=No+Image';
+                          }} 
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 flex items-center justify-center rounded-md bg-gray-200">
+                        <Image size={20} className="opacity-50" />
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{catalog.title}</TableCell>
+                  <TableCell className="font-medium">{catalog.category_name || 'Sem categoria'}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEditCatalog(catalog)}>
+                        <Pencil size={16} />
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteCatalog(catalog.id)}>
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      )}
+    </>
+  );
 
-              <FormField
-                control={form.control}
-                name="category_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoria</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map(category => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleCloseDialog}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {selectedCatalog ? 'Atualizar' : 'Criar'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+  return (
+    <div className="space-y-6">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
+        <TabsList className="mb-6">
+          <TabsTrigger value="catalogs">Catálogos</TabsTrigger>
+          <TabsTrigger value="categories">Categorias</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="catalogs" className="mt-0">
+          {renderCatalogContent()}
+        </TabsContent>
+        
+        <TabsContent value="categories" className="mt-0">
+          <CategoryManagement onCategoriesUpdated={loadCategories} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

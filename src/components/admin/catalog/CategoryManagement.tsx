@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
@@ -22,7 +23,11 @@ const categoryFormSchema = z.object({
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
-const CategoryManagement: React.FC = () => {
+interface CategoryManagementProps {
+  onCategoriesUpdated?: () => void;
+}
+
+const CategoryManagement: React.FC<CategoryManagementProps> = ({ onCategoriesUpdated }) => {
   const [categories, setCategories] = useState<CatalogCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CatalogCategory | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -40,6 +45,9 @@ const CategoryManagement: React.FC = () => {
     try {
       const data = await fetchCatalogCategories();
       setCategories(data);
+      if (onCategoriesUpdated) {
+        onCategoriesUpdated();
+      }
     } catch (error) {
       console.error('Error loading categories:', error);
       toast({

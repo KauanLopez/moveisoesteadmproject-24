@@ -54,7 +54,7 @@ export const fetchCatalogBySlug = async (slug: string): Promise<CatalogWithCateg
 export const saveCatalog = async (catalog: Partial<Catalog> & { title: string }): Promise<Catalog | null> => {
   const { data, error } = await supabase
     .from('catalogs')
-    .upsert(catalog as any)
+    .upsert(catalog)
     .select()
     .single();
   
@@ -101,7 +101,7 @@ export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[
 export const saveCatalogItem = async (item: Partial<CatalogItem> & { catalog_id: string, image_url: string }): Promise<CatalogItem | null> => {
   const { data, error } = await supabase
     .from('catalog_items')
-    .upsert(item as any)
+    .upsert(item)
     .select()
     .single();
   
