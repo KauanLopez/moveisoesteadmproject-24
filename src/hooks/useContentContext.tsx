@@ -6,8 +6,8 @@ import {
   saveDefaultContentToSupabase,
   saveContentToSupabase,
   getContentFromLocalStorage,
-  defaultContent
 } from '@/services/contentService';
+import { defaultContent } from '@/utils/contentUtils';
 
 type ContentContextType = {
   content: ImageContent[];
