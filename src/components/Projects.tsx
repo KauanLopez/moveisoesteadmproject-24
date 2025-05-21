@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
+import { supabase } from "@/integrations/supabase/client";
+import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -13,16 +14,46 @@ const Projects = () => {
     dragFree: false,
     containScroll: "trimSnaps"
   });
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<ImageContent[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  // Load content from localStorage
+  // Load content from Supabase with localStorage fallback
   useEffect(() => {
-    const storedContent = localStorage.getItem('moveis_oeste_content');
-    if (storedContent) {
-      const allContent = JSON.parse(storedContent);
-      const projectItems = allContent.filter((item: any) => item.section === 'projects');
-      setProjects(projectItems);
-    }
+    const loadProjects = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content')
+          .select('*')
+          .eq('section', 'projects');
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
+          setProjects(data.map(mapDbContentToImageContent));
+        } else {
+          // Fallback to localStorage
+          fallbackToLocalStorage();
+        }
+      } catch (error) {
+        console.error('Error loading projects:', error);
+        fallbackToLocalStorage();
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    const fallbackToLocalStorage = () => {
+      const storedContent = localStorage.getItem('moveis_oeste_content');
+      if (storedContent) {
+        const allContent = JSON.parse(storedContent);
+        const projectItems = allContent.filter((item: any) => item.section === 'projects');
+        setProjects(projectItems);
+      }
+    };
+    
+    loadProjects();
   }, []);
   
   React.useEffect(() => {
@@ -52,6 +83,10 @@ const Projects = () => {
       emblaApi.scrollTo(index);
     }
   };
+
+  if (loading) {
+    return <div className="py-16 text-center">Carregando projetos...</div>;
+  }
   
   return (
     <section id="projects" className="py-16 bg-gray-50">

@@ -1,23 +1,7 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
-
-// Define types for content items
-export type ImageContent = {
-  id: string;
-  section: string;
-  title: string;
-  description: string;
-  image: string;
-  objectPosition: string; // For custom positioning of images
-  scale?: number; // For zoom level
-};
-
-type ContentContextType = {
-  content: ImageContent[];
-  updateContent: (id: string, updates: Partial<ImageContent>) => void;
-  saveContent: () => void;
-  addContent: (newItem: ImageContent) => void;
-};
+import { supabase } from "@/integrations/supabase/client";
+import { ImageContent, mapDbContentToImageContent, mapImageContentToDb } from '@/types/customTypes';
 
 // Default content based on current site data
 const defaultContent: ImageContent[] = [
@@ -127,19 +111,67 @@ const defaultContent: ImageContent[] = [
 
 const CONTENT_STORAGE_KEY = 'moveis_oeste_content';
 
+type ContentContextType = {
+  content: ImageContent[];
+  updateContent: (id: string, updates: Partial<ImageContent>) => void;
+  saveContent: () => Promise<void>;
+  addContent: (newItem: ImageContent) => void;
+};
+
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
 
 export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [content, setContent] = useState<ImageContent[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const storedContent = localStorage.getItem(CONTENT_STORAGE_KEY);
-    if (storedContent) {
-      setContent(JSON.parse(storedContent));
-    } else {
-      setContent(defaultContent);
-      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(defaultContent));
-    }
+    const loadContent = async () => {
+      try {
+        // Try to load content from Supabase
+        const { data: dbContent, error } = await supabase
+          .from('content')
+          .select('*');
+
+        if (error) {
+          console.error('Error fetching content from Supabase:', error);
+          // Fallback to localStorage if Supabase fails
+          fallbackToLocalStorage();
+          return;
+        }
+
+        if (dbContent && dbContent.length > 0) {
+          // Map the database content to our ImageContent format
+          const mappedContent = dbContent.map(mapDbContentToImageContent);
+          setContent(mappedContent);
+        } else {
+          // If no content in database, use default and save it
+          setContent(defaultContent);
+          // Save default content to Supabase
+          for (const item of defaultContent) {
+            await supabase
+              .from('content')
+              .upsert(mapImageContentToDb(item));
+          }
+        }
+      } catch (err) {
+        console.error('Error in content loading:', err);
+        fallbackToLocalStorage();
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    const fallbackToLocalStorage = () => {
+      const storedContent = localStorage.getItem(CONTENT_STORAGE_KEY);
+      if (storedContent) {
+        setContent(JSON.parse(storedContent));
+      } else {
+        setContent(defaultContent);
+        localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(defaultContent));
+      }
+    };
+
+    loadContent();
   }, []);
 
   const updateContent = (id: string, updates: Partial<ImageContent>) => {
@@ -150,8 +182,28 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   };
 
-  const saveContent = () => {
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(content));
+  const saveContent = async () => {
+    try {
+      // Save to Supabase
+      for (const item of content) {
+        const { error } = await supabase
+          .from('content')
+          .upsert(mapImageContentToDb(item));
+        
+        if (error) {
+          throw error;
+        }
+      }
+      
+      // Also save to localStorage as backup
+      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(content));
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error saving content:', error);
+      // Still save to localStorage even if Supabase fails
+      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(content));
+      return Promise.reject(error);
+    }
   };
   
   const addContent = (newItem: ImageContent) => {

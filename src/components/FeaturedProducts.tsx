@@ -1,9 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Maximize2 } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { supabase } from "@/integrations/supabase/client";
+import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
 
 const FeaturedProducts = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -14,19 +15,49 @@ const FeaturedProducts = () => {
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<ImageContent[]>([]);
+  const [loading, setLoading] = useState(true);
   const carouselApi = useRef<{ scrollNext: () => void } | null>(null);
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const productItemRef = useRef<HTMLDivElement>(null);
 
-  // Load content from localStorage
+  // Load content from Supabase with localStorage fallback
   useEffect(() => {
-    const storedContent = localStorage.getItem('moveis_oeste_content');
-    if (storedContent) {
-      const allContent = JSON.parse(storedContent);
-      const productItems = allContent.filter((item: any) => item.section === 'products');
-      setProducts(productItems);
-    }
+    const loadProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content')
+          .select('*')
+          .eq('section', 'products');
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
+          setProducts(data.map(mapDbContentToImageContent));
+        } else {
+          // Fallback to localStorage
+          fallbackToLocalStorage();
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        fallbackToLocalStorage();
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    const fallbackToLocalStorage = () => {
+      const storedContent = localStorage.getItem('moveis_oeste_content');
+      if (storedContent) {
+        const allContent = JSON.parse(storedContent);
+        const productItems = allContent.filter((item: any) => item.section === 'products');
+        setProducts(productItems);
+      }
+    };
+    
+    loadProducts();
   }, []);
 
   useEffect(() => {
@@ -86,6 +117,10 @@ const FeaturedProducts = () => {
       scale: product.scale || 1
     });
   };
+
+  if (loading) {
+    return <div className="py-16 text-center">Carregando produtos...</div>;
+  }
 
   return (
     <section id="featured-products" className="py-16 bg-white">
