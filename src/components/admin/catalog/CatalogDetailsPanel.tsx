@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Catalog, CatalogCategory } from '@/types/catalogTypes';
-import { fetchCatalogs, fetchCatalogCategories } from '@/services/catalogService';
+import { fetchCatalogs } from '@/services/catalogService';
+import { fetchCatalogCategories } from '@/services/categoryService';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CatalogForm from './CatalogForm';

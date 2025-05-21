@@ -1,9 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { CatalogCategory } from '@/types/catalogTypes';
-import { fetchCatalogCategories, saveCatalogCategory, deleteCatalogCategory } from '@/services/catalogService';
+import { 
+  fetchCatalogCategories, 
+  saveCatalogCategory, 
+  deleteCatalogCategory 
+} from '@/services/categoryService';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';

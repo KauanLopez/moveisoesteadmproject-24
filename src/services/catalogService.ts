@@ -1,57 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Catalog, CatalogCategory, CatalogItem, CatalogWithCategory } from "@/types/catalogTypes";
-
-// Helper function to generate a UUID using the crypto API
-const generateUUID = () => {
-  return crypto.randomUUID();
-};
-
-// Fetch all catalog categories
-export const fetchCatalogCategories = async (): Promise<CatalogCategory[]> => {
-  const { data, error } = await supabase
-    .from('catalog_categories')
-    .select('*')
-    .order('name');
-  
-  if (error) {
-    console.error('Error fetching catalog categories:', error);
-    return [];
-  }
-  
-  return data || [];
-};
-
-// Create a new catalog category
-export const saveCatalogCategory = async (category: Partial<CatalogCategory> & { name: string }): Promise<CatalogCategory | null> => {
-  const { data, error } = await supabase
-    .from('catalog_categories')
-    .upsert(category as any)
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error saving catalog category:', error);
-    return null;
-  }
-  
-  return data;
-};
-
-// Delete a catalog category
-export const deleteCatalogCategory = async (id: string): Promise<boolean> => {
-  const { error } = await supabase
-    .from('catalog_categories')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
-    console.error('Error deleting catalog category:', error);
-    return false;
-  }
-  
-  return true;
-};
+import { Catalog, CatalogItem, CatalogWithCategory } from "@/types/catalogTypes";
 
 // Fetch all catalogs with their categories
 export const fetchCatalogs = async (): Promise<CatalogWithCategory[]> => {
@@ -101,53 +50,11 @@ export const fetchCatalogBySlug = async (slug: string): Promise<CatalogWithCateg
   };
 };
 
-// Fetch catalog items for a specific catalog
-export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[]> => {
-  const { data, error } = await supabase
-    .from('catalog_items')
-    .select('*')
-    .eq('catalog_id', catalogId)
-    .order('display_order', { ascending: true });
-  
-  if (error) {
-    console.error(`Error fetching items for catalog ${catalogId}:`, error);
-    return [];
-  }
-  
-  return data || [];
-};
-
-// Upload an image to Supabase storage and return the URL
-export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'): Promise<string | null> => {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${generateUUID()}.${fileExt}`;
-  const filePath = `${folder}/${fileName}`;
-
-  const { data, error } = await supabase
-    .storage
-    .from('catalog_images')
-    .upload(filePath, file);
-
-  if (error) {
-    console.error('Error uploading image:', error);
-    return null;
-  }
-
-  const { data: urlData } = supabase
-    .storage
-    .from('catalog_images')
-    .getPublicUrl(filePath);
-
-  return urlData.publicUrl;
-};
-
 // Create or update a catalog
 export const saveCatalog = async (catalog: Partial<Catalog> & { title: string }): Promise<Catalog | null> => {
-  // We need to explicitly cast the catalog object to work with Supabase's TypeScript definitions
-  // while still allowing the database trigger to generate the slug
   const { data, error } = await supabase
     .from('catalogs')
-    .upsert(catalog as any)  // Using type assertion to bypass TypeScript's check
+    .upsert(catalog as any)
     .select()
     .single();
   
@@ -174,11 +81,27 @@ export const deleteCatalog = async (id: string): Promise<boolean> => {
   return true;
 };
 
+// Fetch catalog items for a specific catalog
+export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[]> => {
+  const { data, error } = await supabase
+    .from('catalog_items')
+    .select('*')
+    .eq('catalog_id', catalogId)
+    .order('display_order', { ascending: true });
+  
+  if (error) {
+    console.error(`Error fetching items for catalog ${catalogId}:`, error);
+    return [];
+  }
+  
+  return data || [];
+};
+
 // Create or update a catalog item
 export const saveCatalogItem = async (item: Partial<CatalogItem> & { catalog_id: string, image_url: string }): Promise<CatalogItem | null> => {
   const { data, error } = await supabase
     .from('catalog_items')
-    .upsert(item as any)  // Using type assertion to bypass TypeScript's check
+    .upsert(item as any)
     .select()
     .single();
   

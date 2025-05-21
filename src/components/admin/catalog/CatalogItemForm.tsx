@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -9,7 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { CatalogItem } from '@/types/catalogTypes';
-import { saveCatalogItem, uploadCatalogImage } from '@/services/catalogService';
+// Update the import path for uploadCatalogImage and saveCatalogItem
+import { uploadCatalogImage } from '@/services/imageService';
+import { saveCatalogItem } from '@/services/catalogService';
 import { useToast } from '@/components/ui/use-toast';
 import { Image, Upload } from 'lucide-react';
 
