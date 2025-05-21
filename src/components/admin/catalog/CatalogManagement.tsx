@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
@@ -7,17 +8,20 @@ import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   fetchCatalogs,
-  deleteCatalog
+  deleteCatalog,
+  saveCatalog
 } from '@/services/catalogService';
 import { fetchCatalogCategories } from '@/services/categoryService';
 
 const catalogFormSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
+  category_id: z.string().optional(),
 });
 
 type CatalogFormValues = z.infer<typeof catalogFormSchema>;
@@ -27,12 +31,16 @@ const CatalogManagement: React.FC = () => {
   const [selectedCatalog, setSelectedCatalog] = useState<CatalogWithCategory | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
   
   const { toast } = useToast();
   
   const form = useForm<CatalogFormValues>({
     resolver: zodResolver(catalogFormSchema),
-    defaultValues: { title: '' }
+    defaultValues: { 
+      title: '',
+      category_id: undefined
+    }
   });
 
   const loadCatalogs = async () => {
@@ -52,16 +60,37 @@ const CatalogManagement: React.FC = () => {
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      const data = await fetchCatalogCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast({
+        title: "Erro ao carregar categorias",
+        description: "Não foi possível carregar as categorias.",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     loadCatalogs();
+    loadCategories();
   }, []);
 
   const handleOpenDialog = (catalog: CatalogWithCategory | null = null) => {
     setSelectedCatalog(catalog);
     if (catalog) {
-      form.reset({ title: catalog.title });
+      form.reset({ 
+        title: catalog.title,
+        category_id: catalog.category_id 
+      });
     } else {
-      form.reset({ title: '' });
+      form.reset({ 
+        title: '',
+        category_id: undefined 
+      });
     }
     setIsDialogOpen(true);
   };
@@ -73,23 +102,29 @@ const CatalogManagement: React.FC = () => {
 
   const handleSaveCatalog = async (data: CatalogFormValues) => {
     try {
-      // Placeholder for saveCatalog function
-      // const result = await saveCatalog(data);
+      // Create the catalog object with the necessary fields
+      const catalogData = {
+        ...(selectedCatalog ? { id: selectedCatalog.id } : {}),
+        title: data.title,
+        category_id: data.category_id || null
+      };
       
-      // if (result) {
-      //   toast({
-      //     title: "Sucesso",
-      //     description: `Catálogo ${selectedCatalog ? 'atualizado' : 'criado'} com sucesso.`,
-      //   });
-      //   handleCloseDialog();
-      //   loadCatalogs();
-      // } else {
-      //   toast({
-      //     title: "Erro",
-      //     description: `Erro ao ${selectedCatalog ? 'atualizar' : 'criar'} o catálogo.`,
-      //     variant: "destructive"
-      //   });
-      // }
+      const result = await saveCatalog(catalogData);
+      
+      if (result) {
+        toast({
+          title: "Sucesso",
+          description: `Catálogo ${selectedCatalog ? 'atualizado' : 'criado'} com sucesso.`,
+        });
+        handleCloseDialog();
+        loadCatalogs();
+      } else {
+        toast({
+          title: "Erro",
+          description: `Erro ao ${selectedCatalog ? 'atualizar' : 'criar'} o catálogo.`,
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error saving catalog:', error);
       toast({
@@ -187,6 +222,34 @@ const CatalogManagement: React.FC = () => {
                     <FormControl>
                       <Input placeholder="Título do catálogo" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map(category => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
