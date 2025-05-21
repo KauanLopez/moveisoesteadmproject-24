@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Catalog, CatalogCategory, CatalogItem, CatalogWithCategory } from "@/types/catalogTypes";
+import { v4 as uuidv4 } from 'uuid';
 
 // Fetch all catalog categories
 export const fetchCatalogCategories = async (): Promise<CatalogCategory[]> => {
@@ -15,6 +16,37 @@ export const fetchCatalogCategories = async (): Promise<CatalogCategory[]> => {
   }
   
   return data || [];
+};
+
+// Create a new catalog category
+export const saveCatalogCategory = async (category: Partial<CatalogCategory> & { name: string }): Promise<CatalogCategory | null> => {
+  const { data, error } = await supabase
+    .from('catalog_categories')
+    .upsert(category as any)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error saving catalog category:', error);
+    return null;
+  }
+  
+  return data;
+};
+
+// Delete a catalog category
+export const deleteCatalogCategory = async (id: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('catalog_categories')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    console.error('Error deleting catalog category:', error);
+    return false;
+  }
+  
+  return true;
 };
 
 // Fetch all catalogs with their categories
@@ -79,6 +111,30 @@ export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[
   }
   
   return data || [];
+};
+
+// Upload an image to Supabase storage and return the URL
+export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'): Promise<string | null> => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${uuidv4()}.${fileExt}`;
+  const filePath = `${folder}/${fileName}`;
+
+  const { data, error } = await supabase
+    .storage
+    .from('catalog_images')
+    .upload(filePath, file);
+
+  if (error) {
+    console.error('Error uploading image:', error);
+    return null;
+  }
+
+  const { data: urlData } = supabase
+    .storage
+    .from('catalog_images')
+    .getPublicUrl(filePath);
+
+  return urlData.publicUrl;
 };
 
 // Create or update a catalog

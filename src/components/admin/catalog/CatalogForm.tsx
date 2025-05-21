@@ -10,8 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Catalog, CatalogCategory } from '@/types/catalogTypes';
-import { saveCatalog } from '@/services/catalogService';
+import { saveCatalog, uploadCatalogImage } from '@/services/catalogService';
 import { useToast } from '@/components/ui/use-toast';
+import { Image, Upload } from 'lucide-react';
 
 // Form validation schema
 const formSchema = z.object({
@@ -31,6 +32,8 @@ interface CatalogFormProps {
 
 const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose }) => {
   const [submitting, setSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -43,15 +46,41 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
     },
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      
+      // Create a preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      
+      // Update the form field
+      form.setValue('cover_image', 'uploading...', { shouldValidate: true });
+    }
+  };
+
   const onSubmit = async (data: FormValues) => {
     setSubmitting(true);
     try {
+      // Upload image if a new file is selected
+      let imageUrl = data.cover_image;
+      
+      if (imageFile) {
+        const uploadedUrl = await uploadCatalogImage(imageFile);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        } else {
+          throw new Error('Failed to upload image');
+        }
+      }
+
       // Prepare data for saving
       const catalogData = {
         ...(catalog ? { id: catalog.id } : {}),
         title: data.title,
         description: data.description || null,
-        cover_image: data.cover_image,
+        cover_image: imageUrl,
         category_id: data.category_id,
       };
 
@@ -127,10 +156,66 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
               name="cover_image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Imagem de Capa (URL)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} />
-                  </FormControl>
+                  <FormLabel>Imagem de Capa</FormLabel>
+                  <div className="space-y-4">
+                    {/* Image URL input */}
+                    <FormControl>
+                      <Input 
+                        placeholder="https://..." 
+                        {...field} 
+                        disabled={!!imagePreview}
+                      />
+                    </FormControl>
+                    
+                    {/* File upload button */}
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => document.getElementById('cover-image-upload')?.click()}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload da Imagem
+                        </Button>
+                        {imagePreview && (
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            onClick={() => {
+                              setImageFile(null);
+                              setImagePreview(null);
+                              field.onChange(catalog?.cover_image || '');
+                            }}
+                          >
+                            Remover
+                          </Button>
+                        )}
+                      </div>
+                      <input 
+                        id="cover-image-upload"
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                    
+                    {/* Image preview */}
+                    {(imagePreview || field.value) && (
+                      <div className="mt-2 rounded-md overflow-hidden border border-gray-200">
+                        <img 
+                          src={imagePreview || field.value} 
+                          alt="Preview" 
+                          className="w-full h-48 object-cover"
+                          onError={(e) => {
+                            // Handle image loading error
+                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Imagem+não+encontrada';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

@@ -5,6 +5,7 @@ import ContentSection from '../ContentSection';
 import UserManagement from '../user-management';
 import CatalogManagement from '../catalog/CatalogManagement';
 import CatalogDetailsPanel from '../catalog/CatalogDetailsPanel';
+import CategoryManagement from '../catalog/CategoryManagement';
 
 interface AdminContentProps {
   activeTab: string;
@@ -29,6 +30,7 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeTab }) => {
       
       <TabsContent value="catalog" className="space-y-8 overflow-x-auto">
         <div className="grid grid-cols-1 gap-8">
+          <CategoryManagement />
           <CatalogManagement />
           <CatalogDetailsPanel />
         </div>

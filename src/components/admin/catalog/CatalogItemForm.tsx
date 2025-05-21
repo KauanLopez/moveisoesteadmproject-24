@@ -9,14 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { CatalogItem } from '@/types/catalogTypes';
-import { saveCatalogItem } from '@/services/catalogService';
+import { saveCatalogItem, uploadCatalogImage } from '@/services/catalogService';
 import { useToast } from '@/components/ui/use-toast';
+import { Image, Upload } from 'lucide-react';
 
 // Form validation schema
 const formSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
-  image_url: z.string().min(1, 'URL da imagem é obrigatória'),
+  image_url: z.string().min(1, 'Imagem é obrigatória'),
   display_order: z.coerce.number().int().default(0),
 });
 
@@ -30,6 +31,8 @@ interface CatalogItemFormProps {
 
 const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onClose }) => {
   const [submitting, setSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -42,16 +45,42 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
     },
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      
+      // Create a preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      
+      // Update the form field
+      form.setValue('image_url', 'uploading...', { shouldValidate: true });
+    }
+  };
+
   const onSubmit = async (data: FormValues) => {
     setSubmitting(true);
     try {
+      // Upload image if a new file is selected
+      let imageUrl = data.image_url;
+      
+      if (imageFile) {
+        const uploadedUrl = await uploadCatalogImage(imageFile, 'catalog_items');
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        } else {
+          throw new Error('Failed to upload image');
+        }
+      }
+
       // Prepare data for saving
       const itemData = {
         ...(item ? { id: item.id } : {}),
         catalog_id: catalogId,
         title: data.title || null,
         description: data.description || null,
-        image_url: data.image_url,
+        image_url: imageUrl,
         display_order: data.display_order,
       };
 
@@ -127,15 +156,71 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
               name="image_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL da Imagem</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} />
-                  </FormControl>
+                  <FormLabel>Imagem</FormLabel>
+                  <div className="space-y-4">
+                    {/* Image URL input */}
+                    <FormControl>
+                      <Input 
+                        placeholder="https://..." 
+                        {...field} 
+                        disabled={!!imagePreview}
+                      />
+                    </FormControl>
+                    
+                    {/* File upload button */}
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => document.getElementById('item-image-upload')?.click()}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload da Imagem
+                        </Button>
+                        {imagePreview && (
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            onClick={() => {
+                              setImageFile(null);
+                              setImagePreview(null);
+                              field.onChange(item?.image_url || '');
+                            }}
+                          >
+                            Remover
+                          </Button>
+                        )}
+                      </div>
+                      <input 
+                        id="item-image-upload"
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                    
+                    {/* Image preview */}
+                    {(imagePreview || field.value) && (
+                      <div className="mt-2 rounded-md overflow-hidden border border-gray-200">
+                        <img 
+                          src={imagePreview || field.value} 
+                          alt="Preview" 
+                          className="w-full h-48 object-cover"
+                          onError={(e) => {
+                            // Handle image loading error
+                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Imagem+não+encontrada';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="display_order"
@@ -145,8 +230,8 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
                   <FormControl>
                     <Input 
                       type="number" 
-                      min={0}
                       {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
