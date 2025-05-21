@@ -74,7 +74,7 @@ const ImageEditor: React.FC<ImageEditorProps> = ({ content, onUpdate, section })
   const aspectRatio = getAspectRatio(section, devicePreview);
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md">
       <h3 className="text-lg font-semibold mb-4">Editar Imagem</h3>
       
       {/* Device preview selector */}
@@ -99,7 +99,7 @@ const ImageEditor: React.FC<ImageEditorProps> = ({ content, onUpdate, section })
           aspectRatio={aspectRatio}
         />
         
-        {/* Zoom and position controls */}
+        {/* Zoom controls */}
         <ImageControls
           scale={scale}
           onScaleChange={handleScaleChange}
@@ -118,7 +118,7 @@ const ImageEditor: React.FC<ImageEditorProps> = ({ content, onUpdate, section })
       
       <div className="mt-4 pt-4 border-t border-gray-200">
         <p className="text-sm text-gray-500 mb-2">
-          <strong>Dica:</strong> Use o zoom e o reposicionamento para enquadrar perfeitamente a imagem como deseja que apareça no site. Verifique como ficará em diferentes dispositivos.
+          <strong>Dica:</strong> Use o zoom para enquadrar perfeitamente a imagem como deseja que apareça no site. Verifique como ficará em diferentes dispositivos.
         </p>
       </div>
     </div>

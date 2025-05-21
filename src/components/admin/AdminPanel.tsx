@@ -16,7 +16,7 @@ const AdminPanel = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 md:p-6 max-w-7xl">
+    <div className="container mx-auto px-4 pb-6 pt-4 md:py-6 max-w-7xl">
       <AdminHeader title="Painel Administrativo" />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

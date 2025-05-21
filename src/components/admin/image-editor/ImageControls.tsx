@@ -79,24 +79,6 @@ const ImageControls: React.FC<ImageControlsProps> = ({
           </Button>
         </div>
       </div>
-      
-      {/* Image position controls */}
-      <div className="mb-4 mt-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Posição da Imagem</label>
-        <div className="grid grid-cols-3 gap-2">
-          {['left top', 'center top', 'right top', 'left center', 'center', 'right center', 'left bottom', 'center bottom', 'right bottom'].map((position) => (
-            <Button
-              key={position}
-              variant={objectPosition === position ? "default" : "outline"}
-              size="sm"
-              className={objectPosition === position ? "bg-furniture-green" : ""}
-              onClick={() => onPositionSelect(position)}
-            >
-              {position.split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ')}
-            </Button>
-          ))}
-        </div>
-      </div>
     </>
   );
 };
