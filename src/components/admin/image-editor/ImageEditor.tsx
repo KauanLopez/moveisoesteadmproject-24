@@ -89,15 +89,17 @@ const ImageEditor: React.FC<ImageEditorProps> = ({ content, onUpdate, section })
           Visualização da imagem (prévia de como irá aparecer no site)
         </p>
         
-        <ImagePreview
-          image={content.image}
-          title={content.title}
-          objectPosition={objectPosition}
-          scale={scale}
-          onPositionChange={handlePositionChange}
-          devicePreview={devicePreview}
-          aspectRatio={aspectRatio}
-        />
+        <div className="max-w-full overflow-hidden">
+          <ImagePreview
+            image={content.image}
+            title={content.title}
+            objectPosition={objectPosition}
+            scale={scale}
+            onPositionChange={handlePositionChange}
+            devicePreview={devicePreview}
+            aspectRatio={aspectRatio}
+          />
+        </div>
         
         {/* Zoom controls */}
         <ImageControls

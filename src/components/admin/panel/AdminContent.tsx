@@ -11,28 +11,28 @@ interface AdminContentProps {
 const AdminContent: React.FC<AdminContentProps> = ({ activeTab }) => {
   return (
     <>
-      <TabsContent value="projects" className="space-y-8">
+      <TabsContent value="projects" className="space-y-8 overflow-x-auto">
         <ContentSection 
           title="Nosso Trabalho em Residências" 
           section="projects" 
         />
       </TabsContent>
       
-      <TabsContent value="products" className="space-y-8">
+      <TabsContent value="products" className="space-y-8 overflow-x-auto">
         <ContentSection 
           title="Produtos em Destaque" 
           section="products" 
         />
       </TabsContent>
       
-      <TabsContent value="manager" className="space-y-8">
+      <TabsContent value="manager" className="space-y-8 overflow-x-auto">
         <ContentSection 
           title="Gerente" 
           section="manager" 
         />
       </TabsContent>
       
-      <TabsContent value="users" className="space-y-8">
+      <TabsContent value="users" className="space-y-8 overflow-x-auto">
         <UserManagement />
       </TabsContent>
     </>
