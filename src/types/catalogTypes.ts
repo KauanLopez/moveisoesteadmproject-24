@@ -6,5 +6,10 @@ export type CatalogCategory = Database['public']['Tables']['catalog_categories']
 export type Catalog = Database['public']['Tables']['catalogs']['Row'];
 export type CatalogItem = Database['public']['Tables']['catalog_items']['Row'];
 
+// Extended types with additional properties
+export type CatalogWithCategory = Catalog & { 
+  category_name?: string 
+};
+
 // Helper function to generate route for catalog
 export const getCatalogRoute = (slug: string) => `/catalogo/${slug}`;

@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Catalog } from '@/types/catalogTypes';
+import { CatalogWithCategory } from '@/types/catalogTypes';
 import CatalogCard from './CatalogCard';
 
 interface CatalogListProps {
-  catalogs: Catalog[];
+  catalogs: CatalogWithCategory[];
 }
 
 export const CatalogList: React.FC<CatalogListProps> = ({ catalogs }) => {

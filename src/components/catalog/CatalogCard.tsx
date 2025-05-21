@@ -2,17 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { getCatalogRoute } from '@/types/catalogTypes';
+import { getCatalogRoute, CatalogWithCategory } from '@/types/catalogTypes';
 
 interface CatalogCardProps {
-  catalog: {
-    id: string;
-    title: string;
-    slug: string;
-    description: string | null;
-    cover_image: string | null;
-    category_name?: string;
-  };
+  catalog: CatalogWithCategory;
 }
 
 const CatalogCard: React.FC<CatalogCardProps> = ({ catalog }) => {
