@@ -36,3 +36,6 @@ export interface CatalogFormData {
   cover_image: string;
   category_id: string;
 }
+
+// Helper function to get the catalog route (if needed in the future)
+export const getCatalogRoute = (slug: string): string => `/catalog/${slug}`;

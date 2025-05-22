@@ -1,55 +1,55 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
-export const toggleFavoriteStatus = async (itemId: string, status: boolean): Promise<boolean> => {
+// Check if an item is marked as favorite
+export const checkFavoriteStatus = async (itemId: string): Promise<boolean> => {
   try {
-    if (status) {
-      // Add to featured products
-      const { data: featuredContent, error: getFeaturedError } = await supabase
-        .from('content')
-        .select('*')
-        .eq('section', 'products');
+    const { data } = await supabase
+      .from('content')
+      .select('*')
+      .eq('id', itemId)
+      .eq('section', 'products')
+      .single();
+    
+    return !!data;
+  } catch (error) {
+    console.error('Error checking favorite status:', error);
+    return false;
+  }
+};
 
-      if (getFeaturedError) {
-        console.error('Error fetching featured products:', getFeaturedError);
-        return false;
-      }
-
-      const { data: catalogItem, error: getCatalogItemError } = await supabase
+// Toggle an item's favorite status
+export const toggleFavoriteStatus = async (itemId: string, shouldBeFavorite: boolean): Promise<boolean> => {
+  try {
+    if (shouldBeFavorite) {
+      // First, get the item details from catalog_items
+      const { data: item } = await supabase
         .from('catalog_items')
         .select('*')
         .eq('id', itemId)
         .single();
-
-      if (getCatalogItemError || !catalogItem) {
-        console.error('Error fetching catalog item:', getCatalogItemError);
-        return false;
-      }
-
-      const newFeaturedItem = {
+      
+      if (!item) return false;
+      
+      // Then create a new entry in content table
+      const { error } = await supabase.from('content').insert({
+        id: item.id,
         section: 'products',
-        title: catalogItem.title || 'Featured Product',
-        description: catalogItem.description || '',
-        image: catalogItem.image_url,
-        objectPosition: 'center',
-        scale: 1
-      };
-
-      const { error: insertError } = await supabase
-        .from('content')
-        .insert([newFeaturedItem]);
-
-      if (insertError) {
-        console.error('Error adding to featured products:', insertError);
-        return false;
-      }
-
-      return true;
+        title: item.title || 'Featured Product',
+        description: item.description || '',
+        image_url: item.image_url
+      });
+      
+      return !error;
     } else {
-      // Remove from featured products
-      // This is a placeholder since we don't have direct mapping between catalog items and featured content
-      // In a real implementation, we'd need a way to know which content item corresponds to the catalog item
-      console.log('Remove from featured functionality would go here');
-      return true;
+      // Remove the item from content table
+      const { error } = await supabase
+        .from('content')
+        .delete()
+        .eq('id', itemId)
+        .eq('section', 'products');
+      
+      return !error;
     }
   } catch (error) {
     console.error('Error toggling favorite status:', error);
@@ -57,8 +57,17 @@ export const toggleFavoriteStatus = async (itemId: string, status: boolean): Pro
   }
 };
 
-export const checkFavoriteStatus = async (itemId: string): Promise<boolean> => {
-  // This is a placeholder. In a real implementation, we'd need a way to check if a catalog item
-  // is featured in the content table
-  return false;
+// Get all favorite items
+export const getFavoriteItems = async () => {
+  try {
+    const { data } = await supabase
+      .from('content')
+      .select('*')
+      .eq('section', 'products');
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error getting favorite items:', error);
+    return [];
+  }
 };

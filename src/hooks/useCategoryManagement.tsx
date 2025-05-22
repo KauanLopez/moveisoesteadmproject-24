@@ -4,8 +4,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { CatalogCategory } from '@/types/catalogTypes';
 import { 
   fetchCatalogCategories, 
-  saveCatalogCategory, 
-  deleteCatalogCategory 
+  saveCategory, 
+  deleteCategory 
 } from '@/services/categoryService';
 
 export function useCategoryManagement(onCategoriesUpdated?: () => void) {
@@ -57,7 +57,7 @@ export function useCategoryManagement(onCategoriesUpdated?: () => void) {
         name,
       };
 
-      const result = await saveCatalogCategory(categoryData);
+      const result = await saveCategory(categoryData);
       
       if (result) {
         toast({
@@ -89,7 +89,7 @@ export function useCategoryManagement(onCategoriesUpdated?: () => void) {
   const handleDeleteCategory = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta categoria? Esta ação não pode ser desfeita.')) {
       try {
-        const success = await deleteCatalogCategory(id);
+        const success = await deleteCategory(id);
         if (success) {
           toast({
             title: "Categoria excluída",
