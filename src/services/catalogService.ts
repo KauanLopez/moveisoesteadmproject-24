@@ -2,52 +2,72 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Catalog, CatalogItem, CatalogWithCategory, CatalogFormData } from "@/types/catalogTypes";
 
+// Verificar autenticação
+const checkAuthenticated = async () => {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) {
+    throw new Error("Usuário não autenticado. Faça login para continuar.");
+  }
+};
+
 // Fetch all catalogs with their categories
 export const fetchCatalogs = async (): Promise<CatalogWithCategory[]> => {
-  const { data, error } = await supabase
-    .from('catalogs')
-    .select(`
-      *,
-      catalog_categories (
-        name
-      )
-    `)
-    .order('title');
-  
-  if (error) {
-    console.error('Error fetching catalogs:', error);
-    return [];
+  try {
+    await checkAuthenticated();
+    
+    const { data, error } = await supabase
+      .from('catalogs')
+      .select(`
+        *,
+        catalog_categories (
+          name
+        )
+      `)
+      .order('title');
+    
+    if (error) {
+      console.error('Error fetching catalogs:', error);
+      throw error;
+    }
+    
+    // Transform data to include category name directly
+    return data.map(catalog => ({
+      ...catalog,
+      category_name: catalog.catalog_categories?.name
+    })) || [];
+  } catch (error) {
+    console.error('Exception fetching catalogs:', error);
+    throw error;
   }
-  
-  // Transform data to include category name directly
-  return data.map(catalog => ({
-    ...catalog,
-    category_name: catalog.catalog_categories?.name
-  })) || [];
 };
 
 // Fetch a single catalog by slug
 export const fetchCatalogBySlug = async (slug: string): Promise<CatalogWithCategory | null> => {
-  const { data, error } = await supabase
-    .from('catalogs')
-    .select(`
-      *,
-      catalog_categories (
-        name
-      )
-    `)
-    .eq('slug', slug)
-    .single();
-  
-  if (error) {
-    console.error(`Error fetching catalog with slug ${slug}:`, error);
-    return null;
+  try {
+    const { data, error } = await supabase
+      .from('catalogs')
+      .select(`
+        *,
+        catalog_categories (
+          name
+        )
+      `)
+      .eq('slug', slug)
+      .single();
+    
+    if (error) {
+      console.error(`Error fetching catalog with slug ${slug}:`, error);
+      throw error;
+    }
+    
+    return {
+      ...data,
+      category_name: data.catalog_categories?.name
+    };
+  } catch (error) {
+    console.error(`Exception fetching catalog with slug ${slug}:`, error);
+    throw error;
   }
-  
-  return {
-    ...data,
-    category_name: data.catalog_categories?.name
-  };
 };
 
 // Helper function to generate a slug from a title
@@ -63,10 +83,12 @@ const generateSlug = (title: string): string => {
 // Create or update a catalog
 export const saveCatalog = async (catalogData: CatalogFormData | (Partial<Catalog> & { title: string })): Promise<Catalog | null> => {
   try {
+    await checkAuthenticated();
+    
     // Se um slug não for fornecido, gerar um a partir do título
     const dataToSave = {
       ...catalogData,
-      slug: 'slug' in catalogData ? catalogData.slug : generateSlug(catalogData.title),
+      slug: 'slug' in catalogData && catalogData.slug ? catalogData.slug : generateSlug(catalogData.title),
     };
 
     console.log('Saving catalog with data:', dataToSave);
@@ -79,75 +101,103 @@ export const saveCatalog = async (catalogData: CatalogFormData | (Partial<Catalo
     
     if (error) {
       console.error('Error saving catalog:', error);
-      return null;
+      throw error;
     }
     
     console.log('Catalog saved successfully:', data);
     return data;
   } catch (error) {
     console.error('Exception saving catalog:', error);
-    return null;
+    throw error;
   }
 };
 
 // Delete a catalog
 export const deleteCatalog = async (id: string): Promise<boolean> => {
-  const { error } = await supabase
-    .from('catalogs')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
+  try {
+    await checkAuthenticated();
+    
+    const { error } = await supabase
+      .from('catalogs')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting catalog:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
     console.error('Error deleting catalog:', error);
-    return false;
+    throw error;
   }
-  
-  return true;
 };
 
 // Fetch catalog items for a specific catalog
 export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[]> => {
-  const { data, error } = await supabase
-    .from('catalog_items')
-    .select('*')
-    .eq('catalog_id', catalogId)
-    .order('display_order', { ascending: true });
-  
-  if (error) {
-    console.error(`Error fetching items for catalog ${catalogId}:`, error);
-    return [];
+  try {
+    await checkAuthenticated();
+    
+    const { data, error } = await supabase
+      .from('catalog_items')
+      .select('*')
+      .eq('catalog_id', catalogId)
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error(`Error fetching items for catalog ${catalogId}:`, error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error(`Exception fetching items for catalog ${catalogId}:`, error);
+    throw error;
   }
-  
-  return data || [];
 };
 
 // Create or update a catalog item
 export const saveCatalogItem = async (item: Partial<CatalogItem> & { catalog_id: string, image_url: string }): Promise<CatalogItem | null> => {
-  const { data, error } = await supabase
-    .from('catalog_items')
-    .upsert(item)
-    .select()
-    .single();
-  
-  if (error) {
+  try {
+    await checkAuthenticated();
+    
+    const { data, error } = await supabase
+      .from('catalog_items')
+      .upsert(item)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error saving catalog item:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
     console.error('Error saving catalog item:', error);
-    return null;
+    throw error;
   }
-  
-  return data;
 };
 
 // Delete a catalog item
 export const deleteCatalogItem = async (id: string): Promise<boolean> => {
-  const { error } = await supabase
-    .from('catalog_items')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
+  try {
+    await checkAuthenticated();
+    
+    const { error } = await supabase
+      .from('catalog_items')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting catalog item:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
     console.error('Error deleting catalog item:', error);
-    return false;
+    throw error;
   }
-  
-  return true;
 };

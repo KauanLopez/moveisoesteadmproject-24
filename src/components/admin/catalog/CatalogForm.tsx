@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,8 @@ import { Catalog, CatalogCategory } from '@/types/catalogTypes';
 import { uploadCatalogImage } from '@/services/imageService';
 import { saveCatalog } from '@/services/catalogService';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { AlertCircle } from 'lucide-react';
 
 // Import our new components
 import CatalogTitleField from './form-components/CatalogTitleField';
@@ -29,6 +31,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<CatalogFormValues>({
@@ -40,6 +43,20 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
       category_id: catalog?.category_id || '',
     },
   });
+
+  // Verificar autenticação no carregamento do componente
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        setAuthError("Usuário não autenticado. Por favor, faça login para continuar.");
+      } else {
+        setAuthError(null);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   const handleFileChange = (file: File | null) => {
     setImageFile(file);
@@ -57,6 +74,14 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
   const onSubmit = async (data: CatalogFormValues) => {
     setSubmitting(true);
     setUploadError(null);
+    
+    // Verificar novamente autenticação antes de submeter
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) {
+      setAuthError("Usuário não autenticado. Por favor, faça login para continuar.");
+      setSubmitting(false);
+      return;
+    }
     
     try {
       // Upload image if a new file is selected
@@ -83,12 +108,12 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
             setIsUploading(false);
             return;
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Upload error:", error);
-          setUploadError('Falha ao fazer upload da imagem. Tente novamente.');
+          setUploadError(error.message || 'Falha ao fazer upload da imagem. Tente novamente.');
           toast({
             title: "Erro",
-            description: "Falha ao fazer upload da imagem. Verifique sua conexão ou tente uma imagem menor.",
+            description: error.message || "Falha ao fazer upload da imagem. Verifique sua conexão ou tente uma imagem menor.",
             variant: "destructive"
           });
           setSubmitting(false);
@@ -135,11 +160,11 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
           variant: "destructive"
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving catalog:', error);
       toast({
         title: "Erro",
-        description: `Erro ao ${catalog ? 'atualizar' : 'criar'} o catálogo: ${(error as Error).message}`,
+        description: `Erro ao ${catalog ? 'atualizar' : 'criar'} o catálogo: ${error.message || "erro desconhecido"}`,
         variant: "destructive"
       });
     } finally {
@@ -152,6 +177,16 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
       <CardHeader>
         <CardTitle>{catalog ? 'Editar Catálogo' : 'Novo Catálogo'}</CardTitle>
       </CardHeader>
+      
+      {authError && (
+        <div className="mx-6 mb-4 bg-red-50 p-3 rounded-lg flex items-start gap-3 border border-red-200">
+          <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+          <div>
+            <p className="text-sm text-red-700">{authError}</p>
+          </div>
+        </div>
+      )}
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
@@ -165,7 +200,8 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
               isUploading={isUploading}
             />
             {uploadError && (
-              <div className="text-sm text-red-500">
+              <div className="text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" />
                 {uploadError}
               </div>
             )}

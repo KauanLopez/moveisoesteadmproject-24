@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { fetchCatalogItems, saveCatalogItem, deleteCatalogItem } from '@/services/catalogService';
 import { CatalogItem } from '@/types/catalogTypes';
 import { uploadCatalogImage } from '@/services/imageService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CatalogImageManagerProps {
   catalogId: string;
@@ -21,17 +22,33 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Verificar autenticação
+  const checkAuth = async () => {
+    const { data: session } = await supabase.auth.getSession();
+    return !!session.session;
+  };
 
   // Load existing catalog images
   useEffect(() => {
     const loadImages = async () => {
       setLoading(true);
+      setError(null);
       try {
+        const isAuthenticated = await checkAuth();
+        if (!isAuthenticated) {
+          setError("Usuário não autenticado. Por favor, faça login.");
+          setLoading(false);
+          return;
+        }
+        
         const items = await fetchCatalogItems(catalogId);
         setImages(items);
       } catch (error) {
         console.error('Error loading catalog images:', error);
+        setError("Não foi possível carregar as imagens do catálogo.");
         toast({
           title: "Erro ao carregar imagens",
           description: "Não foi possível carregar as imagens do catálogo.",
@@ -49,9 +66,12 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    
+    setError(null);
 
     // Validar tamanho do arquivo
     if (file.size > 5 * 1024 * 1024) {
+      setError("O tamanho máximo permitido é 5MB.");
       toast({
         title: "Arquivo muito grande",
         description: "O tamanho máximo permitido é 5MB.",
@@ -63,6 +83,7 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
     // Validar tipo de arquivo
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
+      setError("Formato não suportado. Utilize JPG, PNG ou WebP.");
       toast({
         title: "Formato não suportado",
         description: "Utilize JPG, PNG ou WebP.",
@@ -73,6 +94,19 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
 
     setUploading(true);
     try {
+      // Verificar autenticação
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        setError("Usuário não autenticado. Por favor, faça login.");
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar autenticado para fazer upload de imagens.",
+          variant: "destructive"
+        });
+        setUploading(false);
+        return;
+      }
+      
       const imageUrl = await uploadCatalogImage(file, 'catalog-images');
       
       if (imageUrl) {
@@ -102,11 +136,12 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
       } else {
         throw new Error('Falha ao fazer upload da imagem');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error);
+      setError(error.message || "Falha ao fazer upload da imagem");
       toast({
         title: "Erro ao fazer upload",
-        description: "Não foi possível fazer o upload da imagem. Verifique se você está logado e tem permissões.",
+        description: error.message || "Não foi possível fazer o upload da imagem. Verifique se você está logado e tem permissões.",
         variant: "destructive"
       });
     } finally {
@@ -118,6 +153,18 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
   const handleDeleteImage = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta imagem?')) {
       try {
+        // Verificar autenticação
+        const isAuthenticated = await checkAuth();
+        if (!isAuthenticated) {
+          setError("Usuário não autenticado. Por favor, faça login.");
+          toast({
+            title: "Erro de autenticação",
+            description: "Você precisa estar autenticado para excluir imagens.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         await deleteCatalogItem(id);
         setImages(images.filter(img => img.id !== id));
         toast({
@@ -137,6 +184,16 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 p-4 rounded-lg flex items-start gap-3 border border-red-200">
+          <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-medium text-red-800">Erro</h4>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+      
       <div className="bg-gray-50 p-4 rounded-lg border">
         <h3 className="text-lg font-medium mb-4">Adicionar Nova Imagem</h3>
         <div className="space-y-4">
