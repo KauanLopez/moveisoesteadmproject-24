@@ -13,39 +13,14 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'
     const fileName = `${generateUUID()}.${fileExt}`;
     const filePath = `${folder}/${fileName}`;
 
-    // Primeiro verificamos se o bucket 'catalog-images' existe
-    const { data: buckets } = await supabase
-      .storage
-      .listBuckets();
+    // Determine which bucket to use based on folder
+    const bucketName = folder === 'catalog_items' ? 'catalog-items' : 'catalog-images';
     
-    const bucketExists = buckets?.some(bucket => bucket.name === 'catalog-images');
+    console.log(`Uploading file to bucket: ${bucketName}, path: ${filePath}`);
     
-    if (!bucketExists) {
-      console.error('Bucket "catalog-images" not found. Using the "default" bucket instead.');
-      
-      // Tenta fazer upload para o bucket "default"
-      const { data, error } = await supabase
-        .storage
-        .from('default')
-        .upload(filePath, file);
-
-      if (error) {
-        console.error('Error uploading image:', error);
-        return null;
-      }
-
-      const { data: urlData } = supabase
-        .storage
-        .from('default')
-        .getPublicUrl(filePath);
-
-      return urlData.publicUrl;
-    }
-
-    // Se o bucket existir, usa "catalog-images"
     const { data, error } = await supabase
       .storage
-      .from('catalog-images')
+      .from(bucketName)
       .upload(filePath, file);
 
     if (error) {
@@ -55,9 +30,10 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'
 
     const { data: urlData } = supabase
       .storage
-      .from('catalog-images')
+      .from(bucketName)
       .getPublicUrl(filePath);
 
+    console.log('Image uploaded successfully, URL:', urlData.publicUrl);
     return urlData.publicUrl;
   } catch (error) {
     console.error('Exception while uploading image:', error);

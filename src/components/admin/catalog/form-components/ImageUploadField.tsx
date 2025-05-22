@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Upload, AlertTriangle } from 'lucide-react';
+import { Upload, AlertTriangle, Loader2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { CatalogFormValues } from '../types/CatalogFormTypes';
 
@@ -21,6 +21,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   imagePreview 
 }) => {
   const [fileError, setFileError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
@@ -41,12 +42,14 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
         return;
       }
       
+      setIsUploading(true);
       onFileChange(file);
       
       // Create a preview URL
       const previewUrl = URL.createObjectURL(file);
+      setIsUploading(false);
       
-      // Update the form field
+      // Update the form field with a temporary placeholder
       form.setValue('cover_image', 'uploading...', { shouldValidate: true });
     }
   };
@@ -64,7 +67,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
               <Input 
                 placeholder="https://..." 
                 {...field} 
-                disabled={!!imagePreview}
+                disabled={!!imagePreview || isUploading}
               />
             </FormControl>
             
@@ -75,9 +78,19 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                   type="button" 
                   variant="outline" 
                   onClick={() => document.getElementById('cover-image-upload')?.click()}
+                  disabled={isUploading}
                 >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload da Imagem
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload da Imagem
+                    </>
+                  )}
                 </Button>
                 {imagePreview && (
                   <Button 
@@ -88,6 +101,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                       field.onChange(originalImageUrl || '');
                       setFileError(null);
                     }}
+                    disabled={isUploading}
                   >
                     Remover
                   </Button>
@@ -99,6 +113,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                 accept="image/*" 
                 className="hidden"
                 onChange={handleFileChange}
+                disabled={isUploading}
               />
               
               {fileError && (

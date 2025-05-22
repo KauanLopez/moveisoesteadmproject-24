@@ -70,7 +70,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
           console.log('Image uploaded successfully:', uploadedUrl);
           imageUrl = uploadedUrl;
         } else {
-          setUploadError('Falha ao fazer upload da imagem. Verifique se o bucket existe.');
+          setUploadError('Falha ao fazer upload da imagem. Tente novamente.');
           toast({
             title: "Erro",
             description: "Falha ao fazer upload da imagem. Verifique sua conexão ou tente uma imagem menor.",
