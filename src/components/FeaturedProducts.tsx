@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Maximize2, LayoutGrid } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { supabase } from "@/integrations/supabase/client";
-import { getFavoriteItems } from "@/services/favoriteService";
+import { getFavoriteItems, FavoriteItem } from "@/services/favoriteService";
 import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
 
 const FeaturedProducts = () => {
@@ -34,10 +34,10 @@ const FeaturedProducts = () => {
         if (favoriteItems && favoriteItems.length > 0) {
           const mappedProducts = favoriteItems.map(item => ({
             id: item.id,
-            title: item.title || (item.catalog_items?.title || 'Produto em destaque'),
-            image: item.image || item.catalog_items?.image_url,
-            objectPosition: item.object_position || 'center',
-            scale: item.scale || 1
+            title: item.title || 'Produto em destaque',
+            image: item.image_url || '',
+            objectPosition: 'center',  // Default value
+            scale: 1  // Default value
           }));
           setProducts(mappedProducts);
         } else {

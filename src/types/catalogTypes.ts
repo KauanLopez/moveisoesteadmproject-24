@@ -17,9 +17,7 @@ export type CatalogItemWithFavorite = CatalogItem & {
 };
 
 // Content type with catalog item id
-export type ContentItem = Database['public']['Tables']['content']['Row'] & {
-  catalog_item_id?: string | null
-};
+export type ContentItem = Database['public']['Tables']['content']['Row'];
 
 // Helper function to generate route for catalog
 export const getCatalogRoute = (slug: string) => `/catalogo/${slug}`;

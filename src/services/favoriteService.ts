@@ -67,18 +67,17 @@ export const checkFavoriteStatus = async (itemId: string): Promise<boolean> => {
 };
 
 // Define a simpler interface for favorite items to avoid deep type issues
-interface FavoriteItem {
+export interface FavoriteItem {
   id: string;
   title?: string | null;
   image_url?: string | null;
-  catalog_item_id?: string | null;
 }
 
 // Get all favorite items
 export const getFavoriteItems = async (): Promise<FavoriteItem[]> => {
   const { data, error } = await supabase
     .from('content')
-    .select('id, title, image_url, catalog_item_id')
+    .select('id, title, image_url')  // Only select columns that exist
     .eq('section', 'products');
     
   if (error) {
@@ -86,5 +85,5 @@ export const getFavoriteItems = async (): Promise<FavoriteItem[]> => {
     return [];
   }
   
-  return (data as FavoriteItem[]) || [];
+  return data as FavoriteItem[] || [];
 };
