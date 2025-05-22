@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, StarOff } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
 import { Catalog, CatalogItem } from '@/types/catalogTypes';
 import { fetchCatalogItems, deleteCatalogItem } from '@/services/catalogService';
+import { toggleFavoriteStatus, checkFavoriteStatus } from '@/services/favoriteService';
 import CatalogItemForm from './CatalogItemForm';
 
 interface CatalogItemManagementProps {
@@ -16,6 +18,7 @@ const CatalogItemManagement: React.FC<CatalogItemManagementProps> = ({ catalog }
   const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   
   const { toast } = useToast();
 
@@ -24,6 +27,13 @@ const CatalogItemManagement: React.FC<CatalogItemManagementProps> = ({ catalog }
     try {
       const data = await fetchCatalogItems(catalog.id);
       setItems(data);
+      
+      // Load favorite status for all items
+      const favoritesStatus: Record<string, boolean> = {};
+      for (const item of data) {
+        favoritesStatus[item.id] = await checkFavoriteStatus(item.id);
+      }
+      setFavorites(favoritesStatus);
     } catch (error) {
       console.error('Error loading catalog items:', error);
       toast({
@@ -72,6 +82,35 @@ const CatalogItemManagement: React.FC<CatalogItemManagementProps> = ({ catalog }
     }
   };
 
+  const handleToggleFavorite = async (id: string) => {
+    const currentStatus = favorites[id] || false;
+    const newStatus = !currentStatus;
+    
+    try {
+      const success = await toggleFavoriteStatus(id, newStatus);
+      if (success) {
+        setFavorites(prev => ({
+          ...prev,
+          [id]: newStatus
+        }));
+        
+        toast({
+          title: newStatus ? "Adicionado aos destaques" : "Removido dos destaques",
+          description: newStatus 
+            ? "Item adicionado à seção 'Produtos em Destaque' da página inicial." 
+            : "Item removido da seção 'Produtos em Destaque'."
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite status:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status de destaque do item.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleFormClose = (shouldRefresh: boolean) => {
     setIsFormOpen(false);
     if (shouldRefresh) {
@@ -102,17 +141,18 @@ const CatalogItemManagement: React.FC<CatalogItemManagementProps> = ({ catalog }
             <TableHead className="w-[100px]">Imagem</TableHead>
             <TableHead>Título</TableHead>
             <TableHead>Ordem</TableHead>
+            <TableHead>Destaque</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {loading ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-4">Carregando itens...</TableCell>
+              <TableCell colSpan={5} className="text-center py-4">Carregando itens...</TableCell>
             </TableRow>
           ) : items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-4">Nenhum item encontrado neste catálogo.</TableCell>
+              <TableCell colSpan={5} className="text-center py-4">Nenhum item encontrado neste catálogo.</TableCell>
             </TableRow>
           ) : (
             items.map((item) => (
@@ -122,10 +162,28 @@ const CatalogItemManagement: React.FC<CatalogItemManagementProps> = ({ catalog }
                     src={item.image_url} 
                     alt={item.title || "Imagem do catálogo"} 
                     className="w-16 h-16 object-cover rounded"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://via.placeholder.com/100?text=No+Image';
+                    }}
                   />
                 </TableCell>
                 <TableCell className="font-medium">{item.title || "Sem título"}</TableCell>
                 <TableCell>{item.display_order || 0}</TableCell>
+                <TableCell>
+                  <Button
+                    variant={favorites[item.id] ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToggleFavorite(item.id)}
+                    title={favorites[item.id] ? "Remover dos destaques" : "Adicionar aos destaques"}
+                  >
+                    {favorites[item.id] ? (
+                      <Star size={16} className="fill-current" />
+                    ) : (
+                      <StarOff size={16} />
+                    )}
+                  </Button>
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>

@@ -11,5 +11,10 @@ export type CatalogWithCategory = Catalog & {
   category_name?: string 
 };
 
+// Extended types with favorite status (not in DB schema)
+export type CatalogItemWithFavorite = CatalogItem & {
+  is_favorite?: boolean
+};
+
 // Helper function to generate route for catalog
 export const getCatalogRoute = (slug: string) => `/catalogo/${slug}`;

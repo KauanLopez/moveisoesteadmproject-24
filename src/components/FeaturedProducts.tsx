@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Maximize2, LayoutGrid } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { supabase } from "@/integrations/supabase/client";
+import { getFavoriteItems } from "@/services/favoriteService";
 import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
 
 const FeaturedProducts = () => {
@@ -17,7 +19,7 @@ const FeaturedProducts = () => {
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [products, setProducts] = useState<ImageContent[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const carouselApi = useRef<{ scrollNext: () => void } | null>(null);
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -26,20 +28,35 @@ const FeaturedProducts = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const { data, error } = await supabase
-          .from('content')
-          .select('*')
-          .eq('section', 'products');
+        // First try to load products from featured items (favorites)
+        const favoriteItems = await getFavoriteItems();
         
-        if (error) {
-          throw error;
-        }
-        
-        if (data && data.length > 0) {
-          setProducts(data.map(mapDbContentToImageContent));
+        if (favoriteItems && favoriteItems.length > 0) {
+          const mappedProducts = favoriteItems.map(item => ({
+            id: item.id,
+            title: item.title || (item.catalog_items?.title || 'Produto em destaque'),
+            image: item.image || item.catalog_items?.image_url,
+            objectPosition: item.object_position || 'center',
+            scale: item.scale || 1
+          }));
+          setProducts(mappedProducts);
         } else {
-          // Fallback to localStorage
-          fallbackToLocalStorage();
+          // Fallback to regular content
+          const { data, error } = await supabase
+            .from('content')
+            .select('*')
+            .eq('section', 'products');
+          
+          if (error) {
+            throw error;
+          }
+          
+          if (data && data.length > 0) {
+            setProducts(data.map(mapDbContentToImageContent));
+          } else {
+            // Fallback to localStorage
+            fallbackToLocalStorage();
+          }
         }
       } catch (error) {
         console.error('Error loading products:', error);
@@ -135,9 +152,9 @@ const FeaturedProducts = () => {
           <div className="relative px-4">
             <Carousel 
               opts={{
-                align: "center", // Centraliza os itens
+                align: "center",
                 loop: true,
-                dragFree: false, // Desativa dragFree para obter efeito magnético
+                dragFree: false,
                 containScroll: "trimSnaps",
               }}
               className="w-full"
@@ -156,7 +173,7 @@ const FeaturedProducts = () => {
                       <div className="h-64 overflow-hidden">
                         <img 
                           src={product.image} 
-                          alt={product.name} 
+                          alt={product.title} 
                           className="w-full h-full object-cover"
                           style={{ 
                             objectPosition: product.objectPosition || 'center',

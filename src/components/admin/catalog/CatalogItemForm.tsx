@@ -1,28 +1,28 @@
+
 import React, { useState } from 'react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { CatalogItem } from '@/types/catalogTypes';
-// Update the import path for uploadCatalogImage and saveCatalogItem
-import { uploadCatalogImage } from '@/services/imageService';
 import { saveCatalogItem } from '@/services/catalogService';
+import { uploadCatalogImage } from '@/services/imageService';
 import { useToast } from '@/components/ui/use-toast';
-import { Image, Upload } from 'lucide-react';
+import { Upload, Star, StarOff } from 'lucide-react';
 
-// Form validation schema
-const formSchema = z.object({
+const catalogItemSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
-  image_url: z.string().min(1, 'Imagem é obrigatória'),
-  display_order: z.coerce.number().int().default(0),
+  image_url: z.string().min(1, 'A imagem é obrigatória'),
+  display_order: z.coerce.number().default(0),
+  is_favorite: z.boolean().optional().default(false),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type CatalogItemFormValues = z.infer<typeof catalogItemSchema>;
 
 interface CatalogItemFormProps {
   item: CatalogItem | null;
@@ -35,14 +35,15 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { toast } = useToast();
-  
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+
+  const form = useForm<CatalogItemFormValues>({
+    resolver: zodResolver(catalogItemSchema),
     defaultValues: {
       title: item?.title || '',
       description: item?.description || '',
       image_url: item?.image_url || '',
       display_order: item?.display_order || 0,
+      is_favorite: false, // We'll implement favorites later
     },
   });
 
@@ -60,7 +61,7 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
     }
   };
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: CatalogItemFormValues) => {
     setSubmitting(true);
     try {
       // Upload image if a new file is selected
@@ -79,7 +80,7 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
       const itemData = {
         ...(item ? { id: item.id } : {}),
         catalog_id: catalogId,
-        title: data.title || null,
+        title: data.title,
         description: data.description || null,
         image_url: imageUrl,
         display_order: data.display_order,
@@ -90,13 +91,13 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
       if (result) {
         toast({
           title: "Sucesso",
-          description: `Item ${item ? 'atualizado' : 'adicionado'} com sucesso.`,
+          description: `Item do catálogo ${item ? 'atualizado' : 'criado'} com sucesso.`,
         });
         onClose(true);
       } else {
         toast({
           title: "Erro",
-          description: `Erro ao ${item ? 'atualizar' : 'adicionar'} o item.`,
+          description: `Erro ao ${item ? 'atualizar' : 'criar'} o item do catálogo.`,
           variant: "destructive"
         });
       }
@@ -104,7 +105,7 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
       console.error('Error saving catalog item:', error);
       toast({
         title: "Erro",
-        description: `Erro ao ${item ? 'atualizar' : 'adicionar'} o item.`,
+        description: `Erro ao ${item ? 'atualizar' : 'criar'} o item do catálogo.`,
         variant: "destructive"
       });
     } finally {
@@ -127,7 +128,7 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
                 <FormItem>
                   <FormLabel>Título (opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Título do item" {...field} value={field.value || ''} />
+                    <Input placeholder="Título do item" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -141,17 +142,13 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
                 <FormItem>
                   <FormLabel>Descrição (opcional)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Descrição do item"
-                      {...field}
-                      value={field.value || ''}
-                    />
+                    <Textarea placeholder="Descrição do item" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="image_url"
@@ -159,7 +156,6 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
                 <FormItem>
                   <FormLabel>Imagem</FormLabel>
                   <div className="space-y-4">
-                    {/* Image URL input */}
                     <FormControl>
                       <Input 
                         placeholder="https://..." 
@@ -168,42 +164,38 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
                       />
                     </FormControl>
                     
-                    {/* File upload button */}
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => document.getElementById('item-image-upload')?.click()}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload da Imagem
+                      </Button>
+                      {imagePreview && (
                         <Button 
                           type="button" 
-                          variant="outline" 
-                          onClick={() => document.getElementById('item-image-upload')?.click()}
+                          variant="ghost" 
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview(null);
+                            field.onChange(item?.image_url || '');
+                          }}
                         >
-                          <Upload className="mr-2 h-4 w-4" />
-                          Upload da Imagem
+                          Remover
                         </Button>
-                        {imagePreview && (
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            onClick={() => {
-                              setImageFile(null);
-                              setImagePreview(null);
-                              field.onChange(item?.image_url || '');
-                            }}
-                          >
-                            Remover
-                          </Button>
-                        )}
-                      </div>
-                      <input 
-                        id="item-image-upload"
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
+                      )}
                     </div>
+                    <input 
+                      id="item-image-upload"
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
                     
-                    {/* Image preview */}
-                    {(imagePreview || field.value) && (
+                    {(imagePreview || field.value) && field.value !== 'uploading...' && (
                       <div className="mt-2 rounded-md overflow-hidden border border-gray-200">
                         <img 
                           src={imagePreview || field.value} 
@@ -227,30 +219,27 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
               name="display_order"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ordem de Exibição</FormLabel>
+                  <FormLabel>Ordem de exibição</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                    />
+                    <Input type="number" min={0} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </CardContent>
+          
           <CardFooter className="flex justify-between">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => onClose(false)}
               disabled={submitting}
             >
               Cancelar
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Salvando...' : item ? 'Atualizar' : 'Adicionar'}
+              {submitting ? 'Salvando...' : item ? 'Atualizar' : 'Criar'}
             </Button>
           </CardFooter>
         </form>
