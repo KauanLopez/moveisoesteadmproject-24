@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LayoutGrid } from 'lucide-react';
 import ProductImageDialog from './featured/ProductImageDialog';
 import ProductCarousel from './featured/ProductCarousel';
-import { useFeaturedProducts, FeaturedProduct } from '@/hooks/useFeaturedProducts';
+import { useContent } from '@/context/ContentContext';
+import { ImageContent } from '@/types/customTypes';
 
 const FeaturedProducts = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -15,7 +14,8 @@ const FeaturedProducts = () => {
     scale: number;
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const { products, loading } = useFeaturedProducts();
+  const { content } = useContent();
+  const products = content.filter(item => item.section === 'products');
 
   useEffect(() => {
     const checkMobile = () => {
@@ -30,7 +30,7 @@ const FeaturedProducts = () => {
     };
   }, []);
 
-  const handleImageClick = (product: FeaturedProduct) => {
+  const handleImageClick = (product: ImageContent) => {
     setSelectedImage(product.image);
     setSelectedImageData({
       src: product.image,
@@ -39,8 +39,8 @@ const FeaturedProducts = () => {
     });
   };
 
-  if (loading) {
-    return <div className="py-16 text-center">Carregando produtos...</div>;
+  if (products.length === 0) {
+    return <div className="py-16 text-center">Nenhum produto em destaque disponível.</div>;
   }
 
   return (
@@ -51,22 +51,16 @@ const FeaturedProducts = () => {
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
         </div>
 
-        {products.length > 0 && (
-          <ProductCarousel 
-            products={products}
-            isMobile={isMobile}
-            onImageClick={handleImageClick}
-          />
-        )}
+        <ProductCarousel 
+          products={products}
+          isMobile={isMobile}
+          onImageClick={handleImageClick}
+        />
         
-        {/* Button to link to catalog page */}
         <div className="mt-12 text-center">
-          <Link to="/catalogo">
-            <Button variant="default" className="gap-2" size="lg">
-              <LayoutGrid className="h-5 w-5" />
-              Ver Catálogo Completo
-            </Button>
-          </Link>
+          <Button variant="default" className="gap-2" size="lg">
+            Entre em contato para saber mais
+          </Button>
         </div>
       </div>
 

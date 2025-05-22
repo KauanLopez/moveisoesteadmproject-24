@@ -9,18 +9,21 @@ import Manager from '@/components/Manager';
 import Location from '@/components/Location';
 import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
+import { ContentProvider } from '@/context/ContentContext';
 
 const Index = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <Hero />
-      <FeaturedProducts />
-      <Projects />
-      <About />
-      <Manager />
-      <CTA />
-      <Location />
+      <ContentProvider>
+        <Hero />
+        <FeaturedProducts />
+        <Projects />
+        <About />
+        <Manager />
+        <CTA />
+        <Location />
+      </ContentProvider>
       <Footer />
     </div>
   );

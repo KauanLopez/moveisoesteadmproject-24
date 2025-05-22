@@ -28,10 +28,11 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // Try to load content from Supabase
         const dbContent = await fetchContentFromSupabase();
 
-        if (dbContent) {
+        if (dbContent && dbContent.length > 0) {
+          console.log('Loaded content from Supabase:', dbContent);
           setContent(dbContent);
         } else {
-          // If no content in database, use default and save it
+          console.log('No content in database, using default content');
           setContent(defaultContent);
           // Save default content to Supabase
           await saveDefaultContentToSupabase();
@@ -39,7 +40,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } catch (err) {
         console.error('Error in content loading:', err);
         // Fallback to localStorage if Supabase fails
-        setContent(getContentFromLocalStorage());
+        const localContent = getContentFromLocalStorage();
+        console.log('Fallback to localStorage:', localContent);
+        setContent(localContent);
       } finally {
         setIsLoaded(true);
       }
