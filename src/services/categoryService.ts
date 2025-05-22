@@ -22,9 +22,18 @@ export const fetchCatalogCategories = async (): Promise<CatalogCategory[]> => {
 // Save category (create or update)
 export const saveCategory = async (category: Partial<CatalogCategory>): Promise<CatalogCategory | null> => {
   try {
+    // Ensure name is provided when required by database
+    if (!category.id && !category.name) {
+      throw new Error('Name is required for new categories');
+    }
+    
     const { data, error } = await supabase
       .from('catalog_categories')
-      .upsert(category)
+      .upsert({
+        id: category.id,
+        name: category.name || '', // Ensure name is not undefined
+        // Don't include created_at or updated_at, they have defaults
+      })
       .select();
     
     if (error) throw error;

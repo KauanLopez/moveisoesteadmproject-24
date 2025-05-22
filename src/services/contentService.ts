@@ -3,6 +3,76 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImageContent, mapDbContentToImageContent, mapImageContentToDb } from '@/types/customTypes';
 import { defaultContent, CONTENT_STORAGE_KEY } from '@/utils/contentUtils';
 
+// Fetch content by section from Supabase
+export const fetchContent = async (section: string): Promise<ImageContent[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('content')
+      .select('*')
+      .eq('section', section);
+    
+    if (error) {
+      throw error;
+    }
+    
+    if (data && data.length > 0) {
+      return data.map(mapDbContentToImageContent);
+    }
+    
+    return [];
+  } catch (error) {
+    console.error(`Error fetching ${section} content:`, error);
+    return [];
+  }
+};
+
+// Save content item
+export const saveContent = async (item: ImageContent): Promise<ImageContent | null> => {
+  try {
+    const mappedItem = mapImageContentToDb(item);
+    
+    const { data, error } = await supabase
+      .from('content')
+      .upsert({
+        ...mappedItem,
+        section: item.section
+      })
+      .select();
+    
+    if (error) {
+      throw error;
+    }
+    
+    if (data && data.length > 0) {
+      return mapDbContentToImageContent(data[0]);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error saving content:', error);
+    return null;
+  }
+};
+
+// Delete content item
+export const deleteContent = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('content')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting content:', error);
+    return false;
+  }
+};
+
 // Fetch content from Supabase
 export const fetchContentFromSupabase = async (): Promise<ImageContent[] | null> => {
   try {

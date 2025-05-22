@@ -6,14 +6,12 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface SectionHeaderProps {
   title: string;
-  section: string;
-  onAddItem: () => void;
+  onAddNew: () => void;  // Changed from onAddItem to onAddNew to match usage
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({ 
   title, 
-  section,
-  onAddItem 
+  onAddNew 
 }) => {
   return (
     <div className="flex justify-between items-center mb-4">
@@ -23,7 +21,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
           Edite o conteúdo desta seção do site.
         </p>
       </div>
-      <Button onClick={onAddItem} className="flex-shrink-0">
+      <Button onClick={onAddNew} className="flex-shrink-0">
         <Plus className="mr-2 h-4 w-4" />
         Novo Item
       </Button>
