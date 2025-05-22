@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { fetchCatalogItems, saveCatalogItem, deleteCatalogItem } from '@/services/catalogService';
 import { CatalogItem } from '@/types/catalogTypes';
@@ -50,6 +50,27 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Validar tamanho do arquivo
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "O tamanho máximo permitido é 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Formato não suportado",
+        description: "Utilize JPG, PNG ou WebP.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setUploading(true);
     try {
       const imageUrl = await uploadCatalogImage(file, 'catalog-images');
@@ -79,13 +100,13 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
           event.target.value = '';
         }
       } else {
-        throw new Error('Failed to upload image');
+        throw new Error('Falha ao fazer upload da imagem');
       }
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
         title: "Erro ao fazer upload",
-        description: "Não foi possível fazer o upload da imagem.",
+        description: "Não foi possível fazer o upload da imagem. Verifique se você está logado e tem permissões.",
         variant: "destructive"
       });
     } finally {
@@ -154,6 +175,7 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
               <div className="w-32">
                 {uploading ? (
                   <Button disabled className="w-full">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Enviando...
                   </Button>
                 ) : (

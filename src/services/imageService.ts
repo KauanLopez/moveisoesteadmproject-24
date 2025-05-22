@@ -7,7 +7,7 @@ const generateUUID = () => {
 };
 
 // Upload an image to Supabase storage and return the URL
-export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'): Promise<string | null> => {
+export const uploadCatalogImage = async (file: File, folder: string = 'catalog-covers'): Promise<string | null> => {
   try {
     const fileExt = file.name.split('.').pop();
     const fileName = `${generateUUID()}.${fileExt}`;
@@ -22,9 +22,31 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('User not authenticated. Cannot upload images without authentication.');
-      return null;
+      throw new Error("Usuário não autenticado. Faça login para fazer upload de imagens.");
     }
     
+    // Check if the bucket exists, if not create it
+    const { data: bucketExists } = await supabase
+      .storage
+      .getBucket(bucketName);
+
+    if (!bucketExists) {
+      console.log(`Creating bucket: ${bucketName}`);
+      const { error: bucketError } = await supabase
+        .storage
+        .createBucket(bucketName, {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+        });
+
+      if (bucketError) {
+        console.error('Error creating bucket:', bucketError);
+        throw bucketError;
+      }
+    }
+
+    // Upload the file
     const { data, error } = await supabase
       .storage
       .from(bucketName)
@@ -38,6 +60,7 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'
       throw error;
     }
 
+    // Get the public URL for the uploaded file
     const { data: urlData } = supabase
       .storage
       .from(bucketName)
