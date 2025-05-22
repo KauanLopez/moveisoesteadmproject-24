@@ -16,7 +16,6 @@ import CategoryField from './form-components/CategoryField';
 import ImageUploadField from './form-components/ImageUploadField';
 import FormActions from './form-components/FormActions';
 import { catalogFormSchema, CatalogFormValues } from './types/CatalogFormTypes';
-import { Loader2 } from 'lucide-react';
 
 interface CatalogFormProps {
   catalog: Catalog | null;
@@ -29,6 +28,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<CatalogFormValues>({
@@ -64,12 +64,27 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
       
       if (imageFile) {
         console.log('Uploading image file:', imageFile.name);
-        const uploadedUrl = await uploadCatalogImage(imageFile);
+        setIsUploading(true);
         
-        if (uploadedUrl) {
-          console.log('Image uploaded successfully:', uploadedUrl);
-          imageUrl = uploadedUrl;
-        } else {
+        try {
+          const uploadedUrl = await uploadCatalogImage(imageFile);
+          
+          if (uploadedUrl) {
+            console.log('Image uploaded successfully:', uploadedUrl);
+            imageUrl = uploadedUrl;
+          } else {
+            setUploadError('Falha ao fazer upload da imagem. Tente novamente.');
+            toast({
+              title: "Erro",
+              description: "Falha ao fazer upload da imagem. Verifique se você está logado e tem permissões para fazer upload.",
+              variant: "destructive"
+            });
+            setSubmitting(false);
+            setIsUploading(false);
+            return;
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
           setUploadError('Falha ao fazer upload da imagem. Tente novamente.');
           toast({
             title: "Erro",
@@ -77,7 +92,10 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
             variant: "destructive"
           });
           setSubmitting(false);
+          setIsUploading(false);
           return;
+        } finally {
+          setIsUploading(false);
         }
       }
 
@@ -144,6 +162,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
               originalImageUrl={catalog?.cover_image}
               onFileChange={handleFileChange}
               imagePreview={imagePreview}
+              isUploading={isUploading}
             />
             {uploadError && (
               <div className="text-sm text-red-500">

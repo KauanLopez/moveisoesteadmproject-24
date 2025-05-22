@@ -20,11 +20,13 @@ const ProductImageDialog = ({
   scale = 1 
 }: ProductImageDialogProps) => {
   const [isLoading, setIsLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState(false);
 
   React.useEffect(() => {
     // Reset loading state when a new image is selected
     if (selectedImage) {
       setIsLoading(true);
+      setLoadError(false);
     }
   }, [selectedImage]);
 
@@ -50,8 +52,16 @@ const ProductImageDialog = ({
                 transform: `scale(${scale})`
               }}
               onLoad={() => setIsLoading(false)}
-              onError={() => setIsLoading(false)}
+              onError={() => {
+                setIsLoading(false);
+                setLoadError(true);
+              }}
             />
+          )}
+          {loadError && (
+            <div className="bg-white/80 p-4 rounded-lg text-center">
+              <p className="text-red-500">Não foi possível carregar a imagem</p>
+            </div>
           )}
           <button 
             onClick={() => onOpenChange(false)} 

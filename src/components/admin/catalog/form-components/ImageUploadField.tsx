@@ -12,16 +12,17 @@ interface ImageUploadFieldProps {
   originalImageUrl?: string;
   onFileChange: (file: File | null) => void;
   imagePreview: string | null;
+  isUploading?: boolean;
 }
 
 const ImageUploadField: React.FC<ImageUploadFieldProps> = ({ 
   form, 
   originalImageUrl, 
   onFileChange, 
-  imagePreview 
+  imagePreview,
+  isUploading = false
 }) => {
   const [fileError, setFileError] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
@@ -42,12 +43,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
         return;
       }
       
-      setIsUploading(true);
       onFileChange(file);
-      
-      // Create a preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setIsUploading(false);
       
       // Update the form field with a temporary placeholder
       form.setValue('cover_image', 'uploading...', { shouldValidate: true });
