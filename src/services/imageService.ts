@@ -11,6 +11,12 @@ const generateUUID = () => {
  */
 const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
   try {
+    // Verificar se o usuário está autenticado
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      throw new Error("Usuário não autenticado. Faça login para continuar.");
+    }
+    
     // Verificar se o bucket existe
     const { data: bucketExists, error: checkError } = await supabase
       .storage
@@ -18,6 +24,12 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
     
     if (checkError) {
       console.error('Error checking bucket:', checkError);
+      
+      // Se o erro for de permissão, pode ser problema de autenticação
+      if (checkError.message.includes('Permission denied')) {
+        throw new Error("Sem permissão para verificar bucket de armazenamento. Verifique se você está autenticado.");
+      }
+      
       throw checkError;
     }
 
@@ -34,6 +46,12 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
 
       if (bucketError) {
         console.error('Error creating bucket:', bucketError);
+        
+        // Se o erro for de permissão, pode ser problema de autenticação
+        if (bucketError.message.includes('Permission denied')) {
+          throw new Error("Sem permissão para criar bucket de armazenamento. Verifique se você está autenticado.");
+        }
+        
         throw bucketError;
       }
     }
@@ -41,7 +59,7 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Error ensuring bucket exists:', error);
-    return false;
+    throw error; // Propagar erro para tratamento pelo chamador
   }
 };
 
@@ -61,10 +79,7 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
     console.log(`Uploading file to bucket: ${bucketName}`);
     
     // Garantir que o bucket exista
-    const bucketCreated = await ensureBucketExists(bucketName);
-    if (!bucketCreated) {
-      throw new Error("Falha ao criar ou verificar bucket de armazenamento.");
-    }
+    await ensureBucketExists(bucketName);
 
     // Preparar o nome do arquivo
     const fileExt = file.name.split('.').pop();
@@ -82,6 +97,12 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
 
     if (error) {
       console.error('Error uploading image:', error);
+      
+      // Verificar se é um erro de autenticação
+      if (error.message.includes('Authentication') || error.message.includes('JWT')) {
+        throw new Error("Erro de autenticação. Por favor, faça login novamente.");
+      }
+      
       throw error;
     }
 

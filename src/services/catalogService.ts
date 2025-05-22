@@ -8,6 +8,7 @@ const checkAuthenticated = async () => {
   if (!data.session) {
     throw new Error("Usuário não autenticado. Faça login para continuar.");
   }
+  return data.session;
 };
 
 // Fetch all catalogs with their categories
@@ -27,6 +28,9 @@ export const fetchCatalogs = async (): Promise<CatalogWithCategory[]> => {
     
     if (error) {
       console.error('Error fetching catalogs:', error);
+      if (error.message.includes('JWT') || error.message.includes('claim')) {
+        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
+      }
       throw error;
     }
     
@@ -83,7 +87,7 @@ const generateSlug = (title: string): string => {
 // Create or update a catalog
 export const saveCatalog = async (catalogData: CatalogFormData | (Partial<Catalog> & { title: string })): Promise<Catalog | null> => {
   try {
-    await checkAuthenticated();
+    const session = await checkAuthenticated();
     
     // Se um slug não for fornecido, gerar um a partir do título
     const dataToSave = {
@@ -101,6 +105,9 @@ export const saveCatalog = async (catalogData: CatalogFormData | (Partial<Catalo
     
     if (error) {
       console.error('Error saving catalog:', error);
+      if (error.message.includes('JWT') || error.message.includes('claim')) {
+        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
+      }
       throw error;
     }
     
@@ -124,6 +131,9 @@ export const deleteCatalog = async (id: string): Promise<boolean> => {
     
     if (error) {
       console.error('Error deleting catalog:', error);
+      if (error.message.includes('JWT') || error.message.includes('claim')) {
+        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
+      }
       throw error;
     }
     
@@ -147,6 +157,9 @@ export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[
     
     if (error) {
       console.error(`Error fetching items for catalog ${catalogId}:`, error);
+      if (error.message.includes('JWT') || error.message.includes('claim')) {
+        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
+      }
       throw error;
     }
     
@@ -170,6 +183,9 @@ export const saveCatalogItem = async (item: Partial<CatalogItem> & { catalog_id:
     
     if (error) {
       console.error('Error saving catalog item:', error);
+      if (error.message.includes('JWT') || error.message.includes('claim')) {
+        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
+      }
       throw error;
     }
     
@@ -192,6 +208,9 @@ export const deleteCatalogItem = async (id: string): Promise<boolean> => {
     
     if (error) {
       console.error('Error deleting catalog item:', error);
+      if (error.message.includes('JWT') || error.message.includes('claim')) {
+        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
+      }
       throw error;
     }
     

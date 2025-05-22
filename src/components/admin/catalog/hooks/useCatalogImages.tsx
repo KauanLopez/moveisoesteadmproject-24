@@ -5,6 +5,7 @@ import { CatalogItem } from '@/types/catalogTypes';
 import { fetchCatalogItems, deleteCatalogItem, saveCatalogItem } from '@/services/catalogService';
 import { uploadCatalogImage } from '@/services/imageService';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export const useCatalogImages = (catalogId: string) => {
   const [images, setImages] = useState<CatalogItem[]>([]);
@@ -12,19 +13,13 @@ export const useCatalogImages = (catalogId: string) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-
-  // Check authentication status
-  const checkAuth = async () => {
-    const { data: session } = await supabase.auth.getSession();
-    return !!session.session;
-  };
+  const { isAuthenticated } = useAuth(); // Use authentication context
 
   // Load existing catalog images
   const loadImages = async () => {
     setLoading(true);
     setError(null);
     try {
-      const isAuthenticated = await checkAuth();
       if (!isAuthenticated) {
         setError("Usuário não autenticado. Por favor, faça login.");
         setLoading(false);
@@ -46,16 +41,32 @@ export const useCatalogImages = (catalogId: string) => {
     }
   };
 
-  // Load images on component mount
+  // Load images when component mounts
   useEffect(() => {
-    loadImages();
-  }, [catalogId]);
+    if (isAuthenticated) {
+      loadImages();
+    } else {
+      setError("Usuário não autenticado. Por favor, faça login.");
+      setLoading(false);
+    }
+  }, [catalogId, isAuthenticated]);
 
   // Handle image upload
   const handleImageUpload = async (file: File, title: string, description: string) => {
     if (!file) return;
     
     setError(null);
+
+    // Check authentication first
+    if (!isAuthenticated) {
+      setError("Usuário não autenticado. Por favor, faça login.");
+      toast({
+        title: "Erro de autenticação",
+        description: "Você precisa estar autenticado para fazer upload de imagens.",
+        variant: "destructive"
+      });
+      return false;
+    }
 
     // Validate file size
     if (file.size > 5 * 1024 * 1024) {
@@ -65,7 +76,7 @@ export const useCatalogImages = (catalogId: string) => {
         description: "O tamanho máximo permitido é 5MB.",
         variant: "destructive"
       });
-      return;
+      return false;
     }
     
     // Validate file type
@@ -77,24 +88,11 @@ export const useCatalogImages = (catalogId: string) => {
         description: "Utilize JPG, PNG ou WebP.",
         variant: "destructive"
       });
-      return;
+      return false;
     }
 
     setUploading(true);
     try {
-      // Verify authentication
-      const isAuthenticated = await checkAuth();
-      if (!isAuthenticated) {
-        setError("Usuário não autenticado. Por favor, faça login.");
-        toast({
-          title: "Erro de autenticação",
-          description: "Você precisa estar autenticado para fazer upload de imagens.",
-          variant: "destructive"
-        });
-        setUploading(false);
-        return;
-      }
-      
       const imageUrl = await uploadCatalogImage(file, 'catalog-images');
       
       if (imageUrl) {
@@ -125,7 +123,7 @@ export const useCatalogImages = (catalogId: string) => {
       setError(error.message || "Falha ao fazer upload da imagem");
       toast({
         title: "Erro ao fazer upload",
-        description: error.message || "Não foi possível fazer o upload da imagem. Verifique se você está logado e tem permissões.",
+        description: error.message || "Não foi possível fazer o upload da imagem.",
         variant: "destructive"
       });
       return false;
@@ -136,20 +134,18 @@ export const useCatalogImages = (catalogId: string) => {
 
   // Handle image deletion
   const handleDeleteImage = async (id: string) => {
+    if (!isAuthenticated) {
+      setError("Usuário não autenticado. Por favor, faça login.");
+      toast({
+        title: "Erro de autenticação",
+        description: "Você precisa estar autenticado para excluir imagens.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (window.confirm('Tem certeza que deseja excluir esta imagem?')) {
       try {
-        // Verify authentication
-        const isAuthenticated = await checkAuth();
-        if (!isAuthenticated) {
-          setError("Usuário não autenticado. Por favor, faça login.");
-          toast({
-            title: "Erro de autenticação",
-            description: "Você precisa estar autenticado para excluir imagens.",
-            variant: "destructive"
-          });
-          return;
-        }
-        
         await deleteCatalogItem(id);
         setImages(images.filter(img => img.id !== id));
         toast({
@@ -174,6 +170,7 @@ export const useCatalogImages = (catalogId: string) => {
     error,
     setError,
     handleImageUpload,
-    handleDeleteImage
+    handleDeleteImage,
+    isAuthenticated // Expose authentication status
   };
 };
