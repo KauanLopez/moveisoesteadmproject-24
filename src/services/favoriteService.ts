@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { CatalogItem } from "@/types/catalogTypes";
+import { CatalogItem, CatalogItemWithFavorite } from "@/types/catalogTypes";
 
 // Toggle favorite status for a catalog item
 export const toggleFavoriteStatus = async (itemId: string, isFavorite: boolean): Promise<boolean> => {
@@ -24,7 +24,7 @@ export const toggleFavoriteStatus = async (itemId: string, isFavorite: boolean):
       .from('content')
       .insert({
         title: catalogItem.title || 'Produto em destaque',
-        image: catalogItem.image_url,
+        image_url: catalogItem.image_url,
         section: 'products',
         catalog_item_id: itemId // Link to original catalog item
       });
@@ -68,12 +68,21 @@ export const checkFavoriteStatus = async (itemId: string): Promise<boolean> => {
 
 // Get all favorite items
 export const getFavoriteItems = async (): Promise<any[]> => {
+  // Using explicit typing to avoid the "excessively deep" error
+  interface FavoriteItem {
+    id: string;
+    title: string;
+    image: string;
+    catalog_item_id: string;
+    catalog_items: CatalogItem;
+  }
+  
   const { data, error } = await supabase
     .from('content')
     .select(`
       id,
       title,
-      image,
+      image_url as image,
       catalog_item_id,
       catalog_items (*)
     `)
@@ -84,5 +93,5 @@ export const getFavoriteItems = async (): Promise<any[]> => {
     return [];
   }
   
-  return data || [];
+  return data as unknown as FavoriteItem[] || [];
 };
