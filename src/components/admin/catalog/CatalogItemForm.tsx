@@ -68,7 +68,7 @@ const CatalogItemForm: React.FC<CatalogItemFormProps> = ({ item, catalogId, onCl
       let imageUrl = data.image_url;
       
       if (imageFile) {
-        const uploadedUrl = await uploadCatalogImage(imageFile, 'catalog_items');
+        const uploadedUrl = await uploadCatalogImage(imageFile, 'catalog-images');
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
         } else {

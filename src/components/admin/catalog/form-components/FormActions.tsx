@@ -9,16 +9,12 @@ interface FormActionsProps {
   onCancel: () => void;
 }
 
-const FormActions: React.FC<FormActionsProps> = ({ 
-  isEditing, 
-  isSubmitting, 
-  onCancel 
-}) => {
+const FormActions: React.FC<FormActionsProps> = ({ isEditing, isSubmitting, onCancel }) => {
   return (
     <CardFooter className="flex justify-between">
-      <Button 
-        type="button" 
-        variant="outline" 
+      <Button
+        type="button"
+        variant="outline"
         onClick={onCancel}
         disabled={isSubmitting}
       >

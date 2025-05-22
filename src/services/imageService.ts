@@ -14,7 +14,7 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalogs'
     const filePath = `${folder}/${fileName}`;
 
     // Determine which bucket to use based on folder
-    const bucketName = folder === 'catalog_items' ? 'catalog-items' : 'catalog-images';
+    const bucketName = folder === 'catalog-images' ? 'catalog-images' : 'catalog-covers';
     
     console.log(`Uploading file to bucket: ${bucketName}, path: ${filePath}`);
     

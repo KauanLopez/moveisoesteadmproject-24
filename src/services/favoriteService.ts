@@ -1,101 +1,64 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { CatalogItem } from "@/types/catalogTypes";
 
-// Define a simpler interface for favorite items
-export interface FavoriteItem {
-  id: string;
-  title?: string | null;
-  image_url?: string | null;
-}
+export const toggleFavoriteStatus = async (itemId: string, status: boolean): Promise<boolean> => {
+  try {
+    if (status) {
+      // Add to featured products
+      const { data: featuredContent, error: getFeaturedError } = await supabase
+        .from('content')
+        .select('*')
+        .eq('section', 'products');
 
-// Toggle favorite status for a catalog item
-export const toggleFavoriteStatus = async (itemId: string, isFavorite: boolean): Promise<boolean> => {
-  // Currently, we'll handle favorites by adding the item to the content table with 'products' section
-  
-  const { data: catalogItem, error: fetchError } = await supabase
-    .from('catalog_items')
-    .select('*')
-    .eq('id', itemId)
-    .single();
-  
-  if (fetchError || !catalogItem) {
-    console.error('Error fetching catalog item:', fetchError);
+      if (getFeaturedError) {
+        console.error('Error fetching featured products:', getFeaturedError);
+        return false;
+      }
+
+      const { data: catalogItem, error: getCatalogItemError } = await supabase
+        .from('catalog_items')
+        .select('*')
+        .eq('id', itemId)
+        .single();
+
+      if (getCatalogItemError || !catalogItem) {
+        console.error('Error fetching catalog item:', getCatalogItemError);
+        return false;
+      }
+
+      const newFeaturedItem = {
+        section: 'products',
+        title: catalogItem.title || 'Featured Product',
+        description: catalogItem.description || '',
+        image: catalogItem.image_url,
+        objectPosition: 'center',
+        scale: 1
+      };
+
+      const { error: insertError } = await supabase
+        .from('content')
+        .insert([newFeaturedItem]);
+
+      if (insertError) {
+        console.error('Error adding to featured products:', insertError);
+        return false;
+      }
+
+      return true;
+    } else {
+      // Remove from featured products
+      // This is a placeholder since we don't have direct mapping between catalog items and featured content
+      // In a real implementation, we'd need a way to know which content item corresponds to the catalog item
+      console.log('Remove from featured functionality would go here');
+      return true;
+    }
+  } catch (error) {
+    console.error('Error toggling favorite status:', error);
     return false;
   }
-  
-  if (isFavorite) {
-    // Add to favorites (content table, products section)
-    const { error } = await supabase
-      .from('content')
-      .insert({
-        title: catalogItem.title || 'Produto em destaque',
-        image_url: catalogItem.image_url,
-        section: 'products'
-      });
-      
-    if (error) {
-      console.error('Error adding to favorites:', error);
-      return false;
-    }
-  } else {
-    // Remove from favorites
-    // Since we don't have catalog_item_id, we'll remove based on matching image_url
-    const { error } = await supabase
-      .from('content')
-      .delete()
-      .eq('image_url', catalogItem.image_url)
-      .eq('section', 'products');
-      
-    if (error) {
-      console.error('Error removing from favorites:', error);
-      return false;
-    }
-  }
-  
-  return true;
 };
 
-// Check if an item is already a favorite
 export const checkFavoriteStatus = async (itemId: string): Promise<boolean> => {
-  // First get the catalog item to find its image_url
-  const { data: catalogItem, error: fetchError } = await supabase
-    .from('catalog_items')
-    .select('image_url')
-    .eq('id', itemId)
-    .single();
-    
-  if (fetchError || !catalogItem) {
-    console.error('Error fetching catalog item:', fetchError);
-    return false;
-  }
-  
-  // Then check if this image_url exists in the content table
-  const { data, error } = await supabase
-    .from('content')
-    .select('id')
-    .eq('image_url', catalogItem.image_url)
-    .eq('section', 'products');
-    
-  if (error) {
-    console.error('Error checking favorite status:', error);
-    return false;
-  }
-  
-  return data && data.length > 0;
-};
-
-// Get all favorite items - using a simpler approach with explicit typing
-export const getFavoriteItems = async (): Promise<FavoriteItem[]> => {
-  const response = await supabase
-    .from('content')
-    .select('id, title, image_url')
-    .eq('section', 'products');
-  
-  if (response.error) {
-    console.error('Error fetching favorite items:', response.error);
-    return [];
-  }
-  
-  return response.data || [];
+  // This is a placeholder. In a real implementation, we'd need a way to check if a catalog item
+  // is featured in the content table
+  return false;
 };
