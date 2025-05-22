@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CatalogCategory } from "@/types/catalogTypes";
 
-// Fetch all catalog categories
+// Fetch categories
 export const fetchCatalogCategories = async (): Promise<CatalogCategory[]> => {
   try {
     const { data, error } = await supabase
@@ -10,40 +10,33 @@ export const fetchCatalogCategories = async (): Promise<CatalogCategory[]> => {
       .select('*')
       .order('name');
     
-    if (error) {
-      console.error('Error fetching categories:', error);
-      return [];
-    }
+    if (error) throw error;
     
     return data || [];
   } catch (error) {
-    console.error('Exception fetching categories:', error);
+    console.error('Error fetching catalog categories:', error);
     return [];
   }
 };
 
-// Save a category (create or update)
-export const saveCategory = async (category: Partial<CatalogCategory> & { name: string }): Promise<CatalogCategory | null> => {
+// Save category (create or update)
+export const saveCategory = async (category: Partial<CatalogCategory>): Promise<CatalogCategory | null> => {
   try {
     const { data, error } = await supabase
       .from('catalog_categories')
       .upsert(category)
-      .select()
-      .single();
+      .select();
     
-    if (error) {
-      console.error('Error saving category:', error);
-      return null;
-    }
+    if (error) throw error;
     
-    return data;
+    return data?.[0] || null;
   } catch (error) {
-    console.error('Exception saving category:', error);
+    console.error('Error saving category:', error);
     return null;
   }
 };
 
-// Delete a category
+// Delete category
 export const deleteCategory = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
@@ -51,14 +44,14 @@ export const deleteCategory = async (id: string): Promise<boolean> => {
       .delete()
       .eq('id', id);
     
-    if (error) {
-      console.error('Error deleting category:', error);
-      return false;
-    }
+    if (error) throw error;
     
     return true;
   } catch (error) {
-    console.error('Exception deleting category:', error);
+    console.error('Error deleting category:', error);
     return false;
   }
 };
+
+// Alias for backward compatibility
+export const deleteCatalogCategory = deleteCategory;

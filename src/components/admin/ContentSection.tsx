@@ -1,17 +1,15 @@
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { useContent } from '@/context/ContentContext';
-import { ImageContent } from '@/types/customTypes';
-import ImageEditor from './image-editor/ImageEditor';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-
-// Import the new components
+import { fetchContent, saveContent, deleteContent } from '@/services/contentService';
+import { ImageContent } from '@/types/customTypes';
 import SectionHeader from './content-section/SectionHeader';
-import TabNavigation from './content-section/TabNavigation';
 import ContentForm from './content-section/ContentForm';
 import EmptySection from './content-section/EmptySection';
-import SaveButton from './content-section/SaveButton';
+import CatalogImagesButton from './catalog/CatalogImagesButton';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ContentSectionProps {
   title: string;
@@ -19,116 +17,183 @@ interface ContentSectionProps {
 }
 
 const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
-  const { content, updateContent, saveContent, addContent } = useContent();
+  const [items, setItems] = useState<ImageContent[]>([]);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+
   const { toast } = useToast();
-  const sectionContent = content.filter(item => item.section === section);
-  const [activeTab, setActiveTab] = useState(sectionContent[0]?.id || '');
-  const [isSaving, setIsSaving] = useState(false);
-  
-  const currentItem = sectionContent.find(item => item.id === activeTab);
-  
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (currentItem) {
-      updateContent(currentItem.id, { title: e.target.value });
-    }
-  };
-  
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (currentItem) {
-      updateContent(currentItem.id, { description: e.target.value });
-    }
-  };
-  
-  const handleUpdateImage = (updates: Partial<ImageContent>) => {
-    if (currentItem) {
-      updateContent(currentItem.id, updates);
-    }
-  };
-  
-  const handleSaveChanges = () => {
-    setIsSaving(true);
+
+  // Load content from Supabase
+  const loadContent = async () => {
+    setLoading(true);
     try {
-      saveContent();
-      toast({
-        title: "Alterações salvas",
-        description: "As alterações foram salvas com sucesso",
-      });
+      const data = await fetchContent(section);
+      setItems(data);
     } catch (error) {
+      console.error(`Error loading ${section} content:`, error);
       toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar as alterações",
+        title: "Erro ao carregar conteúdo",
+        description: `Não foi possível carregar o conteúdo de ${title.toLowerCase()}.`,
         variant: "destructive"
       });
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
-  const handleAddNewItem = () => {
-    const newId = `${section}${sectionContent.length + 1}`;
-    const newItem = {
-      id: newId,
-      section: section,
-      title: `Novo ${title.split(' ')[0]}`,
-      description: "",
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=2070&auto=format&fit=crop",
-      objectPosition: 'center'
-    };
-    
-    addContent(newItem);
-    setActiveTab(newId);
-    toast({
-      title: "Item adicionado",
-      description: "Um novo item foi adicionado. Não esqueça de salvar suas alterações!",
-    });
+  // Load content on component mount
+  useEffect(() => {
+    loadContent();
+  }, [section]);
+
+  const handleEdit = (id: string) => {
+    setEditId(id);
+    setShowForm(true);
   };
 
-  if (sectionContent.length === 0) {
-    return <EmptySection onAddItem={handleAddNewItem} />;
-  }
+  const handleAdd = () => {
+    setEditId(null);
+    setShowForm(true);
+  };
+
+  const handleFormClose = async (savedItem?: ImageContent) => {
+    setShowForm(false);
+    if (savedItem) {
+      await loadContent(); // Reload content after save
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Tem certeza que deseja excluir este item?")) {
+      try {
+        await deleteContent(id);
+        toast({
+          title: "Item excluído",
+          description: "O item foi excluído com sucesso.",
+        });
+        await loadContent();
+      } catch (error) {
+        console.error("Error deleting content:", error);
+        toast({
+          title: "Erro ao excluir",
+          description: "Não foi possível excluir o item.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  // Get catalog titles for catalog image management
+  const [catalogTitles, setCatalogTitles] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    if (section === 'projects') {
+      const fetchCatalogTitles = async () => {
+        try {
+          // For each catalog item, try to fetch its title from the catalogs table
+          const titles: Record<string, string> = {};
+          
+          for (const item of items) {
+            // Check if we already have this catalog's title
+            if (!titles[item.id]) {
+              const { data } = await supabase
+                .from('catalogs')
+                .select('title')
+                .eq('id', item.id)
+                .single();
+                
+              if (data) {
+                titles[item.id] = data.title;
+              }
+            }
+          }
+          
+          setCatalogTitles(titles);
+        } catch (error) {
+          console.error('Error fetching catalog titles:', error);
+        }
+      };
+      
+      if (items.length > 0) {
+        fetchCatalogTitles();
+      }
+    }
+  }, [items, section]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <SectionHeader 
-          title={title} 
-          section={section} 
-          onAddItem={handleAddNewItem} 
+    <div>
+      {showForm ? (
+        <ContentForm
+          section={section}
+          sectionTitle={title}
+          itemId={editId}
+          onClose={handleFormClose}
         />
-        
-        {/* Content tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="relative">
-            <TabNavigation items={sectionContent} activeTab={activeTab} />
-          </div>
+      ) : (
+        <>
+          <SectionHeader title={title} onAddNew={handleAdd} />
 
-          {sectionContent.map(item => (
-            <TabsContent key={item.id} value={item.id} className="pt-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left column: Text content */}
-                <div className="space-y-6">
-                  <ContentForm
-                    item={item}
-                    onTitleChange={handleTitleChange}
-                    onDescriptionChange={handleDescriptionChange}
-                  />
+          {loading ? (
+            <div className="text-center py-8">Carregando...</div>
+          ) : items.length === 0 ? (
+            <EmptySection onAdd={handleAdd} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-lg overflow-hidden shadow-md"
+                >
+                  <div className="relative aspect-w-16 aspect-h-9">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-48 object-cover"
+                      style={{ 
+                        objectPosition: item.objectPosition || 'center',
+                        transform: item.scale ? `scale(${item.scale})` : 'scale(1)'
+                      }}
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold mb-1">{item.title}</h3>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="flex justify-between">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(item.id)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        Excluir
+                      </Button>
+                    </div>
+                    
+                    {/* Add the Catalog Images button for projects section */}
+                    {section === 'projects' && (
+                      <div className="mt-3">
+                        <CatalogImagesButton 
+                          catalogId={item.id} 
+                          catalogTitle={catalogTitles[item.id] || item.title} 
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                {/* Right column: Image editor */}
-                <div>
-                  <ImageEditor 
-                    content={item} 
-                    onUpdate={handleUpdateImage} 
-                    section={section} 
-                  />
-                </div>
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
-      </div>
-      
-      <SaveButton isSaving={isSaving} onSave={handleSaveChanges} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
