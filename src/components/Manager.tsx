@@ -1,57 +1,10 @@
 
-import React, { useEffect, useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
+import React from 'react';
+import { useContent } from '@/context/ContentContext';
 
 const Manager = () => {
-  const [manager, setManager] = useState<ImageContent | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Load content from Supabase with localStorage fallback
-  useEffect(() => {
-    const loadManager = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('content')
-          .select('*')
-          .eq('section', 'manager')
-          .maybeSingle();
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (data) {
-          setManager(mapDbContentToImageContent(data));
-        } else {
-          // Fallback to localStorage
-          fallbackToLocalStorage();
-        }
-      } catch (error) {
-        console.error('Error loading manager data:', error);
-        fallbackToLocalStorage();
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    const fallbackToLocalStorage = () => {
-      const storedContent = localStorage.getItem('moveis_oeste_content');
-      if (storedContent) {
-        const allContent = JSON.parse(storedContent);
-        const managerItem = allContent.find((item: any) => item.section === 'manager');
-        if (managerItem) {
-          setManager(managerItem);
-        }
-      }
-    };
-    
-    loadManager();
-  }, []);
-
-  if (loading) {
-    return <div className="py-8 text-center">Carregando informações do gerente...</div>;
-  }
+  const { content } = useContent();
+  const manager = content.find(item => item.section === 'manager');
 
   if (!manager) {
     return null;

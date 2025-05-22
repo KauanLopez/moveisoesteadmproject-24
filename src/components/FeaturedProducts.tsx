@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import ProductImageDialog from './featured/ProductImageDialog';
 import ProductCarousel from './featured/ProductCarousel';
 import { useContent } from '@/context/ContentContext';
-import { ImageContent } from '@/types/customTypes';
 
 const FeaturedProducts = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -22,7 +21,7 @@ const FeaturedProducts = () => {
       setIsMobile(window.innerWidth < 768);
     };
     
-    checkMobile(); // Verificação inicial
+    checkMobile(); // Initial check
     window.addEventListener('resize', checkMobile);
     
     return () => {
@@ -30,7 +29,7 @@ const FeaturedProducts = () => {
     };
   }, []);
 
-  const handleImageClick = (product: ImageContent) => {
+  const handleImageClick = (product: any) => {
     setSelectedImage(product.image);
     setSelectedImageData({
       src: product.image,

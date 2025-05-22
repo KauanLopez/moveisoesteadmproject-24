@@ -3,9 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
-import { supabase } from "@/integrations/supabase/client";
-import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
 import CatalogViewModal from './catalog/CatalogViewModal';
+import { useContent } from '@/context/ContentContext';
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,48 +15,9 @@ const Projects = () => {
     dragFree: false,
     containScroll: "trimSnaps"
   });
-  const [projects, setProjects] = useState<ImageContent[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedCatalog, setSelectedCatalog] = useState<string | null>(null);
-  
-  // Load content from Supabase with localStorage fallback
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('content')
-          .select('*')
-          .eq('section', 'projects');
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (data && data.length > 0) {
-          setProjects(data.map(mapDbContentToImageContent));
-        } else {
-          // Fallback to localStorage
-          fallbackToLocalStorage();
-        }
-      } catch (error) {
-        console.error('Error loading projects:', error);
-        fallbackToLocalStorage();
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    const fallbackToLocalStorage = () => {
-      const storedContent = localStorage.getItem('moveis_oeste_content');
-      if (storedContent) {
-        const allContent = JSON.parse(storedContent);
-        const projectItems = allContent.filter((item: any) => item.section === 'projects');
-        setProjects(projectItems);
-      }
-    };
-    
-    loadProjects();
-  }, []);
+  const { content } = useContent();
+  const projects = content.filter(item => item.section === 'projects');
   
   React.useEffect(() => {
     if (emblaApi) {
@@ -67,7 +27,7 @@ const Projects = () => {
       
       emblaApi.on('select', onSelect);
       
-      // Adiciona um ouvinte para quando o usuário parar de rolar
+      // Add a listener for when the user stops scrolling
       const onSettled = () => {
         emblaApi.scrollTo(emblaApi.selectedScrollSnap());
       };
@@ -95,8 +55,8 @@ const Projects = () => {
     setSelectedCatalog(null);
   };
 
-  if (loading) {
-    return <div className="py-16 text-center">Carregando catálogos...</div>;
+  if (projects.length === 0) {
+    return <div className="py-16 text-center">Nenhum catálogo disponível.</div>;
   }
   
   return (

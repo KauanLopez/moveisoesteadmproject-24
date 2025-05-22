@@ -135,22 +135,8 @@ export const saveContentToSupabase = async (content: ImageContent[]): Promise<vo
         }
       }
     }
-    
-    // Also save to localStorage as backup
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(content));
   } catch (error) {
     console.error('Error saving content:', error);
-    // Still save to localStorage even if Supabase fails
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(content));
     throw error;
   }
-};
-
-// Get content from localStorage
-export const getContentFromLocalStorage = (): ImageContent[] => {
-  const storedContent = localStorage.getItem(CONTENT_STORAGE_KEY);
-  if (storedContent) {
-    return JSON.parse(storedContent);
-  }
-  return defaultContent;
 };

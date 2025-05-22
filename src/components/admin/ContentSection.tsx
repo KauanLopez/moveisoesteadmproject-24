@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchContent, saveContent, deleteContent } from '@/services/contentService';
 import { ImageContent } from '@/types/customTypes';
 import SectionHeader from './content-section/SectionHeader';
 import ContentForm from './content-section/ContentForm';
 import EmptySection from './content-section/EmptySection';
 import CatalogImagesButton from './catalog/CatalogImagesButton';
 import { supabase } from '@/integrations/supabase/client';
+import { useContent } from '@/context/ContentContext';
 
 interface ContentSectionProps {
   title: string;
@@ -21,15 +21,17 @@ const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
   const [editId, setEditId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-
+  
+  const { content, updateContent, addContent } = useContent();
   const { toast } = useToast();
 
-  // Load content from Supabase
-  const loadContent = async () => {
+  // Load content from context
+  useEffect(() => {
     setLoading(true);
     try {
-      const data = await fetchContent(section);
-      setItems(data);
+      // Filter content from the context based on section
+      const sectionItems = content.filter(item => item.section === section);
+      setItems(sectionItems);
     } catch (error) {
       console.error(`Error loading ${section} content:`, error);
       toast({
@@ -40,12 +42,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Load content on component mount
-  useEffect(() => {
-    loadContent();
-  }, [section]);
+  }, [section, content]);
 
   const handleEdit = (id: string) => {
     setEditId(id);
@@ -59,20 +56,30 @@ const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
 
   const handleFormClose = async (savedItem?: ImageContent) => {
     setShowForm(false);
-    if (savedItem) {
-      await loadContent(); // Reload content after save
-    }
+    // No need to reload, the context will be updated
   };
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Tem certeza que deseja excluir este item?")) {
       try {
-        await deleteContent(id);
+        // Delete from database
+        const { error } = await supabase
+          .from('content')
+          .delete()
+          .eq('id', id);
+          
+        if (error) throw error;
+        
+        // Also remove from context
+        const updatedContent = content.filter(item => item.id !== id);
+        
         toast({
           title: "Item excluído",
           description: "O item foi excluído com sucesso.",
         });
-        await loadContent();
+        
+        // Refresh the items list
+        setItems(items.filter(item => item.id !== id));
       } catch (error) {
         console.error("Error deleting content:", error);
         toast({
