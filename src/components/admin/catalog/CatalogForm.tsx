@@ -16,6 +16,7 @@ import CategoryField from './form-components/CategoryField';
 import ImageUploadField from './form-components/ImageUploadField';
 import FormActions from './form-components/FormActions';
 import { catalogFormSchema, CatalogFormValues } from './types/CatalogFormTypes';
+import { Loader2 } from 'lucide-react';
 
 interface CatalogFormProps {
   catalog: Catalog | null;
@@ -27,6 +28,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
   const [submitting, setSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<CatalogFormValues>({
@@ -41,6 +43,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
 
   const handleFileChange = (file: File | null) => {
     setImageFile(file);
+    setUploadError(null);
     
     if (file) {
       // Create a preview URL
@@ -53,20 +56,32 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
 
   const onSubmit = async (data: CatalogFormValues) => {
     setSubmitting(true);
+    setUploadError(null);
+    
     try {
       // Upload image if a new file is selected
       let imageUrl = data.cover_image;
       
       if (imageFile) {
+        console.log('Uploading image file:', imageFile.name);
         const uploadedUrl = await uploadCatalogImage(imageFile);
+        
         if (uploadedUrl) {
+          console.log('Image uploaded successfully:', uploadedUrl);
           imageUrl = uploadedUrl;
         } else {
-          throw new Error('Falha ao fazer upload da imagem');
+          setUploadError('Falha ao fazer upload da imagem. Verifique se o bucket existe.');
+          toast({
+            title: "Erro",
+            description: "Falha ao fazer upload da imagem. Verifique sua conexão ou tente uma imagem menor.",
+            variant: "destructive"
+          });
+          setSubmitting(false);
+          return;
         }
       }
 
-      if (!imageUrl) {
+      if (!imageUrl && !imageFile) {
         toast({
           title: "Erro",
           description: "A imagem de capa é obrigatória.",
@@ -130,6 +145,11 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
               onFileChange={handleFileChange}
               imagePreview={imagePreview}
             />
+            {uploadError && (
+              <div className="text-sm text-red-500">
+                {uploadError}
+              </div>
+            )}
             <CategoryField form={form} categories={categories} />
           </CardContent>
 

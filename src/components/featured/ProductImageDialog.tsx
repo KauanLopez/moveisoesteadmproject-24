@@ -2,6 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { X } from 'lucide-react';
 
 interface ProductImageDialogProps {
   isOpen: boolean;
@@ -34,6 +35,13 @@ const ProductImageDialog = ({
               transform: `scale(${scale})`
             }}
           />
+          <button 
+            onClick={() => onOpenChange(false)} 
+            className="absolute top-3 right-3 bg-white/70 hover:bg-white rounded-full p-2 transition-colors"
+            aria-label="Fechar"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
       </DialogContent>
     </Dialog>

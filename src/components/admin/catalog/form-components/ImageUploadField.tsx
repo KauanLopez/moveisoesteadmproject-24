@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
+import { Upload, AlertTriangle } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { CatalogFormValues } from '../types/CatalogFormTypes';
 
@@ -20,9 +20,27 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   onFileChange, 
   imagePreview 
 }) => {
+  const [fileError, setFileError] = useState<string | null>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
+    
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      
+      // Validar tamanho do arquivo (limite de 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFileError("Arquivo muito grande. O tamanho máximo é 5MB.");
+        return;
+      }
+      
+      // Validar tipo de arquivo
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        setFileError("Formato de arquivo não suportado. Utilize JPG, PNG ou WebP.");
+        return;
+      }
+      
       onFileChange(file);
       
       // Create a preview URL
@@ -68,6 +86,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                     onClick={() => {
                       onFileChange(null);
                       field.onChange(originalImageUrl || '');
+                      setFileError(null);
                     }}
                   >
                     Remover
@@ -81,6 +100,13 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                 className="hidden"
                 onChange={handleFileChange}
               />
+              
+              {fileError && (
+                <div className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  {fileError}
+                </div>
+              )}
             </div>
             
             {/* Image preview */}
