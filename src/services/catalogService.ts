@@ -50,11 +50,27 @@ export const fetchCatalogBySlug = async (slug: string): Promise<CatalogWithCateg
   };
 };
 
+// Helper function to generate a slug from a title
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')     // Replace spaces with hyphens
+    .replace(/-+/g, '-')      // Replace multiple hyphens with single hyphen
+    .trim();
+};
+
 // Create or update a catalog
 export const saveCatalog = async (catalog: Partial<Catalog> & { title: string }): Promise<Catalog | null> => {
+  // If a slug is not provided, generate one from the title
+  const catalogData = {
+    ...catalog,
+    slug: catalog.slug || generateSlug(catalog.title),
+  };
+
   const { data, error } = await supabase
     .from('catalogs')
-    .upsert(catalog)
+    .upsert(catalogData)
     .select()
     .single();
   
