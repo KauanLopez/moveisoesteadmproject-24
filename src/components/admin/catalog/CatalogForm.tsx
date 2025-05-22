@@ -62,8 +62,18 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
         } else {
-          throw new Error('Failed to upload image');
+          throw new Error('Falha ao fazer upload da imagem');
         }
+      }
+
+      if (!imageUrl) {
+        toast({
+          title: "Erro",
+          description: "A imagem de capa é obrigatória.",
+          variant: "destructive"
+        });
+        setSubmitting(false);
+        return;
       }
 
       // Prepare data for saving
@@ -74,6 +84,8 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
         cover_image: imageUrl,
         category_id: data.category_id,
       };
+
+      console.log('Submitting catalog data:', catalogData);
 
       const result = await saveCatalog(catalogData);
       
@@ -94,7 +106,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
       console.error('Error saving catalog:', error);
       toast({
         title: "Erro",
-        description: `Erro ao ${catalog ? 'atualizar' : 'criar'} o catálogo.`,
+        description: `Erro ao ${catalog ? 'atualizar' : 'criar'} o catálogo: ${(error as Error).message}`,
         variant: "destructive"
       });
     } finally {

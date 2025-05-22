@@ -87,7 +87,6 @@ export const checkFavoriteStatus = async (itemId: string): Promise<boolean> => {
 
 // Get all favorite items - using a simpler approach with explicit typing
 export const getFavoriteItems = async (): Promise<FavoriteItem[]> => {
-  // Using explicit typing to avoid deep type instantiation
   const response = await supabase
     .from('content')
     .select('id, title, image_url')
@@ -98,6 +97,5 @@ export const getFavoriteItems = async (): Promise<FavoriteItem[]> => {
     return [];
   }
   
-  // Simple type assertion that avoids complex nesting
-  return (response.data || []) as FavoriteItem[];
+  return response.data || [];
 };

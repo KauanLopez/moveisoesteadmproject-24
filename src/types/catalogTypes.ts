@@ -21,3 +21,11 @@ export type ContentItem = Database['public']['Tables']['content']['Row'];
 
 // Helper function to generate route for catalog
 export const getCatalogRoute = (slug: string) => `/catalogo/${slug}`;
+
+// Form related types
+export interface CatalogFormData {
+  title: string;
+  description?: string | null;
+  cover_image: string;
+  category_id: string;
+}

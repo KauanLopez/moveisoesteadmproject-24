@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Catalog, CatalogItem, CatalogWithCategory } from "@/types/catalogTypes";
+import { Catalog, CatalogItem, CatalogWithCategory, CatalogFormData } from "@/types/catalogTypes";
 
 // Fetch all catalogs with their categories
 export const fetchCatalogs = async (): Promise<CatalogWithCategory[]> => {
@@ -61,25 +61,33 @@ const generateSlug = (title: string): string => {
 };
 
 // Create or update a catalog
-export const saveCatalog = async (catalog: Partial<Catalog> & { title: string }): Promise<Catalog | null> => {
-  // If a slug is not provided, generate one from the title
-  const catalogData = {
-    ...catalog,
-    slug: catalog.slug || generateSlug(catalog.title),
-  };
+export const saveCatalog = async (catalogData: CatalogFormData | (Partial<Catalog> & { title: string })): Promise<Catalog | null> => {
+  try {
+    // Se um slug não for fornecido, gerar um a partir do título
+    const dataToSave = {
+      ...catalogData,
+      slug: 'slug' in catalogData ? catalogData.slug : generateSlug(catalogData.title),
+    };
 
-  const { data, error } = await supabase
-    .from('catalogs')
-    .upsert(catalogData)
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error saving catalog:', error);
+    console.log('Saving catalog with data:', dataToSave);
+
+    const { data, error } = await supabase
+      .from('catalogs')
+      .upsert(dataToSave)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error saving catalog:', error);
+      return null;
+    }
+    
+    console.log('Catalog saved successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Exception saving catalog:', error);
     return null;
   }
-  
-  return data;
 };
 
 // Delete a catalog
