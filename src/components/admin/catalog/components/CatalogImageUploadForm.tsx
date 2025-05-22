@@ -5,31 +5,74 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, Loader2, Plus } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { AlertCircle, Loader2, Plus, LockIcon } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface CatalogImageUploadFormProps {
   onUpload: (file: File, title: string, description: string) => Promise<boolean | undefined>;
   uploading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
 }
 
 const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({ 
   onUpload, 
   uploading,
-  error 
+  error,
+  isAuthenticated
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     setLocalError(null);
     
-    if (!file) return;
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      setLocalError("Usuário não autenticado. Por favor, faça login.");
+      toast({
+        title: "Erro de autenticação",
+        description: "Você precisa estar autenticado para fazer upload de imagens.",
+        variant: "destructive"
+      });
+      event.target.value = '';
+      return;
+    }
+
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+      setLocalError("O tamanho máximo permitido é 5MB.");
+      event.target.value = '';
+      return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setLocalError("Formato não suportado. Utilize JPG, PNG ou WebP.");
+      event.target.value = '';
+      return;
+    }
+    
+    setSelectedFile(file);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLocalError(null);
+    
+    if (!selectedFile) {
+      setLocalError("Por favor, selecione uma imagem para fazer upload.");
+      return;
+    }
     
     if (!isAuthenticated) {
       setLocalError("Usuário não autenticado. Por favor, faça login.");
@@ -41,20 +84,35 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
       return;
     }
     
-    const success = await onUpload(file, title, description);
+    const success = await onUpload(selectedFile, title, description);
     
     if (success) {
       // Reset form fields on success
       setTitle('');
       setDescription('');
+      setSelectedFile(null);
       
       // Reset the file input
-      event.target.value = '';
+      const fileInput = document.getElementById('image') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <LockIcon className="h-4 w-4" />
+        <AlertTitle>Acesso restrito</AlertTitle>
+        <AlertDescription>
+          Você precisa estar autenticado para adicionar imagens ao catálogo.
+          Por favor, faça login para continuar.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
-    <div className="bg-gray-50 p-4 rounded-lg border">
+    <form onSubmit={handleSubmit} className="bg-gray-50 p-4 rounded-lg border">
       <h3 className="text-lg font-medium mb-4">Adicionar Nova Imagem</h3>
       
       {(error || localError) && (
@@ -75,7 +133,7 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Título da imagem"
-            disabled={!isAuthenticated}
+            disabled={uploading || !isAuthenticated}
           />
         </div>
         
@@ -87,7 +145,7 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição da imagem"
             rows={2}
-            disabled={!isAuthenticated}
+            disabled={uploading || !isAuthenticated}
           />
         </div>
         
@@ -98,29 +156,32 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
               id="image"
               type="file"
               accept="image/*"
-              onChange={handleImageUpload}
+              onChange={handleFileSelect}
               disabled={uploading || !isAuthenticated}
               className="flex-1"
             />
-            <div className="w-32">
-              {uploading ? (
-                <Button disabled className="w-full">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enviando...
-                </Button>
-              ) : (
-                <label 
-                  htmlFor="image" 
-                  className={`cursor-pointer inline-flex items-center justify-center w-full px-4 py-2 ${!isAuthenticated ? 'bg-gray-400' : 'bg-primary'} text-white rounded-md ${isAuthenticated ? 'hover:bg-primary/90' : ''}`}
-                >
-                  <Plus className="w-4 h-4 mr-2" /> Escolher
-                </label>
-              )}
-            </div>
           </div>
         </div>
+        
+        <div>
+          {uploading ? (
+            <Button disabled className="w-full">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Enviando...
+            </Button>
+          ) : (
+            <Button 
+              type="submit"
+              className="w-full"
+              disabled={!selectedFile || !isAuthenticated}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Imagem
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
+    </form>
   );
 };
 

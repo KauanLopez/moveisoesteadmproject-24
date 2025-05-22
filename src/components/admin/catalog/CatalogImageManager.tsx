@@ -1,16 +1,19 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCatalogImages } from './hooks/useCatalogImages';
 import CatalogImageUploadForm from './components/CatalogImageUploadForm';
 import CatalogImageGallery from './components/CatalogImageGallery';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 interface CatalogImageManagerProps {
   catalogId: string;
 }
 
 const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) => {
+  const { isAuthenticated } = useAuth();
   const { 
     images, 
     loading, 
@@ -19,8 +22,13 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
     setError,
     handleImageUpload, 
     handleDeleteImage,
-    isAuthenticated 
+    reloadImages
   } = useCatalogImages(catalogId);
+
+  useEffect(() => {
+    // Clear errors when component mounts or authentication state changes
+    setError(null);
+  }, [isAuthenticated, setError]);
 
   if (!isAuthenticated) {
     return (
@@ -35,20 +43,38 @@ const CatalogImageManager: React.FC<CatalogImageManagerProps> = ({ catalogId }) 
     );
   }
 
+  const handleRetry = () => {
+    setError(null);
+    reloadImages();
+  };
+
   return (
     <div className="space-y-6">
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Erro</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>
+            <div className="flex flex-col gap-2">
+              <p>{error}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRetry} 
+                className="w-fit"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" /> Tentar novamente
+              </Button>
+            </div>
+          </AlertDescription>
         </Alert>
       )}
 
       <CatalogImageUploadForm 
         onUpload={handleImageUpload}
         uploading={uploading}
-        error={null} // We're handling errors at the parent level now
+        error={null}
+        isAuthenticated={isAuthenticated}
       />
 
       <div>

@@ -12,8 +12,9 @@ const generateUUID = () => {
 const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
   try {
     // Verificar se o usuário está autenticado
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (!sessionData.session || sessionError) {
+      console.error("Session error:", sessionError);
       throw new Error("Usuário não autenticado. Faça login para continuar.");
     }
     
@@ -57,19 +58,19 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
     }
     
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error ensuring bucket exists:', error);
     throw error; // Propagar erro para tratamento pelo chamador
   }
 };
 
 // Upload an image to Supabase storage and return the URL
-export const uploadCatalogImage = async (file: File, folder: string = 'catalog-covers'): Promise<string | null> => {
+export const uploadCatalogImage = async (file: File, folder: string = 'catalog-covers'): Promise<string> => {
   try {
     // Verificar autenticação
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      console.error('User not authenticated. Cannot upload images without authentication.');
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (!sessionData.session || sessionError) {
+      console.error('User not authenticated:', sessionError);
       throw new Error("Usuário não autenticado. Faça login para fazer upload de imagens.");
     }
     
@@ -106,6 +107,10 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
       throw error;
     }
 
+    if (!data?.path) {
+      throw new Error("Falha ao fazer upload da imagem: caminho do arquivo não retornado.");
+    }
+
     // Get the public URL for the uploaded file
     const { data: urlData } = supabase
       .storage
@@ -114,7 +119,7 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
 
     console.log('Image uploaded successfully, URL:', urlData.publicUrl);
     return urlData.publicUrl;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Exception while uploading image:', error);
     throw error; // Propagar erro para tratamento adequado pelo componente
   }

@@ -10,6 +10,7 @@ import { saveCatalog } from '@/services/catalogService';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertCircle } from 'lucide-react';
+import { Alert } from '@/components/ui/alert';
 
 // Import our new components
 import CatalogTitleField from './form-components/CatalogTitleField';
@@ -18,6 +19,7 @@ import CategoryField from './form-components/CategoryField';
 import ImageUploadField from './form-components/ImageUploadField';
 import FormActions from './form-components/FormActions';
 import { catalogFormSchema, CatalogFormValues } from './types/CatalogFormTypes';
+import { useAuth } from '@/context/AuthContext';
 
 interface CatalogFormProps {
   catalog: Catalog | null;
@@ -33,6 +35,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
   const [isUploading, setIsUploading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   
   const form = useForm<CatalogFormValues>({
     resolver: zodResolver(catalogFormSchema),
@@ -44,19 +47,24 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
     },
   });
 
-  // Verificar autenticação no carregamento do componente
+  // Verificar autenticação no carregamento do componente e quando mudar
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        setAuthError("Usuário não autenticado. Por favor, faça login para continuar.");
-      } else {
-        setAuthError(null);
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          setAuthError("Usuário não autenticado. Por favor, faça login para continuar.");
+        } else {
+          setAuthError(null);
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+        setAuthError("Erro ao verificar autenticação. Por favor, recarregue a página.");
       }
     };
     
     checkAuth();
-  }, []);
+  }, [isAuthenticated]);
 
   const handleFileChange = (file: File | null) => {
     setImageFile(file);
@@ -76,8 +84,8 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
     setUploadError(null);
     
     // Verificar novamente autenticação antes de submeter
-    const { data: session } = await supabase.auth.getSession();
-    if (!session.session) {
+    const { data: session, error: sessionError } = await supabase.auth.getSession();
+    if (!session.session || sessionError) {
       setAuthError("Usuário não autenticado. Por favor, faça login para continuar.");
       setSubmitting(false);
       return;
@@ -130,6 +138,10 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
           description: "A imagem de capa é obrigatória.",
           variant: "destructive"
         });
+        form.setError('cover_image', { 
+          type: 'manual', 
+          message: 'A imagem de capa é obrigatória.' 
+        });
         setSubmitting(false);
         return;
       }
@@ -162,11 +174,18 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
       }
     } catch (error: any) {
       console.error('Error saving catalog:', error);
-      toast({
-        title: "Erro",
-        description: `Erro ao ${catalog ? 'atualizar' : 'criar'} o catálogo: ${error.message || "erro desconhecido"}`,
-        variant: "destructive"
-      });
+      
+      // Verificar se é um erro de autenticação
+      if (error.message?.includes('autenticado') || error.message?.includes('login') || 
+          error.message?.includes('JWT') || error.message?.includes('session')) {
+        setAuthError(error.message || "Erro de autenticação. Por favor, faça login novamente.");
+      } else {
+        toast({
+          title: "Erro",
+          description: `Erro ao ${catalog ? 'atualizar' : 'criar'} o catálogo: ${error.message || "erro desconhecido"}`,
+          variant: "destructive"
+        });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -179,11 +198,13 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
       </CardHeader>
       
       {authError && (
-        <div className="mx-6 mb-4 bg-red-50 p-3 rounded-lg flex items-start gap-3 border border-red-200">
-          <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-          <div>
-            <p className="text-sm text-red-700">{authError}</p>
-          </div>
+        <div className="mx-6 mb-4">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <div>
+              <p>{authError}</p>
+            </div>
+          </Alert>
         </div>
       )}
       
@@ -200,10 +221,10 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
               isUploading={isUploading}
             />
             {uploadError && (
-              <div className="text-sm text-red-500 flex items-center gap-1">
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                {uploadError}
-              </div>
+                <div>{uploadError}</div>
+              </Alert>
             )}
             <CategoryField form={form} categories={categories} />
           </CardContent>
@@ -212,6 +233,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
             isEditing={!!catalog}
             isSubmitting={submitting} 
             onCancel={() => onClose(false)}
+            disabled={!isAuthenticated}
           />
         </form>
       </Form>

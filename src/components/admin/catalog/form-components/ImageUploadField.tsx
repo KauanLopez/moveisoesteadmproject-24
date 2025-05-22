@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Upload, AlertTriangle, Loader2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { CatalogFormValues } from '../types/CatalogFormTypes';
+import { useAuth } from '@/context/AuthContext';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface ImageUploadFieldProps {
   form: UseFormReturn<CatalogFormValues>;
@@ -23,9 +25,23 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   isUploading = false
 }) => {
   const [fileError, setFileError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+  
+  // Clear errors when authentication state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      setFileError(null);
+    }
+  }, [isAuthenticated]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
+    
+    if (!isAuthenticated) {
+      setFileError("Você precisa estar autenticado para fazer upload de imagens.");
+      e.target.value = '';
+      return;
+    }
     
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -33,6 +49,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
       // Validar tamanho do arquivo (limite de 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setFileError("Arquivo muito grande. O tamanho máximo é 5MB.");
+        e.target.value = '';
         return;
       }
       
@@ -40,6 +57,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         setFileError("Formato de arquivo não suportado. Utilize JPG, PNG ou WebP.");
+        e.target.value = '';
         return;
       }
       
@@ -57,13 +75,22 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
       render={({ field }) => (
         <FormItem>
           <FormLabel>Imagem de Capa</FormLabel>
+          {!isAuthenticated && (
+            <Alert variant="destructive" className="mb-3">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Erro de autenticação</AlertTitle>
+              <AlertDescription>
+                Você precisa estar autenticado para fazer upload de imagens.
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-4">
             {/* Image URL input */}
             <FormControl>
               <Input 
                 placeholder="https://..." 
                 {...field} 
-                disabled={!!imagePreview || isUploading}
+                disabled={!!imagePreview || isUploading || !isAuthenticated}
               />
             </FormControl>
             
@@ -74,7 +101,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                   type="button" 
                   variant="outline" 
                   onClick={() => document.getElementById('cover-image-upload')?.click()}
-                  disabled={isUploading}
+                  disabled={isUploading || !isAuthenticated}
                 >
                   {isUploading ? (
                     <>
@@ -97,7 +124,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                       field.onChange(originalImageUrl || '');
                       setFileError(null);
                     }}
-                    disabled={isUploading}
+                    disabled={isUploading || !isAuthenticated}
                   >
                     Remover
                   </Button>
@@ -109,7 +136,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                 accept="image/*" 
                 className="hidden"
                 onChange={handleFileChange}
-                disabled={isUploading}
+                disabled={isUploading || !isAuthenticated}
               />
               
               {fileError && (

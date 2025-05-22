@@ -4,8 +4,9 @@ import { Catalog, CatalogItem, CatalogWithCategory, CatalogFormData } from "@/ty
 
 // Verificar autenticação
 const checkAuthenticated = async () => {
-  const { data } = await supabase.auth.getSession();
-  if (!data.session) {
+  const { data, error } = await supabase.auth.getSession();
+  if (!data.session || error) {
+    console.error("Authentication error:", error);
     throw new Error("Usuário não autenticado. Faça login para continuar.");
   }
   return data.session;
@@ -35,11 +36,11 @@ export const fetchCatalogs = async (): Promise<CatalogWithCategory[]> => {
     }
     
     // Transform data to include category name directly
-    return data.map(catalog => ({
+    return (data || []).map(catalog => ({
       ...catalog,
       category_name: catalog.catalog_categories?.name
-    })) || [];
-  } catch (error) {
+    }));
+  } catch (error: any) {
     console.error('Exception fetching catalogs:', error);
     throw error;
   }
@@ -64,11 +65,13 @@ export const fetchCatalogBySlug = async (slug: string): Promise<CatalogWithCateg
       throw error;
     }
     
+    if (!data) return null;
+    
     return {
       ...data,
       category_name: data.catalog_categories?.name
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Exception fetching catalog with slug ${slug}:`, error);
     throw error;
   }
@@ -113,7 +116,7 @@ export const saveCatalog = async (catalogData: CatalogFormData | (Partial<Catalo
     
     console.log('Catalog saved successfully:', data);
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Exception saving catalog:', error);
     throw error;
   }
@@ -138,7 +141,7 @@ export const deleteCatalog = async (id: string): Promise<boolean> => {
     }
     
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting catalog:', error);
     throw error;
   }
@@ -164,7 +167,7 @@ export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[
     }
     
     return data || [];
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Exception fetching items for catalog ${catalogId}:`, error);
     throw error;
   }
@@ -190,7 +193,7 @@ export const saveCatalogItem = async (item: Partial<CatalogItem> & { catalog_id:
     }
     
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving catalog item:', error);
     throw error;
   }
@@ -215,7 +218,7 @@ export const deleteCatalogItem = async (id: string): Promise<boolean> => {
     }
     
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting catalog item:', error);
     throw error;
   }

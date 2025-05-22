@@ -13,27 +13,43 @@ export const useCatalogImages = (catalogId: string) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth(); // Use authentication context
+  const { isAuthenticated, user } = useAuth();
+  
+  // Check authentication status when the hook is initialized
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!isAuthenticated) {
+        setError("Usuário não autenticado. Por favor, faça login para continuar.");
+        setLoading(false);
+      } else {
+        // Clear error if user is authenticated
+        setError(null);
+        loadImages();
+      }
+    };
+    
+    checkAuth();
+  }, [isAuthenticated, catalogId]);
 
   // Load existing catalog images
   const loadImages = async () => {
+    if (!isAuthenticated) {
+      setError("Usuário não autenticado. Por favor, faça login.");
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      if (!isAuthenticated) {
-        setError("Usuário não autenticado. Por favor, faça login.");
-        setLoading(false);
-        return;
-      }
-      
       const items = await fetchCatalogItems(catalogId);
       setImages(items);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading catalog images:', error);
-      setError("Não foi possível carregar as imagens do catálogo.");
+      setError(error.message || "Não foi possível carregar as imagens do catálogo.");
       toast({
         title: "Erro ao carregar imagens",
-        description: "Não foi possível carregar as imagens do catálogo.",
+        description: error.message || "Não foi possível carregar as imagens do catálogo.",
         variant: "destructive"
       });
     } finally {
@@ -41,19 +57,9 @@ export const useCatalogImages = (catalogId: string) => {
     }
   };
 
-  // Load images when component mounts
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadImages();
-    } else {
-      setError("Usuário não autenticado. Por favor, faça login.");
-      setLoading(false);
-    }
-  }, [catalogId, isAuthenticated]);
-
   // Handle image upload
   const handleImageUpload = async (file: File, title: string, description: string) => {
-    if (!file) return;
+    if (!file) return false;
     
     setError(null);
 
@@ -93,6 +99,12 @@ export const useCatalogImages = (catalogId: string) => {
 
     setUploading(true);
     try {
+      // Verify authentication once more before upload
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error("Sessão expirada. Por favor, faça login novamente.");
+      }
+      
       const imageUrl = await uploadCatalogImage(file, 'catalog-images');
       
       if (imageUrl) {
@@ -130,6 +142,8 @@ export const useCatalogImages = (catalogId: string) => {
     } finally {
       setUploading(false);
     }
+    
+    return false;
   };
 
   // Handle image deletion
@@ -152,11 +166,11 @@ export const useCatalogImages = (catalogId: string) => {
           title: "Imagem removida",
           description: "A imagem foi removida do catálogo."
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting image:', error);
         toast({
           title: "Erro ao remover imagem",
-          description: "Não foi possível remover a imagem.",
+          description: error.message || "Não foi possível remover a imagem.",
           variant: "destructive"
         });
       }
@@ -171,6 +185,7 @@ export const useCatalogImages = (catalogId: string) => {
     setError,
     handleImageUpload,
     handleDeleteImage,
-    isAuthenticated // Expose authentication status
+    isAuthenticated,
+    reloadImages: loadImages
   };
 };
