@@ -1,12 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ImageContent } from '@/types/customTypes';
 import { useToast } from '@/components/ui/use-toast';
 import { useContent } from '@/context/ContentContext';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadCatalogImage } from '@/services/imageService';
+
+// Import refactored components
+import ContentFormHeader from './form-components/ContentFormHeader';
+import ContentTextFields from './form-components/ContentTextFields';
+import ContentImageUploader from './form-components/ContentImageUploader';
+import ContentImagePreview from './form-components/ContentImagePreview';
 
 interface ContentFormProps {
   section: string;
@@ -76,28 +80,6 @@ const ContentForm: React.FC<ContentFormProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      
-      // Validar tamanho do arquivo (limite de 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Arquivo muito grande",
-          description: "O tamanho máximo permitido é 5MB.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Validar tipo de arquivo
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Formato não suportado",
-          description: "Utilize JPG, PNG ou WebP.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
       setImageFile(file);
     }
   };
@@ -192,96 +174,36 @@ const ContentForm: React.FC<ContentFormProps> = ({
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold">
-          {itemId ? `Editar ${sectionTitle}` : `Novo Item em ${sectionTitle}`}
-        </h3>
-        <div className="space-x-2">
-          <Button variant="outline" onClick={() => onClose()} disabled={loading || isUploading}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={loading || isUploading}>
-            {loading || isUploading ? "Processando..." : "Salvar"}
-          </Button>
-        </div>
-      </div>
+      <ContentFormHeader 
+        sectionTitle={sectionTitle} 
+        isEditing={!!itemId}
+        loading={loading || isUploading}
+        onClose={() => onClose()}
+        onSave={handleSave}
+      />
       
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-semibold mb-4">Informações</h3>
         
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Título
-            </label>
-            <Input
-              type="text"
-              value={item.title}
-              onChange={handleTitleChange}
-              placeholder="Título"
-            />
-          </div>
+          <ContentTextFields 
+            item={item}
+            onTitleChange={handleTitleChange}
+            onDescriptionChange={handleDescriptionChange}
+          />
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Descrição
-            </label>
-            <textarea
-              value={item.description}
-              onChange={handleDescriptionChange}
-              placeholder="Descrição"
-              className="w-full min-h-[100px] p-2 border rounded-md"
-            />
-          </div>
+          <ContentImageUploader 
+            imageUrl={item.image}
+            imageFile={imageFile}
+            isUploading={isUploading}
+            onImageUrlChange={handleImageUrlChange}
+            onFileChange={handleFileChange}
+          />
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL da Imagem
-            </label>
-            <Input
-              type="text"
-              value={item.image}
-              onChange={handleImageUrlChange}
-              placeholder="https://exemplo.com/imagem.jpg"
-              disabled={isUploading}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ou faça upload de uma imagem
-            </label>
-            <div className="flex items-center space-x-2">
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                disabled={isUploading}
-              />
-              {isUploading && (
-                <div className="text-sm text-blue-500">Enviando...</div>
-              )}
-            </div>
-          </div>
-          
-          {(item.image || imageFile) && (
-            <div className="mt-4">
-              <p className="block text-sm font-medium text-gray-700 mb-1">
-                Visualização
-              </p>
-              <div className="w-full h-60 bg-gray-100 rounded-md overflow-hidden">
-                <img
-                  src={imageFile ? URL.createObjectURL(imageFile) : item.image}
-                  alt="Visualização"
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "https://via.placeholder.com/400x300?text=Imagem+Inválida";
-                  }}
-                />
-              </div>
-            </div>
-          )}
+          <ContentImagePreview 
+            imageUrl={item.image}
+            imageFile={imageFile}
+          />
         </div>
       </div>
     </div>
