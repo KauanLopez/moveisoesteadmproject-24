@@ -43,8 +43,8 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
 
         // Then fetch all images for this catalog
         const { data: catalogImages } = await supabase
-          .from('catalog_images')
-          .select('*')
+          .from('catalog_items')
+          .select('id, image_url, title, description')
           .eq('catalog_id', catalogId)
           .order('display_order', { ascending: true });
 
@@ -52,21 +52,23 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
           setImages(catalogImages as CatalogImage[]);
         } else {
           // If no catalog images found, use the catalog cover as a single image
-          const { data: contentItem } = await supabase
-            .from('content')
-            .select('id, image_url, title, description')
+          const { data: catalog } = await supabase
+            .from('catalogs')
+            .select('id, cover_image, title, description')
             .eq('id', catalogId)
             .single();
 
-          if (contentItem) {
+          if (catalog && catalog.cover_image) {
             setImages([
               {
-                id: contentItem.id,
-                image_url: contentItem.image_url,
-                title: contentItem.title,
-                description: contentItem.description,
+                id: catalog.id,
+                image_url: catalog.cover_image,
+                title: catalog.title,
+                description: catalog.description || '',
               },
             ]);
+          } else {
+            setImages([]);
           }
         }
       } catch (error) {
