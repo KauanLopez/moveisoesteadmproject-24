@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, Loader2, Plus, LockIcon } from 'lucide-react';
+import { AlertCircle, Loader2, Plus, LockIcon, Link } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface CatalogImageUploadFormProps {
@@ -25,6 +25,8 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
   const [description, setDescription] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file');
   const { toast } = useToast();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,14 +65,37 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
     }
     
     setSelectedFile(file);
+    setImageUrl(''); // Clear URL when file is selected
+  };
+
+  const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setImageUrl(event.target.value);
+    setLocalError(null);
+    if (event.target.value) {
+      setSelectedFile(null); // Clear file when URL is entered
+      // Reset the file input
+      const fileInput = document.getElementById('image') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    }
+  };
+
+  const createFileFromUrl = async (url: string): Promise<File> => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Não foi possível baixar a imagem da URL fornecida.');
+    }
+    
+    const blob = await response.blob();
+    const filename = url.split('/').pop()?.split('?')[0] || 'image.jpg';
+    return new File([blob], filename, { type: blob.type });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
     
-    if (!selectedFile) {
-      setLocalError("Por favor, selecione uma imagem para fazer upload.");
+    if (!selectedFile && !imageUrl) {
+      setLocalError("Por favor, selecione uma imagem ou forneça uma URL.");
       return;
     }
     
@@ -84,17 +109,39 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
       return;
     }
     
-    const success = await onUpload(selectedFile, title, description);
-    
-    if (success) {
-      // Reset form fields on success
-      setTitle('');
-      setDescription('');
-      setSelectedFile(null);
+    try {
+      let fileToUpload = selectedFile;
       
-      // Reset the file input
-      const fileInput = document.getElementById('image') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      // If using URL method, convert URL to file
+      if (imageUrl && !selectedFile) {
+        try {
+          fileToUpload = await createFileFromUrl(imageUrl);
+        } catch (error) {
+          setLocalError("Erro ao baixar imagem da URL. Verifique se a URL é válida e acessível.");
+          return;
+        }
+      }
+      
+      if (!fileToUpload) {
+        setLocalError("Erro ao processar a imagem. Tente novamente.");
+        return;
+      }
+      
+      const success = await onUpload(fileToUpload, title, description);
+      
+      if (success) {
+        // Reset form fields on success
+        setTitle('');
+        setDescription('');
+        setSelectedFile(null);
+        setImageUrl('');
+        
+        // Reset the file input
+        const fileInput = document.getElementById('image') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+      }
+    } catch (error: any) {
+      setLocalError(error.message || "Erro ao processar upload da imagem.");
     }
   };
 
@@ -148,20 +195,68 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
             disabled={uploading || !isAuthenticated}
           />
         </div>
-        
-        <div>
-          <Label htmlFor="image" className="block mb-2">Selecionar Imagem</Label>
-          <div className="flex items-center gap-4">
-            <Input 
-              id="image"
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
+
+        {/* Upload method selector */}
+        <div className="space-y-2">
+          <Label>Método de Upload</Label>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={uploadMethod === 'file' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setUploadMethod('file');
+                setImageUrl('');
+              }}
               disabled={uploading || !isAuthenticated}
-              className="flex-1"
-            />
+            >
+              Arquivo
+            </Button>
+            <Button
+              type="button"
+              variant={uploadMethod === 'url' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setUploadMethod('url');
+                setSelectedFile(null);
+                const fileInput = document.getElementById('image') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
+              }}
+              disabled={uploading || !isAuthenticated}
+            >
+              <Link className="w-4 h-4 mr-1" />
+              URL
+            </Button>
           </div>
         </div>
+        
+        {uploadMethod === 'file' ? (
+          <div>
+            <Label htmlFor="image" className="block mb-2">Selecionar Imagem</Label>
+            <div className="flex items-center gap-4">
+              <Input 
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                disabled={uploading || !isAuthenticated}
+                className="flex-1"
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <Label htmlFor="imageUrl" className="block mb-2">URL da Imagem</Label>
+            <Input 
+              id="imageUrl"
+              type="url"
+              value={imageUrl}
+              onChange={handleUrlChange}
+              placeholder="https://exemplo.com/imagem.jpg"
+              disabled={uploading || !isAuthenticated}
+            />
+          </div>
+        )}
         
         <div>
           {uploading ? (
@@ -173,7 +268,7 @@ const CatalogImageUploadForm: React.FC<CatalogImageUploadFormProps> = ({
             <Button 
               type="submit"
               className="w-full"
-              disabled={!selectedFile || !isAuthenticated}
+              disabled={(!selectedFile && !imageUrl) || !isAuthenticated}
             >
               <Plus className="mr-2 h-4 w-4" />
               Adicionar Imagem
