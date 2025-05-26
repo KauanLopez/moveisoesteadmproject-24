@@ -34,7 +34,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
         // First get catalog details
         const { data: catalog } = await supabase
           .from('catalogs')
-          .select('title, pdf_file_url, total_pages')
+          .select('id, title, description, cover_image, pdf_file_url, total_pages')
           .eq('id', catalogId)
           .single();
 
@@ -63,7 +63,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
                   id: catalog.id,
                   image_url: catalog.cover_image,
                   title: catalog.title,
-                  description: 'Capa do catálogo',
+                  description: catalog.description || 'Capa do catálogo',
                 },
               ]);
             } else {
@@ -82,12 +82,6 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
             setImages(catalogItems as CatalogImage[]);
           } else {
             // Final fallback to catalog cover
-            const { data: catalog } = await supabase
-              .from('catalogs')
-              .select('id, cover_image, title, description')
-              .eq('id', catalogId)
-              .single();
-
             if (catalog && catalog.cover_image) {
               setImages([
                 {

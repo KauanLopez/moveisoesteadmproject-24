@@ -43,6 +43,11 @@ const CatalogManagement = () => {
     }
   };
 
+  const handleManageItems = (catalog: any) => {
+    // Placeholder for managing catalog items functionality
+    console.log('Managing items for catalog:', catalog.id);
+  };
+
   if (showForm && formType === 'traditional') {
     return (
       <CatalogForm
@@ -85,15 +90,13 @@ const CatalogManagement = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <div className="text-center py-8">Carregando catálogos...</div>
-        ) : (
-          <CatalogTable
-            catalogs={catalogs}
-            onEdit={handleEditCatalog}
-            onDelete={handleDeleteCatalog}
-          />
-        )}
+        <CatalogTable
+          catalogs={catalogs}
+          loading={loading}
+          onEdit={handleEditCatalog}
+          onDelete={handleDeleteCatalog}
+          onManageItems={handleManageItems}
+        />
       </CardContent>
     </Card>
   );
