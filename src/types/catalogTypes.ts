@@ -1,3 +1,4 @@
+
 export interface CatalogCategory {
   id: string;
   name: string;
@@ -12,6 +13,9 @@ export interface Catalog {
   cover_image?: string;
   slug: string;
   category_id?: string;
+  pdf_file_url?: string;
+  pdf_filename?: string;
+  total_pages?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -34,6 +38,15 @@ export interface CatalogItem {
   updated_at?: string;
 }
 
+export interface CatalogPdfPage {
+  id: string;
+  catalog_id: string;
+  page_number: number;
+  image_url: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface CatalogFormData {
   id?: string;
   title: string;
@@ -41,6 +54,9 @@ export interface CatalogFormData {
   cover_image?: string;
   slug?: string;
   category_id?: string;
+  pdf_file_url?: string;
+  pdf_filename?: string;
+  total_pages?: number;
 }
 
 // Helper function to generate catalog route

@@ -1,68 +1,101 @@
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CategoryManagement from './CategoryManagement';
-import CatalogContent from './components/CatalogContent';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import CatalogForm from './CatalogForm';
+import CatalogPdfForm from './CatalogPdfForm';
+import CatalogTable from './components/CatalogTable';
 import { useCatalogManagement } from './hooks/useCatalogManagement';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, Image } from 'lucide-react';
 
-const CatalogManagement: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('catalogs');
-  
+const CatalogManagement = () => {
   const {
     catalogs,
     selectedCatalog,
     showForm,
     loading,
     categories,
-    loadCatalogs,
-    loadCategories,
     handleEditCatalog,
     handleCreateCatalog,
     handleCloseForm,
     handleDeleteCatalog
   } = useCatalogManagement();
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    // Reload appropriate data when tab changes
-    if (value === 'catalogs') {
-      loadCatalogs();
-    } else if (value === 'categories') {
-      loadCategories();
+  const [formType, setFormType] = React.useState<'traditional' | 'pdf'>('pdf');
+  const [showPdfForm, setShowPdfForm] = React.useState(false);
+
+  const handleCreateTraditionalCatalog = () => {
+    setFormType('traditional');
+    handleCreateCatalog();
+  };
+
+  const handleCreatePdfCatalog = () => {
+    setFormType('pdf');
+    setShowPdfForm(true);
+  };
+
+  const handleClosePdfForm = (shouldRefresh: boolean) => {
+    setShowPdfForm(false);
+    if (shouldRefresh) {
+      // Reload catalogs if needed
+      window.location.reload();
     }
   };
 
+  if (showForm && formType === 'traditional') {
+    return (
+      <CatalogForm
+        catalog={selectedCatalog}
+        categories={categories}
+        onClose={handleCloseForm}
+      />
+    );
+  }
+
+  if (showPdfForm && formType === 'pdf') {
+    return (
+      <CatalogPdfForm
+        onClose={handleClosePdfForm}
+        categories={categories}
+      />
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <Tabs 
-        value={activeTab} 
-        onValueChange={handleTabChange}
-        className="w-full"
-      >
-        <TabsList className="mb-6">
-          <TabsTrigger value="catalogs">Catálogos</TabsTrigger>
-          <TabsTrigger value="categories">Categorias</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="catalogs" className="mt-0">
-          <CatalogContent 
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Gerenciar Catálogos</CardTitle>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleCreatePdfCatalog}
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Novo Catálogo PDF
+          </Button>
+          <Button 
+            onClick={handleCreateTraditionalCatalog}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Image className="h-4 w-4" />
+            Catálogo Tradicional
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="text-center py-8">Carregando catálogos...</div>
+        ) : (
+          <CatalogTable
             catalogs={catalogs}
-            loading={loading}
-            selectedCatalog={selectedCatalog}
-            showForm={showForm}
-            categories={categories}
-            onCreateClick={handleCreateCatalog}
-            onEditCatalog={handleEditCatalog}
-            onDeleteCatalog={handleDeleteCatalog}
-            onCloseForm={handleCloseForm}
+            onEdit={handleEditCatalog}
+            onDelete={handleDeleteCatalog}
           />
-        </TabsContent>
-        
-        <TabsContent value="categories" className="mt-0">
-          <CategoryManagement onCategoriesUpdated={loadCategories} />
-        </TabsContent>
-      </Tabs>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

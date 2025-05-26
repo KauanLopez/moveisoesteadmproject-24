@@ -71,6 +71,41 @@ export type Database = {
           },
         ]
       }
+      catalog_pdf_pages: {
+        Row: {
+          catalog_id: string
+          created_at: string | null
+          id: string
+          image_url: string
+          page_number: number
+          updated_at: string | null
+        }
+        Insert: {
+          catalog_id: string
+          created_at?: string | null
+          id?: string
+          image_url: string
+          page_number: number
+          updated_at?: string | null
+        }
+        Update: {
+          catalog_id?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          page_number?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_pdf_pages_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalogs: {
         Row: {
           category_id: string | null
@@ -78,8 +113,11 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          pdf_file_url: string | null
+          pdf_filename: string | null
           slug: string
           title: string
+          total_pages: number | null
           updated_at: string
         }
         Insert: {
@@ -88,8 +126,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          pdf_file_url?: string | null
+          pdf_filename?: string | null
           slug: string
           title: string
+          total_pages?: number | null
           updated_at?: string
         }
         Update: {
@@ -98,8 +139,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          pdf_file_url?: string | null
+          pdf_filename?: string | null
           slug?: string
           title?: string
+          total_pages?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -116,6 +160,7 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          gallery_images: string[] | null
           id: string
           image_url: string | null
           object_position: string | null
@@ -127,6 +172,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          gallery_images?: string[] | null
           id?: string
           image_url?: string | null
           object_position?: string | null
@@ -138,6 +184,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          gallery_images?: string[] | null
           id?: string
           image_url?: string | null
           object_position?: string | null

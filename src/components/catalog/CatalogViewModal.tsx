@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CatalogImageCarousel from './CatalogImageCarousel';
+import { fetchCatalogPdfPages } from '@/services/pdfService';
 
 interface CatalogViewModalProps {
   catalogId: string;
@@ -33,7 +34,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
         // First get catalog details
         const { data: catalog } = await supabase
           .from('catalogs')
-          .select('title')
+          .select('title, pdf_file_url, total_pages')
           .eq('id', catalogId)
           .single();
 
@@ -41,34 +42,64 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
           setCatalogTitle(catalog.title || 'Catálogo');
         }
 
-        // Then fetch all images for this catalog
-        const { data: catalogImages } = await supabase
-          .from('catalog_items')
-          .select('id, image_url, title, description')
-          .eq('catalog_id', catalogId)
-          .order('display_order', { ascending: true });
-
-        if (catalogImages && catalogImages.length > 0) {
-          setImages(catalogImages as CatalogImage[]);
-        } else {
-          // If no catalog images found, use the catalog cover as a single image
-          const { data: catalog } = await supabase
-            .from('catalogs')
-            .select('id, cover_image, title, description')
-            .eq('id', catalogId)
-            .single();
-
-          if (catalog && catalog.cover_image) {
-            setImages([
-              {
-                id: catalog.id,
-                image_url: catalog.cover_image,
-                title: catalog.title,
-                description: catalog.description || '',
-              },
-            ]);
+        // Check if this catalog has PDF pages
+        if (catalog?.pdf_file_url) {
+          console.log('Loading PDF pages for catalog:', catalogId);
+          const pdfPages = await fetchCatalogPdfPages(catalogId);
+          
+          if (pdfPages && pdfPages.length > 0) {
+            const pdfImages = pdfPages.map(page => ({
+              id: page.id,
+              image_url: page.image_url,
+              title: `Página ${page.page_number}`,
+              description: ''
+            }));
+            setImages(pdfImages);
           } else {
-            setImages([]);
+            // Fallback to catalog cover if no PDF pages found
+            if (catalog.cover_image) {
+              setImages([
+                {
+                  id: catalog.id,
+                  image_url: catalog.cover_image,
+                  title: catalog.title,
+                  description: 'Capa do catálogo',
+                },
+              ]);
+            } else {
+              setImages([]);
+            }
+          }
+        } else {
+          // Legacy: Try to fetch individual catalog items
+          const { data: catalogItems } = await supabase
+            .from('catalog_items')
+            .select('id, image_url, title, description')
+            .eq('catalog_id', catalogId)
+            .order('display_order', { ascending: true });
+
+          if (catalogItems && catalogItems.length > 0) {
+            setImages(catalogItems as CatalogImage[]);
+          } else {
+            // Final fallback to catalog cover
+            const { data: catalog } = await supabase
+              .from('catalogs')
+              .select('id, cover_image, title, description')
+              .eq('id', catalogId)
+              .single();
+
+            if (catalog && catalog.cover_image) {
+              setImages([
+                {
+                  id: catalog.id,
+                  image_url: catalog.cover_image,
+                  title: catalog.title,
+                  description: catalog.description || '',
+                },
+              ]);
+            } else {
+              setImages([]);
+            }
           }
         }
       } catch (error) {
@@ -97,11 +128,11 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
           <div className="flex-1 overflow-auto p-4">
             {loading ? (
               <div className="flex justify-center items-center h-64">
-                <p>Carregando imagens do catálogo...</p>
+                <p>Carregando catálogo...</p>
               </div>
             ) : images.length === 0 ? (
               <div className="text-center py-12">
-                <p>Nenhuma imagem encontrada para este catálogo.</p>
+                <p>Nenhuma página encontrada para este catálogo.</p>
               </div>
             ) : (
               <CatalogImageCarousel images={images} />
