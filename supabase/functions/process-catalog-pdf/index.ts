@@ -1,157 +1,127 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.7';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
+
+interface RequestPayload {
+  pdfUrl: string;
+  catalogId: string;
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { pdfUrl, catalogId } = await req.json();
+    const { pdfUrl, catalogId }: RequestPayload = await req.json();
     
-    console.log('Processing PDF:', pdfUrl, 'for catalog:', catalogId);
+    console.log(`Processing PDF: ${pdfUrl} for catalog: ${catalogId}`);
+    
+    if (!pdfUrl || !catalogId) {
+      throw new Error('PDF URL and catalog ID are required');
+    }
 
-    // Download the PDF
+    // Fetch the PDF file
     const pdfResponse = await fetch(pdfUrl);
     if (!pdfResponse.ok) {
-      throw new Error('Failed to download PDF');
+      throw new Error(`Failed to fetch PDF: ${pdfResponse.statusText}`);
     }
-    
+
     const pdfBuffer = await pdfResponse.arrayBuffer();
-    
-    // Convert PDF to images using pdf-poppler-like approach
-    // For now, we'll simulate the conversion process
-    // In a real implementation, you'd use a PDF processing library
-    const pdfPages = await convertPdfToImages(pdfBuffer, catalogId);
-    
-    // Save pages to database
-    const { error: deleteError } = await supabase
-      .from('catalog_pdf_pages')
-      .delete()
-      .eq('catalog_id', catalogId);
-    
-    if (deleteError) {
-      console.error('Error deleting existing pages:', deleteError);
-    }
+    console.log(`PDF downloaded, size: ${pdfBuffer.byteLength} bytes`);
 
-    if (pdfPages.length > 0) {
-      const { error: insertError } = await supabase
+    // For this demo, we'll simulate PDF processing
+    // In a real implementation, you would use a PDF processing library
+    // like pdf-lib or pdf2pic to convert pages to images
+    
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // For demo purposes, let's create mock pages
+    const mockPageCount = 5;
+    const pages = [];
+    
+    for (let i = 1; i <= mockPageCount; i++) {
+      // In a real implementation, you would:
+      // 1. Extract page as image
+      // 2. Upload image to Supabase storage
+      // 3. Get the public URL
+      
+      // For now, we'll use a placeholder image
+      const placeholderImageUrl = `https://via.placeholder.com/800x1000/f3f4f6/64748b?text=Página+${i}`;
+      
+      const { data: pageData, error: pageError } = await supabaseClient
         .from('catalog_pdf_pages')
-        .insert(pdfPages.map((page, index) => ({
+        .insert({
           catalog_id: catalogId,
-          page_number: index + 1,
-          image_url: page.imageUrl
-        })));
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      // Update catalog with cover image (first page) and total pages
-      const { error: updateError } = await supabase
-        .from('catalogs')
-        .update({
-          cover_image: pdfPages[0].imageUrl,
-          total_pages: pdfPages.length
+          page_number: i,
+          image_url: placeholderImageUrl
         })
-        .eq('id', catalogId);
-
-      if (updateError) {
-        throw updateError;
+        .select()
+        .single();
+      
+      if (pageError) {
+        console.error(`Error inserting page ${i}:`, pageError);
+        throw pageError;
       }
+      
+      pages.push(pageData);
+      console.log(`Created page ${i} for catalog ${catalogId}`);
     }
+
+    // Update catalog with cover image (first page) and total pages
+    const coverImage = pages[0]?.image_url;
+    
+    const { error: updateError } = await supabaseClient
+      .from('catalogs')
+      .update({
+        cover_image: coverImage,
+        total_pages: mockPageCount
+      })
+      .eq('id', catalogId);
+    
+    if (updateError) {
+      console.error('Error updating catalog:', updateError);
+      throw updateError;
+    }
+
+    console.log(`Successfully processed PDF for catalog ${catalogId}: ${mockPageCount} pages`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        pagesCount: pdfPages.length,
-        coverImage: pdfPages[0]?.imageUrl 
+      JSON.stringify({
+        success: true,
+        pagesCount: mockPageCount,
+        coverImage: coverImage
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
       }
     );
 
   } catch (error) {
     console.error('Error processing PDF:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
+      JSON.stringify({
+        success: false,
+        error: error.message
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }
 });
-
-// Simulated PDF to images conversion
-async function convertPdfToImages(pdfBuffer: ArrayBuffer, catalogId: string): Promise<Array<{ imageUrl: string }>> {
-  // This is a placeholder implementation
-  // In a real scenario, you'd use a PDF processing library like pdf2pic or similar
-  // For now, we'll create placeholder images
-  
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
-  
-  const pages = [];
-  
-  // Simulate extracting 5 pages from PDF
-  for (let i = 1; i <= 5; i++) {
-    // Create a simple placeholder image for each page
-    const canvas = new OffscreenCanvas(800, 1000);
-    const ctx = canvas.getContext('2d');
-    
-    if (ctx) {
-      // Fill with white background
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 800, 1000);
-      
-      // Add some text to simulate PDF content
-      ctx.fillStyle = '#000000';
-      ctx.font = '48px Arial';
-      ctx.fillText(`Página ${i} do Catálogo`, 50, 100);
-      ctx.font = '24px Arial';
-      ctx.fillText(`ID do Catálogo: ${catalogId}`, 50, 150);
-      
-      // Convert to blob
-      const blob = await canvas.convertToBlob({ type: 'image/png' });
-      const arrayBuffer = await blob.arrayBuffer();
-      
-      // Upload to Supabase storage
-      const fileName = `${catalogId}/page-${i}.png`;
-      const { data, error } = await supabase.storage
-        .from('catalog-pdf-images')
-        .upload(fileName, arrayBuffer, {
-          contentType: 'image/png',
-          upsert: true
-        });
-      
-      if (error) {
-        console.error('Error uploading page image:', error);
-        continue;
-      }
-      
-      const { data: urlData } = supabase.storage
-        .from('catalog-pdf-images')
-        .getPublicUrl(fileName);
-      
-      pages.push({ imageUrl: urlData.publicUrl });
-    }
-  }
-  
-  return pages;
-}
