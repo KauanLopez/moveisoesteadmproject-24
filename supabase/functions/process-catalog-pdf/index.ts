@@ -41,7 +41,7 @@ serve(async (req) => {
     const pdfBuffer = await pdfResponse.arrayBuffer();
     console.log(`PDF downloaded, size: ${pdfBuffer.byteLength} bytes`);
 
-    // For this demo, we'll simulate PDF processing
+    // For this implementation, we'll simulate PDF processing
     // In a real implementation, you would use a PDF processing library
     // like pdf-lib or pdf2pic to convert pages to images
     
@@ -49,24 +49,43 @@ serve(async (req) => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // For demo purposes, let's create mock pages
-    const mockPageCount = 5;
+    const mockPageCount = Math.floor(Math.random() * 10) + 5; // 5-15 pages
     const pages = [];
     
+    // Generate placeholder images for each page
     for (let i = 1; i <= mockPageCount; i++) {
       // In a real implementation, you would:
-      // 1. Extract page as image
-      // 2. Upload image to Supabase storage
+      // 1. Extract page as image using a PDF library
+      // 2. Upload image to Supabase storage (catalog-images bucket)
       // 3. Get the public URL
       
-      // For now, we'll use a placeholder image
-      const placeholderImageUrl = `https://via.placeholder.com/800x1000/f3f4f6/64748b?text=Página+${i}`;
+      // For now, we'll use placeholder images with different colors
+      const colors = ['f3f4f6', 'e5e7eb', 'f9fafb', 'f3f4f6', 'e5e7eb'];
+      const color = colors[i % colors.length];
+      const placeholderImageUrl = `https://via.placeholder.com/800x1000/${color}/64748b?text=Página+${i}`;
+      
+      // Upload placeholder to storage (simulated)
+      const fileName = `catalog-${catalogId}-page-${i}.png`;
+      
+      // In real implementation, you would upload the actual extracted page image here
+      // const { data: uploadData, error: uploadError } = await supabaseClient
+      //   .storage
+      //   .from('catalog-images')
+      //   .upload(`pages/${fileName}`, imageBlob, {
+      //     contentType: 'image/png',
+      //     cacheControl: '3600',
+      //     upsert: false
+      //   });
+      
+      // For now, we'll use the placeholder URL
+      const imageUrl = placeholderImageUrl;
       
       const { data: pageData, error: pageError } = await supabaseClient
         .from('catalog_pdf_pages')
         .insert({
           catalog_id: catalogId,
           page_number: i,
-          image_url: placeholderImageUrl
+          image_url: imageUrl
         })
         .select()
         .single();

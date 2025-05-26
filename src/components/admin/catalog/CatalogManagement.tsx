@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import CatalogPdfForm from './CatalogPdfForm';
 import CatalogTable from './components/CatalogTable';
 import { useCatalogManagement } from './hooks/useCatalogManagement';
-import { FileText } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 
 const CatalogManagement = () => {
   const {

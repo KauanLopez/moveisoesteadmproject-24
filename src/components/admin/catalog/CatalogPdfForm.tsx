@@ -25,7 +25,8 @@ const CatalogPdfForm: React.FC<CatalogPdfFormProps> = ({ onClose, categories }) 
     pdfFile: File | null, 
     pdfUrl: string, 
     title: string, 
-    description: string
+    description: string,
+    categoryId: string
   ): Promise<boolean | undefined> => {
     setUploading(true);
     setError(null);
@@ -47,6 +48,7 @@ const CatalogPdfForm: React.FC<CatalogPdfFormProps> = ({ onClose, categories }) 
       const catalogData = {
         title,
         description: description || null,
+        category_id: categoryId || null,
         pdf_file_url: finalPdfUrl,
         pdf_filename: pdfFile?.name || null,
         cover_image: '', // Will be set after PDF processing
@@ -106,6 +108,7 @@ const CatalogPdfForm: React.FC<CatalogPdfFormProps> = ({ onClose, categories }) 
           uploading={uploading}
           error={error}
           isAuthenticated={isAuthenticated}
+          categories={categories}
         />
       </CardContent>
     </Card>

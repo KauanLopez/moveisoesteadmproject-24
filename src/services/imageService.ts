@@ -65,6 +65,7 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
 };
 
 // Upload an image to Supabase storage and return the URL
+// Esta função NÃO será usada para catálogos, apenas para outras seções
 export const uploadCatalogImage = async (file: File, folder: string = 'catalog-covers'): Promise<string> => {
   try {
     // Verificar autenticação
@@ -123,4 +124,14 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
     console.error('Exception while uploading image:', error);
     throw error; // Propagar erro para tratamento adequado pelo componente
   }
+};
+
+// Upload para produtos em destaque e outras seções (NÃO catálogos)
+export const uploadProductImage = async (file: File): Promise<string> => {
+  return uploadCatalogImage(file, 'product-images');
+};
+
+// Upload para gerente e outras seções (NÃO catálogos)
+export const uploadManagerImage = async (file: File): Promise<string> => {
+  return uploadCatalogImage(file, 'manager-images');
 };

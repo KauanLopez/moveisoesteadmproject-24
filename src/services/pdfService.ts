@@ -24,7 +24,7 @@ export const uploadPdfFile = async (file: File): Promise<string> => {
     const fileName = `${generateUUID()}.${fileExt}`;
     const filePath = `pdfs/${fileName}`;
 
-    // Upload the file
+    // Upload the file to the correct bucket
     const { data, error } = await supabase
       .storage
       .from('catalog-pdfs')
