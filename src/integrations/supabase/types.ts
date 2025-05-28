@@ -195,6 +195,36 @@ export type Database = {
         }
         Relationships: []
       }
+      external_url_catalogs: {
+        Row: {
+          created_at: string
+          description: string | null
+          external_content_image_urls: Json | null
+          external_cover_image_url: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          external_content_image_urls?: Json | null
+          external_cover_image_url: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          external_content_image_urls?: Json | null
+          external_cover_image_url?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       featured_items: {
         Row: {
           catalog_id: string

@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
 import CatalogViewModal from './catalog/CatalogViewModal';
 import PdfCatalogModal from './pdf-catalog/PdfCatalogModal';
+import ExternalCatalogViewModal from './admin/external-catalog/ExternalCatalogViewModal';
 import { useContent } from '@/context/ContentContext';
 import { fetchCompletedPdfCatalogs, PdfCatalog } from '@/services/pdfCatalogService';
+import { fetchExternalCatalogs } from '@/services/externalCatalogService';
+import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 
 // Define a unified project type for the carousel
 interface CarouselProject {
@@ -15,7 +18,9 @@ interface CarouselProject {
   description: string;
   image: string;
   isPdfCatalog?: boolean;
+  isExternalCatalog?: boolean;
   pdfCatalog?: PdfCatalog;
+  externalCatalog?: ExternalUrlCatalog;
   objectPosition?: string;
   scale?: number;
 }
@@ -31,51 +36,40 @@ const Projects = () => {
   });
   const [selectedCatalog, setSelectedCatalog] = useState<string | null>(null);
   const [selectedPdfCatalog, setSelectedPdfCatalog] = useState<PdfCatalog | null>(null);
+  const [selectedExternalCatalog, setSelectedExternalCatalog] = useState<ExternalUrlCatalog | null>(null);
   const [pdfCatalogs, setPdfCatalogs] = useState<PdfCatalog[]>([]);
+  const [externalCatalogs, setExternalCatalogs] = useState<ExternalUrlCatalog[]>([]);
   const [loading, setLoading] = useState(true);
   const { content } = useContent();
   const projects = content.filter(item => item.section === 'projects');
   
-  // Load PDF catalogs first
+  // Load PDF catalogs and external catalogs
   useEffect(() => {
-    const loadPdfCatalogs = async () => {
-      console.log('Projects: Starting to load PDF catalogs...');
+    const loadCatalogs = async () => {
+      console.log('Projects: Starting to load catalogs...');
       setLoading(true);
       try {
-        const catalogs = await fetchCompletedPdfCatalogs();
-        console.log('Projects: Received catalogs from service:', catalogs);
-        console.log('Projects: Number of catalogs received:', catalogs.length);
+        // Load PDF catalogs
+        const pdfCatalogData = await fetchCompletedPdfCatalogs();
+        console.log('Projects: PDF catalogs loaded:', pdfCatalogData.length);
+        setPdfCatalogs(pdfCatalogData);
         
-        // Check if SAMEC catalog is in the results
-        const samecCatalog = catalogs.find(cat => cat.title === 'Catalogo SAMEC');
-        console.log('Projects: SAMEC catalog in results:', samecCatalog);
-        
-        if (samecCatalog) {
-          console.log('Projects: SAMEC catalog details:', {
-            id: samecCatalog.id,
-            title: samecCatalog.title,
-            cover_image_url: samecCatalog.cover_image_url,
-            content_image_urls: samecCatalog.content_image_urls
-          });
-        } else {
-          console.log('Projects: SAMEC catalog NOT FOUND in results');
-          console.log('Projects: Available catalog titles:', catalogs.map(c => c.title));
-        }
-        
-        setPdfCatalogs(catalogs);
-        console.log('Projects: PDF catalogs state updated');
+        // Load external catalogs
+        const externalCatalogData = await fetchExternalCatalogs();
+        console.log('Projects: External catalogs loaded:', externalCatalogData.length);
+        setExternalCatalogs(externalCatalogData);
       } catch (error) {
-        console.error('Projects: Error loading PDF catalogs:', error);
+        console.error('Projects: Error loading catalogs:', error);
       } finally {
         setLoading(false);
         console.log('Projects: Loading finished');
       }
     };
 
-    loadPdfCatalogs();
+    loadCatalogs();
   }, []);
   
-  // Combine regular projects with PDF catalogs using the unified type
+  // Combine regular projects, PDF catalogs, and external catalogs using the unified type
   const allProjects: CarouselProject[] = [
     // Convert regular projects to CarouselProject type
     ...projects.map(project => ({
@@ -85,7 +79,8 @@ const Projects = () => {
       image: project.image || '/placeholder.svg',
       objectPosition: project.objectPosition,
       scale: project.scale,
-      isPdfCatalog: false
+      isPdfCatalog: false,
+      isExternalCatalog: false
     })),
     // Convert PDF catalogs to CarouselProject type
     ...pdfCatalogs.map(catalog => ({
@@ -94,20 +89,26 @@ const Projects = () => {
       description: catalog.description || '',
       image: catalog.cover_image_url || '/placeholder.svg',
       isPdfCatalog: true,
+      isExternalCatalog: false,
       pdfCatalog: catalog
+    })),
+    // Convert external catalogs to CarouselProject type
+    ...externalCatalogs.map(catalog => ({
+      id: catalog.id,
+      title: catalog.title,
+      description: catalog.description || '',
+      image: catalog.external_cover_image_url,
+      isPdfCatalog: false,
+      isExternalCatalog: true,
+      externalCatalog: catalog
     }))
   ];
 
   console.log('Projects: Final combination results:');
   console.log('Projects: Regular projects count:', projects.length);
   console.log('Projects: PDF catalogs count:', pdfCatalogs.length);
+  console.log('Projects: External catalogs count:', externalCatalogs.length);
   console.log('Projects: All projects combined count:', allProjects.length);
-  console.log('Projects: Combined projects:', allProjects.map(p => ({ 
-    id: p.id, 
-    title: p.title, 
-    isPdfCatalog: p.isPdfCatalog || false,
-    image: p.image 
-  })));
   
   React.useEffect(() => {
     if (emblaApi) {
@@ -139,6 +140,8 @@ const Projects = () => {
   const handleOpenCatalog = (project: CarouselProject) => {
     if (project.isPdfCatalog && project.pdfCatalog) {
       setSelectedPdfCatalog(project.pdfCatalog);
+    } else if (project.isExternalCatalog && project.externalCatalog) {
+      setSelectedExternalCatalog(project.externalCatalog);
     } else {
       setSelectedCatalog(project.id);
     }
@@ -147,6 +150,7 @@ const Projects = () => {
   const handleCloseCatalog = () => {
     setSelectedCatalog(null);
     setSelectedPdfCatalog(null);
+    setSelectedExternalCatalog(null);
   };
 
   if (loading) {
@@ -282,6 +286,14 @@ const Projects = () => {
         <PdfCatalogModal 
           catalog={selectedPdfCatalog}
           isOpen={!!selectedPdfCatalog} 
+          onClose={handleCloseCatalog} 
+        />
+      )}
+
+      {selectedExternalCatalog && (
+        <ExternalCatalogViewModal 
+          catalog={selectedExternalCatalog}
+          isOpen={!!selectedExternalCatalog} 
           onClose={handleCloseCatalog} 
         />
       )}
