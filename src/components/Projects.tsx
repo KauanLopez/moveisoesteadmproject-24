@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,13 +26,19 @@ const Projects = () => {
   // Load PDF catalogs first
   useEffect(() => {
     const loadPdfCatalogs = async () => {
+      setLoading(true);
       try {
-        console.log('Loading PDF catalogs...');
+        console.log('Projects component: Loading PDF catalogs...');
         const catalogs = await fetchCompletedPdfCatalogs();
-        console.log('Loaded PDF catalogs:', catalogs);
+        console.log('Projects component: Loaded PDF catalogs:', catalogs);
+        
+        // Check if SAMEC catalog is in the results
+        const samecCatalog = catalogs.find(cat => cat.title === 'Catalogo SAMEC');
+        console.log('Projects component: SAMEC catalog in results:', samecCatalog);
+        
         setPdfCatalogs(catalogs);
       } catch (error) {
-        console.error('Error loading PDF catalogs:', error);
+        console.error('Projects component: Error loading PDF catalogs:', error);
       } finally {
         setLoading(false);
       }
@@ -55,9 +60,10 @@ const Projects = () => {
     }))
   ];
 
-  console.log('All projects:', allProjects);
-  console.log('PDF catalogs count:', pdfCatalogs.length);
-  console.log('Regular projects count:', projects.length);
+  console.log('Projects component: All projects combined:', allProjects);
+  console.log('Projects component: PDF catalogs count:', pdfCatalogs.length);
+  console.log('Projects component: Regular projects count:', projects.length);
+  console.log('Projects component: Total projects count:', allProjects.length);
   
   React.useEffect(() => {
     if (emblaApi) {

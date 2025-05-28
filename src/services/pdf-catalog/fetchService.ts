@@ -31,10 +31,11 @@ export const fetchPdfCatalogs = async (): Promise<PdfCatalog[]> => {
  */
 export const fetchCompletedPdfCatalogs = async (): Promise<PdfCatalog[]> => {
   try {
+    console.log('Fetching completed PDF catalogs...');
+    
     const { data, error } = await supabase
       .from('pdf_derived_catalogs')
       .select('*')
-      .not('cover_image_url', 'is', null)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -42,8 +43,17 @@ export const fetchCompletedPdfCatalogs = async (): Promise<PdfCatalog[]> => {
       throw error;
     }
     
-    console.log('Raw completed PDF catalog data:', data);
-    const transformed = transformPdfCatalogData(data);
+    console.log('All PDF catalogs from database:', data);
+    
+    // Check specifically for SAMEC catalog
+    const samecCatalog = data?.find(cat => cat.title === 'Catalogo SAMEC');
+    console.log('SAMEC catalog found:', samecCatalog);
+    
+    // Filter catalogs that have a cover image
+    const completedCatalogs = data?.filter(catalog => catalog.cover_image_url) || [];
+    console.log('Catalogs with cover images:', completedCatalogs);
+    
+    const transformed = transformPdfCatalogData(completedCatalogs);
     console.log('Transformed completed PDF catalogs:', transformed);
     return transformed;
   } catch (error: any) {
