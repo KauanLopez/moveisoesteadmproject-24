@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { authService } from "./authService";
 
 // Helper function to generate a UUID using the crypto API
 const generateUUID = () => {
@@ -11,26 +12,13 @@ const generateUUID = () => {
  */
 const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
   try {
-    // Verificar se o usuário está autenticado
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (!sessionData.session || sessionError) {
-      console.error("Session error:", sessionError);
-      throw new Error("Usuário não autenticado. Faça login para continuar.");
-    }
-    
     // Verificar se o bucket existe
     const { data: bucketExists, error: checkError } = await supabase
       .storage
       .getBucket(bucketName);
     
-    if (checkError) {
+    if (checkError && !checkError.message.includes('not found')) {
       console.error('Error checking bucket:', checkError);
-      
-      // Se o erro for de permissão, pode ser problema de autenticação
-      if (checkError.message.includes('Permission denied')) {
-        throw new Error("Sem permissão para verificar bucket de armazenamento. Verifique se você está autenticado.");
-      }
-      
       throw checkError;
     }
 
@@ -47,12 +35,6 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
 
       if (bucketError) {
         console.error('Error creating bucket:', bucketError);
-        
-        // Se o erro for de permissão, pode ser problema de autenticação
-        if (bucketError.message.includes('Permission denied')) {
-          throw new Error("Sem permissão para criar bucket de armazenamento. Verifique se você está autenticado.");
-        }
-        
         throw bucketError;
       }
     }
@@ -60,70 +42,58 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
     return true;
   } catch (error: any) {
     console.error('Error ensuring bucket exists:', error);
-    throw error; // Propagar erro para tratamento pelo chamador
+    throw error;
   }
 };
 
 // Upload an image to Supabase storage and return the URL
-// Esta função NÃO será usada para catálogos, apenas para outras seções
 export const uploadCatalogImage = async (file: File, folder: string = 'catalog-covers'): Promise<string> => {
-  try {
-    // Verificar autenticação
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (!sessionData.session || sessionError) {
-      console.error('User not authenticated:', sessionError);
-      throw new Error("Usuário não autenticado. Faça login para fazer upload de imagens.");
-    }
-    
-    // Determinar qual bucket usar com base na pasta
-    const bucketName = folder === 'catalog-images' ? 'catalog-images' : 'catalog-covers';
-    
-    console.log(`Uploading file to bucket: ${bucketName}`);
-    
-    // Garantir que o bucket exista
-    await ensureBucketExists(bucketName);
-
-    // Preparar o nome do arquivo
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${generateUUID()}.${fileExt}`;
-    const filePath = `${folder}/${fileName}`;
-
-    // Upload the file
-    const { data, error } = await supabase
-      .storage
-      .from(bucketName)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (error) {
-      console.error('Error uploading image:', error);
+  return await authService.withValidSession(async () => {
+    try {
+      // Determinar qual bucket usar com base na pasta
+      const bucketName = folder === 'catalog-images' ? 'catalog-images' : 'catalog-covers';
       
-      // Verificar se é um erro de autenticação
-      if (error.message.includes('Authentication') || error.message.includes('JWT')) {
-        throw new Error("Erro de autenticação. Por favor, faça login novamente.");
+      console.log(`Uploading file to bucket: ${bucketName}`);
+      
+      // Garantir que o bucket exista
+      await ensureBucketExists(bucketName);
+
+      // Preparar o nome do arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${generateUUID()}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
+
+      // Upload the file
+      const { data, error } = await supabase
+        .storage
+        .from(bucketName)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Error uploading image:', error);
+        throw error;
       }
-      
+
+      if (!data?.path) {
+        throw new Error("Falha ao fazer upload da imagem: caminho do arquivo não retornado.");
+      }
+
+      // Get the public URL for the uploaded file
+      const { data: urlData } = supabase
+        .storage
+        .from(bucketName)
+        .getPublicUrl(filePath);
+
+      console.log('Image uploaded successfully, URL:', urlData.publicUrl);
+      return urlData.publicUrl;
+    } catch (error: any) {
+      console.error('Exception while uploading image:', error);
       throw error;
     }
-
-    if (!data?.path) {
-      throw new Error("Falha ao fazer upload da imagem: caminho do arquivo não retornado.");
-    }
-
-    // Get the public URL for the uploaded file
-    const { data: urlData } = supabase
-      .storage
-      .from(bucketName)
-      .getPublicUrl(filePath);
-
-    console.log('Image uploaded successfully, URL:', urlData.publicUrl);
-    return urlData.publicUrl;
-  } catch (error: any) {
-    console.error('Exception while uploading image:', error);
-    throw error; // Propagar erro para tratamento adequado pelo componente
-  }
+  });
 };
 
 // Upload para produtos em destaque e outras seções (NÃO catálogos)

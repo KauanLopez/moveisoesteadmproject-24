@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { authService } from "./authService";
 
 export interface UrlUploadResponse {
   success: boolean;
@@ -18,39 +19,34 @@ export const uploadImageFromUrl = async (
   bucketName: 'catalog-images' | 'catalog-covers' = 'catalog-images',
   filename?: string
 ): Promise<string> => {
-  try {
-    // Verificar autenticação
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (!sessionData.session || sessionError) {
-      console.error('User not authenticated:', sessionError);
-      throw new Error("Usuário não autenticado. Faça login para fazer upload de imagens.");
-    }
+  return await authService.withValidSession(async () => {
+    try {
+      console.log('Iniciando upload de URL:', imageUrl);
 
-    console.log('Iniciando upload de URL:', imageUrl);
+      const { data, error } = await supabase.functions.invoke('upload-image-from-url', {
+        body: {
+          imageUrl,
+          bucketName,
+          filename
+        }
+      });
 
-    const { data, error } = await supabase.functions.invoke('upload-image-from-url', {
-      body: {
-        imageUrl,
-        bucketName,
-        filename
+      if (error) {
+        console.error('Erro na Edge Function:', error);
+        throw new Error(error.message || 'Erro ao processar upload da URL');
       }
-    });
 
-    if (error) {
-      console.error('Erro na Edge Function:', error);
-      throw new Error(error.message || 'Erro ao processar upload da URL');
+      if (!data.success) {
+        throw new Error(data.error || 'Falha no upload da imagem');
+      }
+
+      console.log('Upload de URL concluído:', data.url);
+      return data.url;
+    } catch (error: any) {
+      console.error('Erro no upload de URL:', error);
+      throw error;
     }
-
-    if (!data.success) {
-      throw new Error(data.error || 'Falha no upload da imagem');
-    }
-
-    console.log('Upload de URL concluído:', data.url);
-    return data.url;
-  } catch (error: any) {
-    console.error('Erro no upload de URL:', error);
-    throw error;
-  }
+  });
 };
 
 /**

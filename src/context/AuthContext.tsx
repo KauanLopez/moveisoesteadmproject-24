@@ -1,136 +1,129 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
-
-// Define types for our authentication context
-type User = {
-  id: string;
-  username: string;
-  isAdmin: boolean;
-};
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 type AuthContextType = {
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  createUser: (username: string, password: string) => Promise<boolean>;
+  session: Session | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
 };
 
-// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Default admin credentials
-const DEFAULT_ADMIN = {
-  id: '1',
-  username: 'admin',
-  password: 'admin123',
-  isAdmin: true
-};
-
-// User storage in localStorage
-const USER_STORAGE_KEY = 'moveis_oeste_users';
-const CURRENT_USER_KEY = 'moveis_oeste_current_user';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize users and auth state
   useEffect(() => {
-    const initializeAuth = () => {
-      try {
-        // Initialize users in localStorage if not already present
-        const storedUsers = localStorage.getItem(USER_STORAGE_KEY);
-        if (!storedUsers) {
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify([DEFAULT_ADMIN]));
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
+        // Update state synchronously
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsAuthenticated(!!session?.user);
+        
+        // Handle auth events
+        if (event === 'SIGNED_OUT') {
+          // Clean up any additional state
+          setUser(null);
+          setSession(null);
+          setIsAuthenticated(false);
         }
-
-        // Check if user is already logged in
-        const currentUser = localStorage.getItem(CURRENT_USER_KEY);
-        if (currentUser) {
-          const parsedUser = JSON.parse(currentUser);
-          setUser(parsedUser);
-          setIsAuthenticated(true);
+        
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed successfully');
         }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        // Clear potentially corrupted data
-        localStorage.removeItem(CURRENT_USER_KEY);
-      } finally {
+        
         setIsLoading(false);
       }
-    };
+    );
 
-    initializeAuth();
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+      }
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsAuthenticated(!!session?.user);
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const storedUsers = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || '[]');
-      const foundUser = storedUsers.find(
-        (u: any) => u.username === username && u.password === password
-      );
-
-      if (foundUser) {
-        const { password: _, ...userWithoutPassword } = foundUser;
-        setUser(userWithoutPassword);
-        setIsAuthenticated(true);
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithoutPassword));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
-  };
-
-  const createUser = async (username: string, password: string): Promise<boolean> => {
-    if (!user?.isAdmin) return false; // Only admins can create users
-    
-    try {
-      const storedUsers = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || '[]');
+      setIsLoading(true);
       
-      // Check if username already exists
-      if (storedUsers.some((u: any) => u.username === username)) {
+      // Clean up any existing sessions first
+      await supabase.auth.signOut();
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password
+      });
+
+      if (error) {
+        console.error('Login error:', error);
         return false;
       }
 
-      const newUser = {
-        id: `${Date.now()}`,
-        username,
-        password,
-        isAdmin: true
-      };
-
-      const updatedUsers = [...storedUsers, newUser];
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUsers));
+      if (data.user && data.session) {
+        // State will be updated via onAuthStateChange
+        return true;
+      }
       
-      return true;
-    } catch (error) {
-      console.error('Create user error:', error);
       return false;
+    } catch (error) {
+      console.error('Login exception:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const logout = () => {
+  const logout = async (): Promise<void> => {
     try {
-      setUser(null);
-      setIsAuthenticated(false);
-      localStorage.removeItem(CURRENT_USER_KEY);
+      setIsLoading(true);
+      
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      
+      if (error) {
+        console.error('Logout error:', error);
+      }
+      
+      // State will be updated via onAuthStateChange
+      
+      // Force page refresh to ensure clean state
+      setTimeout(() => {
+        window.location.href = '/admin';
+      }, 100);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Logout exception:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
+      session,
       login, 
       logout, 
-      createUser, 
       isAuthenticated,
       isLoading 
     }}>

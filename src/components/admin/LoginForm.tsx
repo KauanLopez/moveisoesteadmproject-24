@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
 const LoginForm = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -15,10 +15,10 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, preencha usuário e senha",
+        description: "Por favor, preencha e-mail e senha",
         variant: "destructive"
       });
       return;
@@ -27,11 +27,11 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(username.trim(), password);
+      const success = await login(email.trim(), password);
       if (!success) {
         toast({
           title: "Falha no login",
-          description: "Usuário ou senha incorretos",
+          description: "E-mail ou senha incorretos",
           variant: "destructive"
         });
       } else {
@@ -39,10 +39,6 @@ const LoginForm = () => {
           title: "Login bem-sucedido",
           description: "Bem-vindo ao painel administrativo",
         });
-        // Force a small delay to show the success message
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -66,18 +62,18 @@ const LoginForm = () => {
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Usuário
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              E-mail
             </label>
             <Input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="mt-1"
-              placeholder="Digite seu usuário"
-              autoComplete="username"
+              placeholder="Digite seu e-mail"
+              autoComplete="email"
             />
           </div>
           
@@ -108,7 +104,7 @@ const LoginForm = () => {
         
         <div className="text-sm text-center mt-4">
           <p className="text-gray-600">
-            Usuário padrão: admin | Senha: admin123
+            Para criar conta de administrador, use o console Supabase
           </p>
         </div>
       </form>
