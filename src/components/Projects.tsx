@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,8 +9,9 @@ import { useContent } from '@/context/ContentContext';
 import { fetchCompletedPdfCatalogs, PdfCatalog } from '@/services/pdfCatalogService';
 import { fetchExternalCatalogs } from '@/services/externalCatalogService';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+// Import the IMCAL catalog creator to ensure it's executed
+import '@/utils/createImcalCatalog';
 
-// Define a unified project type for the carousel
 interface CarouselProject {
   id: string;
   title: string;
@@ -43,7 +43,6 @@ const Projects = () => {
   const { content } = useContent();
   const projects = content.filter(item => item.section === 'projects');
   
-  // Load PDF catalogs and external catalogs
   useEffect(() => {
     const loadCatalogs = async () => {
       console.log('Projects: Starting to load catalogs...');
