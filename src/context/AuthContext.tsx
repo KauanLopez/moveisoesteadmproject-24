@@ -8,6 +8,7 @@ type AuthContextType = {
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  createUser: (email: string, password: string) => Promise<boolean>;
   isAuthenticated: boolean;
   isLoading: boolean;
 };
@@ -95,6 +96,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const createUser = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: email.trim(),
+        password,
+        email_confirm: true
+      });
+
+      if (error) {
+        console.error('Create user error:', error);
+        return false;
+      }
+
+      return !!data.user;
+    } catch (error) {
+      console.error('Create user exception:', error);
+      return false;
+    }
+  };
+
   const logout = async (): Promise<void> => {
     try {
       setIsLoading(true);
@@ -123,7 +144,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user, 
       session,
       login, 
-      logout, 
+      logout,
+      createUser,
       isAuthenticated,
       isLoading 
     }}>
