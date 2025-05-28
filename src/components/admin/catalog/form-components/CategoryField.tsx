@@ -12,16 +12,33 @@ interface CategoryFieldProps {
 }
 
 const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
-  // More robust filtering to ensure we only get valid categories
-  const validCategories = categories.filter(category => {
-    return category && 
-           category.id && 
-           typeof category.id === 'string' && 
-           category.id.trim().length > 0 &&
-           category.name &&
-           typeof category.name === 'string' &&
-           category.name.trim().length > 0;
+  // Add console logging to debug the categories data
+  console.log('CategoryField - Raw categories:', categories);
+  
+  // Ultra-defensive filtering to ensure we only get valid categories
+  const validCategories = (categories || []).filter(category => {
+    // Check if category exists and is an object
+    if (!category || typeof category !== 'object') {
+      console.log('CategoryField - Invalid category (not object):', category);
+      return false;
+    }
+    
+    // Check if category has valid id
+    if (!category.id || typeof category.id !== 'string' || category.id.trim().length === 0) {
+      console.log('CategoryField - Invalid category ID:', category);
+      return false;
+    }
+    
+    // Check if category has valid name
+    if (!category.name || typeof category.name !== 'string' || category.name.trim().length === 0) {
+      console.log('CategoryField - Invalid category name:', category);
+      return false;
+    }
+    
+    return true;
   });
+
+  console.log('CategoryField - Valid categories after filtering:', validCategories);
 
   return (
     <FormField
@@ -42,13 +59,21 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
             </FormControl>
             <SelectContent>
               {validCategories.length > 0 ? (
-                validCategories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))
+                validCategories.map(category => {
+                  // Double-check the category ID before rendering
+                  if (!category.id || category.id.trim() === '') {
+                    console.error('CategoryField - Attempting to render SelectItem with invalid ID:', category);
+                    return null;
+                  }
+                  
+                  return (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  );
+                }).filter(Boolean) // Remove any null items
               ) : (
-                <SelectItem value="no-categories" disabled>
+                <SelectItem value="no-categories-available" disabled>
                   Nenhuma categoria disponível
                 </SelectItem>
               )}
