@@ -2,6 +2,18 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const createImcalCatalog = async () => {
+  // First check if IMCAL catalog already exists
+  const { data: existingCatalog } = await supabase
+    .from('external_url_catalogs')
+    .select('id')
+    .eq('title', 'IMCAL')
+    .single();
+
+  if (existingCatalog) {
+    console.log('IMCAL catalog already exists, skipping creation');
+    return existingCatalog;
+  }
+
   const catalogData = {
     title: "IMCAL",
     description: "Criando ambientes que tocam os sentidos e emocionam.",
@@ -100,8 +112,3 @@ export const createImcalCatalog = async () => {
     throw error;
   }
 };
-
-// Auto-execute the function when this file is imported
-createImcalCatalog()
-  .then(() => console.log('IMCAL catalog setup completed'))
-  .catch(error => console.error('IMCAL catalog setup failed:', error));
