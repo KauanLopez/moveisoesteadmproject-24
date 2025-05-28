@@ -26,21 +26,36 @@ const Projects = () => {
   // Load PDF catalogs first
   useEffect(() => {
     const loadPdfCatalogs = async () => {
+      console.log('Projects: Starting to load PDF catalogs...');
       setLoading(true);
       try {
-        console.log('Projects component: Loading PDF catalogs...');
         const catalogs = await fetchCompletedPdfCatalogs();
-        console.log('Projects component: Loaded PDF catalogs:', catalogs);
+        console.log('Projects: Received catalogs from service:', catalogs);
+        console.log('Projects: Number of catalogs received:', catalogs.length);
         
         // Check if SAMEC catalog is in the results
         const samecCatalog = catalogs.find(cat => cat.title === 'Catalogo SAMEC');
-        console.log('Projects component: SAMEC catalog in results:', samecCatalog);
+        console.log('Projects: SAMEC catalog in results:', samecCatalog);
+        
+        if (samecCatalog) {
+          console.log('Projects: SAMEC catalog details:', {
+            id: samecCatalog.id,
+            title: samecCatalog.title,
+            cover_image_url: samecCatalog.cover_image_url,
+            content_image_urls: samecCatalog.content_image_urls
+          });
+        } else {
+          console.log('Projects: SAMEC catalog NOT FOUND in results');
+          console.log('Projects: Available catalog titles:', catalogs.map(c => c.title));
+        }
         
         setPdfCatalogs(catalogs);
+        console.log('Projects: PDF catalogs state updated');
       } catch (error) {
-        console.error('Projects component: Error loading PDF catalogs:', error);
+        console.error('Projects: Error loading PDF catalogs:', error);
       } finally {
         setLoading(false);
+        console.log('Projects: Loading finished');
       }
     };
 
@@ -60,10 +75,16 @@ const Projects = () => {
     }))
   ];
 
-  console.log('Projects component: All projects combined:', allProjects);
-  console.log('Projects component: PDF catalogs count:', pdfCatalogs.length);
-  console.log('Projects component: Regular projects count:', projects.length);
-  console.log('Projects component: Total projects count:', allProjects.length);
+  console.log('Projects: Final combination results:');
+  console.log('Projects: Regular projects count:', projects.length);
+  console.log('Projects: PDF catalogs count:', pdfCatalogs.length);
+  console.log('Projects: All projects combined count:', allProjects.length);
+  console.log('Projects: Combined projects:', allProjects.map(p => ({ 
+    id: p.id, 
+    title: p.title, 
+    isPdfCatalog: p.isPdfCatalog || false,
+    image: p.image 
+  })));
   
   React.useEffect(() => {
     if (emblaApi) {
@@ -122,6 +143,7 @@ const Projects = () => {
   }
 
   if (allProjects.length === 0) {
+    console.log('Projects: No projects to display - showing empty state');
     return (
       <section id="projects" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -136,6 +158,8 @@ const Projects = () => {
       </section>
     );
   }
+  
+  console.log('Projects: Rendering carousel with', allProjects.length, 'projects');
   
   return (
     <section id="projects" className="py-16 bg-gray-50">
@@ -167,33 +191,44 @@ const Projects = () => {
           
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {allProjects.map((project: any) => (
-                <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4 transition-transform duration-300">
-                  <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
-                    <img 
-                      src={project.image} 
-                      alt={project.title} 
-                      className="w-full h-full object-cover"
-                      style={{ 
-                        objectPosition: project.objectPosition || 'center',
-                        transform: project.scale ? `scale(${project.scale})` : 'scale(1)'
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-8">
-                      <h3 className="text-2xl font-bold text-white">{project.title}</h3>
-                      <p className="text-white/80 mt-2">{project.description}</p>
-                      <div className="mt-4">
-                        <Button 
-                          onClick={() => handleOpenCatalog(project)}
-                          className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black"
-                        >
-                          Ver Catálogo
-                        </Button>
+              {allProjects.map((project: any) => {
+                console.log('Projects: Rendering project:', project.title, 'with image:', project.image);
+                return (
+                  <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4 transition-transform duration-300">
+                    <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
+                      <img 
+                        src={project.image} 
+                        alt={project.title} 
+                        className="w-full h-full object-cover"
+                        style={{ 
+                          objectPosition: project.objectPosition || 'center',
+                          transform: project.scale ? `scale(${project.scale})` : 'scale(1)'
+                        }}
+                        onError={(e) => {
+                          console.error('Projects: Image load error for', project.title, '- URL:', project.image);
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                        onLoad={() => {
+                          console.log('Projects: Image loaded successfully for', project.title);
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-8">
+                        <h3 className="text-2xl font-bold text-white">{project.title}</h3>
+                        <p className="text-white/80 mt-2">{project.description}</p>
+                        <div className="mt-4">
+                          <Button 
+                            onClick={() => handleOpenCatalog(project)}
+                            className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black"
+                          >
+                            Ver Catálogo
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           
