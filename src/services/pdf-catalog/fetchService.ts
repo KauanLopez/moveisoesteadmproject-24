@@ -18,6 +18,7 @@ export const fetchPdfCatalogs = async (): Promise<PdfCatalog[]> => {
       throw error;
     }
     
+    console.log('Raw PDF catalog data:', data);
     return transformPdfCatalogData(data);
   } catch (error: any) {
     console.error('Exception fetching PDF catalogs:', error);
@@ -33,7 +34,7 @@ export const fetchCompletedPdfCatalogs = async (): Promise<PdfCatalog[]> => {
     const { data, error } = await supabase
       .from('pdf_derived_catalogs')
       .select('*')
-      .eq('processing_status', 'completed')
+      .not('cover_image_url', 'is', null)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -41,7 +42,10 @@ export const fetchCompletedPdfCatalogs = async (): Promise<PdfCatalog[]> => {
       throw error;
     }
     
-    return transformPdfCatalogData(data);
+    console.log('Raw completed PDF catalog data:', data);
+    const transformed = transformPdfCatalogData(data);
+    console.log('Transformed completed PDF catalogs:', transformed);
+    return transformed;
   } catch (error: any) {
     console.error('Exception fetching completed PDF catalogs:', error);
     throw error;
