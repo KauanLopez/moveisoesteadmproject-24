@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ImageContent } from '@/types/customTypes';
 import { useToast } from '@/components/ui/use-toast';
 import { useContent } from '@/context/ContentContext';
-import { supabase } from '@/integrations/supabase/client';
+import { dbOperations } from '@/lib/supabase-helpers';
 import { uploadCatalogImage } from '@/services/imageService';
 
 // Import refactored components
@@ -138,10 +138,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
       };
       
       // Save to database
-      const { data, error } = await supabase
-        .from('content')
-        .upsert(dbItem)
-        .select();
+      const { data, error } = await dbOperations.content.upsert(dbItem);
         
       if (error) throw error;
       

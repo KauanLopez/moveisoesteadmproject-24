@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ImageContent } from '@/types/customTypes';
-import { supabase } from '@/integrations/supabase/client';
+import { dbOperations } from '@/lib/supabase-helpers';
 
 export const useContentCatalogTitles = (items: ImageContent[], section: string) => {
   const [catalogTitles, setCatalogTitles] = useState<Record<string, string>>({});
@@ -16,11 +16,7 @@ export const useContentCatalogTitles = (items: ImageContent[], section: string) 
           for (const item of items) {
             // Check if we already have this catalog's title
             if (!titles[item.id]) {
-              const { data } = await supabase
-                .from('catalogs')
-                .select('title')
-                .eq('id', item.id)
-                .single();
+              const { data } = await dbOperations.catalogs.selectById(item.id);
                 
               if (data) {
                 titles[item.id] = data.title;

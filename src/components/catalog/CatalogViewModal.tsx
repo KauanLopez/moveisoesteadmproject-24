@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { dbOperations } from '@/lib/supabase-helpers';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CatalogImageCarousel from './CatalogImageCarousel';
 import { fetchCatalogPdfPages } from '@/services/pdfService';
@@ -32,11 +32,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
       setLoading(true);
       try {
         // First get catalog details
-        const { data: catalog } = await supabase
-          .from('catalogs')
-          .select('id, title, description, cover_image, pdf_file_url, total_pages')
-          .eq('id', catalogId)
-          .single();
+        const { data: catalog } = await dbOperations.catalogs.selectById(catalogId);
 
         if (catalog) {
           setCatalogTitle(catalog.title || 'Catálogo');
@@ -72,11 +68,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
           }
         } else {
           // Legacy: Try to fetch individual catalog items
-          const { data: catalogItems } = await supabase
-            .from('catalog_items')
-            .select('id, image_url, title, description')
-            .eq('catalog_id', catalogId)
-            .order('display_order', { ascending: true });
+          const { data: catalogItems } = await dbOperations.catalogItems.selectByCatalogId(catalogId);
 
           if (catalogItems && catalogItems.length > 0) {
             setImages(catalogItems as CatalogImage[]);

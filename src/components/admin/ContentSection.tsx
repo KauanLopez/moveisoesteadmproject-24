@@ -7,7 +7,7 @@ import ContentForm from './content-section/ContentForm';
 import EmptySection from './content-section/EmptySection';
 import ContentItemGrid from './content-section/ContentItemGrid';
 import { useContentCatalogTitles } from './content-section/useContentCatalogTitles';
-import { supabase } from '@/integrations/supabase/client';
+import { dbOperations } from '@/lib/supabase-helpers';
 import { useContent } from '@/context/ContentContext';
 
 interface ContentSectionProps {
@@ -61,10 +61,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ title, section }) => {
     if (window.confirm("Tem certeza que deseja excluir este item?")) {
       try {
         // Delete from database
-        const { error } = await supabase
-          .from('content')
-          .delete()
-          .eq('id', id);
+        const { error } = await dbOperations.content.delete(id);
           
         if (error) throw error;
         

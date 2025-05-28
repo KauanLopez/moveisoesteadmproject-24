@@ -2,7 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { ImageContent } from '@/types/customTypes';
 import { defaultContent } from '@/utils/contentUtils';
-import { supabase } from '@/integrations/supabase/client';
+import { dbOperations } from '@/lib/supabase-helpers';
 
 type ContentContextType = {
   content: ImageContent[];
@@ -35,9 +35,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const loadContent = async () => {
       try {
         // Try to load content from Supabase
-        const { data, error } = await supabase
-          .from('content')
-          .select('*');
+        const { data, error } = await dbOperations.content.selectAll();
         
         if (error) {
           throw error;
@@ -62,9 +60,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
               scale: item.scale
             };
             
-            await supabase
-              .from('content')
-              .upsert(dbItem);
+            await dbOperations.content.upsert(dbItem);
           }
         }
       } catch (err) {
@@ -101,9 +97,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           scale: item.scale
         };
         
-        const { error } = await supabase
-          .from('content')
-          .upsert(dbItem);
+        const { error } = await dbOperations.content.upsert(dbItem);
           
         if (error) throw error;
       }
@@ -120,10 +114,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   
   const deleteContent = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('content')
-        .delete()
-        .eq('id', id);
+      const { error } = await dbOperations.content.delete(id);
         
       if (error) throw error;
       

@@ -9,7 +9,246 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      catalog_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      catalog_items: {
+        Row: {
+          catalog_id: string
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          catalog_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          catalog_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_items_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_pdf_pages: {
+        Row: {
+          catalog_id: string
+          created_at: string
+          id: string
+          image_url: string
+          page_number: number
+          updated_at: string
+        }
+        Insert: {
+          catalog_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          page_number: number
+          updated_at?: string
+        }
+        Update: {
+          catalog_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          page_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_pdf_pages_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalogs: {
+        Row: {
+          category_id: string | null
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          id: string
+          pdf_file_url: string | null
+          pdf_filename: string | null
+          slug: string
+          title: string
+          total_pages: number | null
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          pdf_file_url?: string | null
+          pdf_filename?: string | null
+          slug: string
+          title: string
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          pdf_file_url?: string | null
+          pdf_filename?: string | null
+          slug?: string
+          title?: string
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogs_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          object_position: string | null
+          scale: number | null
+          section: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          object_position?: string | null
+          scale?: number | null
+          section: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          object_position?: string | null
+          scale?: number | null
+          section?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
