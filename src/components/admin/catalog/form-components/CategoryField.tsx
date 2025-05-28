@@ -12,8 +12,16 @@ interface CategoryFieldProps {
 }
 
 const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
-  // Filter out categories with empty or invalid IDs
-  const validCategories = categories.filter(category => category.id && category.id.trim() !== '');
+  // More robust filtering to ensure we only get valid categories
+  const validCategories = categories.filter(category => {
+    return category && 
+           category.id && 
+           typeof category.id === 'string' && 
+           category.id.trim().length > 0 &&
+           category.name &&
+           typeof category.name === 'string' &&
+           category.name.trim().length > 0;
+  });
 
   return (
     <FormField
@@ -24,8 +32,8 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
           <FormLabel>Categoria</FormLabel>
           <Select 
             onValueChange={field.onChange} 
-            defaultValue={field.value}
-            value={field.value}
+            defaultValue={field.value || ""}
+            value={field.value || ""}
           >
             <FormControl>
               <SelectTrigger>
@@ -33,11 +41,17 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {validCategories.map(category => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
+              {validCategories.length > 0 ? (
+                validCategories.map(category => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-categories" disabled>
+                  Nenhuma categoria disponível
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
           <FormMessage />
