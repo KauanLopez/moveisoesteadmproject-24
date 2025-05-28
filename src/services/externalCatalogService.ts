@@ -1,77 +1,85 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { ExternalUrlCatalog, ExternalUrlCatalogFormData } from "@/types/externalCatalogTypes";
+import { supabase } from '@/integrations/supabase/client';
+import { ExternalUrlCatalog, ExternalUrlCatalogFormData } from '@/types/externalCatalogTypes';
+import { authService } from './authService';
 
-export const fetchExternalCatalogs = async (): Promise<ExternalUrlCatalog[]> => {
-  try {
+export const externalCatalogService = {
+  async getAllCatalogs(): Promise<ExternalUrlCatalog[]> {
     const { data, error } = await supabase
       .from('external_url_catalogs')
       .select('*')
       .order('created_at', { ascending: false });
-    
+
     if (error) {
       console.error('Error fetching external catalogs:', error);
-      throw error;
+      throw new Error('Erro ao buscar catálogos externos');
     }
-    
-    return data || [];
-  } catch (error: any) {
-    console.error('Exception fetching external catalogs:', error);
-    throw error;
-  }
-};
 
-export const saveExternalCatalog = async (catalogData: ExternalUrlCatalogFormData & { id?: string }): Promise<ExternalUrlCatalog | null> => {
-  try {
-    if (catalogData.id) {
-      // Update existing catalog
+    // Convert the Json type to string[] for external_content_image_urls
+    return (data || []).map(item => ({
+      ...item,
+      external_content_image_urls: Array.isArray(item.external_content_image_urls) 
+        ? item.external_content_image_urls as string[]
+        : []
+    }));
+  },
+
+  async createCatalog(catalogData: ExternalUrlCatalogFormData): Promise<ExternalUrlCatalog> {
+    return await authService.withValidSession(async () => {
       const { data, error } = await supabase
         .from('external_url_catalogs')
-        .update({
-          title: catalogData.title,
-          description: catalogData.description,
-          external_cover_image_url: catalogData.external_cover_image_url,
-          external_content_image_urls: catalogData.external_content_image_urls
-        })
-        .eq('id', catalogData.id)
+        .insert([catalogData])
         .select()
         .single();
-      
-      if (error) throw error;
-      return data;
-    } else {
-      // Create new catalog
+
+      if (error) {
+        console.error('Error creating external catalog:', error);
+        throw new Error('Erro ao criar catálogo externo');
+      }
+
+      return {
+        ...data,
+        external_content_image_urls: Array.isArray(data.external_content_image_urls) 
+          ? data.external_content_image_urls as string[]
+          : []
+      };
+    });
+  },
+
+  async updateCatalog(id: string, catalogData: Partial<ExternalUrlCatalogFormData>): Promise<ExternalUrlCatalog> {
+    return await authService.withValidSession(async () => {
       const { data, error } = await supabase
         .from('external_url_catalogs')
-        .insert({
-          title: catalogData.title,
-          description: catalogData.description,
-          external_cover_image_url: catalogData.external_cover_image_url,
-          external_content_image_urls: catalogData.external_content_image_urls
-        })
+        .update(catalogData)
+        .eq('id', id)
         .select()
         .single();
-      
-      if (error) throw error;
-      return data;
-    }
-  } catch (error: any) {
-    console.error('Error saving external catalog:', error);
-    throw error;
-  }
-};
 
-export const deleteExternalCatalog = async (id: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('external_url_catalogs')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
-    return true;
-  } catch (error: any) {
-    console.error('Error deleting external catalog:', error);
-    throw error;
+      if (error) {
+        console.error('Error updating external catalog:', error);
+        throw new Error('Erro ao atualizar catálogo externo');
+      }
+
+      return {
+        ...data,
+        external_content_image_urls: Array.isArray(data.external_content_image_urls) 
+          ? data.external_content_image_urls as string[]
+          : []
+      };
+    });
+  },
+
+  async deleteCatalog(id: string): Promise<void> {
+    return await authService.withValidSession(async () => {
+      const { error } = await supabase
+        .from('external_url_catalogs')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting external catalog:', error);
+        throw new Error('Erro ao deletar catálogo externo');
+      }
+    });
   }
 };
