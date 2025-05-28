@@ -2,12 +2,12 @@
 import React from 'react';
 import { CarouselItem } from '@/components/ui/carousel';
 import { Maximize2 } from 'lucide-react';
-import { FeaturedProduct } from '@/hooks/useFeaturedProducts';
+import { ImageContent } from '@/types/customTypes';
 
 interface ProductCarouselItemProps {
-  product: FeaturedProduct;
+  product: ImageContent;
   isMobile: boolean;
-  onImageClick: (product: FeaturedProduct) => void;
+  onImageClick: (product: ImageContent) => void;
 }
 
 const ProductCarouselItem = ({ product, isMobile, onImageClick }: ProductCarouselItemProps) => {
