@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,18 @@ import CatalogViewModal from './catalog/CatalogViewModal';
 import PdfCatalogModal from './pdf-catalog/PdfCatalogModal';
 import { useContent } from '@/context/ContentContext';
 import { fetchCompletedPdfCatalogs, PdfCatalog } from '@/services/pdfCatalogService';
+
+// Define a unified project type for the carousel
+interface CarouselProject {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  isPdfCatalog?: boolean;
+  pdfCatalog?: PdfCatalog;
+  objectPosition?: string;
+  scale?: number;
+}
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,9 +75,19 @@ const Projects = () => {
     loadPdfCatalogs();
   }, []);
   
-  // Combine regular projects with PDF catalogs
-  const allProjects = [
-    ...projects,
+  // Combine regular projects with PDF catalogs using the unified type
+  const allProjects: CarouselProject[] = [
+    // Convert regular projects to CarouselProject type
+    ...projects.map(project => ({
+      id: project.id,
+      title: project.title || '',
+      description: project.description || '',
+      image: project.image || '/placeholder.svg',
+      objectPosition: project.objectPosition,
+      scale: project.scale,
+      isPdfCatalog: false
+    })),
+    // Convert PDF catalogs to CarouselProject type
     ...pdfCatalogs.map(catalog => ({
       id: catalog.id,
       title: catalog.title,
@@ -113,8 +136,8 @@ const Projects = () => {
     }
   };
 
-  const handleOpenCatalog = (project: any) => {
-    if (project.isPdfCatalog) {
+  const handleOpenCatalog = (project: CarouselProject) => {
+    if (project.isPdfCatalog && project.pdfCatalog) {
       setSelectedPdfCatalog(project.pdfCatalog);
     } else {
       setSelectedCatalog(project.id);
@@ -191,7 +214,7 @@ const Projects = () => {
           
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {allProjects.map((project: any) => {
+              {allProjects.map((project: CarouselProject) => {
                 console.log('Projects: Rendering project:', project.title, 'with image:', project.image);
                 return (
                   <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4 transition-transform duration-300">
@@ -233,7 +256,7 @@ const Projects = () => {
           </div>
           
           <div className="flex justify-center mt-8">
-            {allProjects.map((_: any, index: number) => (
+            {allProjects.map((_: CarouselProject, index: number) => (
               <button
                 key={index}
                 onClick={() => scrollTo(index)}
