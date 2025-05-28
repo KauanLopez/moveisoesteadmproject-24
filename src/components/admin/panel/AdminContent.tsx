@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import CatalogManagement from '../catalog/CatalogManagement';
 import ContentSection from '../ContentSection';
-import MessageManagement from '../messages/MessageManagement';
-import UserManagement from '../users/UserManagement';
+import MessageManagement from '../MessageManagement';
+import UserManagement from '../user-management';
 import PdfCatalogManagement from '../pdf-catalog/PdfCatalogManagement';
 
 interface AdminContentProps {

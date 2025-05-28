@@ -102,7 +102,15 @@ export const fetchPdfCatalogs = async (): Promise<PdfCatalog[]> => {
       throw error;
     }
     
-    return data || [];
+    // Convert the data with proper type casting for content_image_urls
+    return (data || []).map(item => ({
+      ...item,
+      content_image_urls: Array.isArray(item.content_image_urls) 
+        ? item.content_image_urls as string[]
+        : (item.content_image_urls as any)?.length 
+          ? JSON.parse(item.content_image_urls as string) 
+          : []
+    }));
   } catch (error: any) {
     console.error('Exception fetching PDF catalogs:', error);
     throw error;
@@ -125,7 +133,15 @@ export const fetchCompletedPdfCatalogs = async (): Promise<PdfCatalog[]> => {
       throw error;
     }
     
-    return data || [];
+    // Convert the data with proper type casting for content_image_urls
+    return (data || []).map(item => ({
+      ...item,
+      content_image_urls: Array.isArray(item.content_image_urls) 
+        ? item.content_image_urls as string[]
+        : (item.content_image_urls as any)?.length 
+          ? JSON.parse(item.content_image_urls as string) 
+          : []
+    }));
   } catch (error: any) {
     console.error('Exception fetching completed PDF catalogs:', error);
     throw error;
