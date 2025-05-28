@@ -1,139 +1,108 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
+import { supabase } from "@/integrations/supabase/client";
 
-export class AuthService {
-  private static instance: AuthService;
-  private refreshPromise: Promise<Session | null> | null = null;
-
-  public static getInstance(): AuthService {
-    if (!AuthService.instance) {
-      AuthService.instance = new AuthService();
-    }
-    return AuthService.instance;
-  }
-
+/**
+ * Enhanced authentication service with proper session validation
+ */
+export const authService = {
   /**
-   * Verifica se há uma sessão válida e a renova se necessário
+   * Validates the current session and refreshes if needed
    */
-  async ensureValidSession(): Promise<Session | null> {
+  async validateSession() {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      if (error) {
-        console.error('Erro ao obter sessão:', error);
-        return null;
+      if (sessionError) {
+        console.error('Session validation error:', sessionError);
+        return { valid: false, error: sessionError.message };
       }
 
-      if (!session) {
-        console.log('Nenhuma sessão encontrada');
-        return null;
+      if (!sessionData.session) {
+        console.log('No active session found');
+        return { valid: false, error: 'No active session' };
       }
 
-      // Verificar se o token expira em menos de 5 minutos
+      // Check if session is expired or about to expire (within 5 minutes)
+      const expiresAt = sessionData.session.expires_at;
       const now = Math.floor(Date.now() / 1000);
-      const expiresAt = session.expires_at || 0;
-      const timeUntilExpiry = expiresAt - now;
+      const fiveMinutes = 5 * 60;
 
-      console.log(`Token expira em ${timeUntilExpiry} segundos`);
-
-      // Se expira em menos de 5 minutos (300 segundos), renovar
-      if (timeUntilExpiry < 300) {
-        console.log('Token próximo do vencimento, renovando...');
-        return await this.refreshSession();
-      }
-
-      return session;
-    } catch (error) {
-      console.error('Erro ao verificar sessão:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Renova a sessão de forma thread-safe
-   */
-  async refreshSession(): Promise<Session | null> {
-    // Evitar múltiplas renovações simultâneas
-    if (this.refreshPromise) {
-      return this.refreshPromise;
-    }
-
-    this.refreshPromise = this._doRefreshSession();
-    const result = await this.refreshPromise;
-    this.refreshPromise = null;
-    
-    return result;
-  }
-
-  private async _doRefreshSession(): Promise<Session | null> {
-    try {
-      console.log('Renovando token de autenticação...');
-      
-      const { data, error } = await supabase.auth.refreshSession();
-      
-      if (error) {
-        console.error('Erro ao renovar sessão:', error);
-        return null;
-      }
-
-      if (data.session) {
-        console.log('Token renovado com sucesso');
-        return data.session;
-      }
-
-      return null;
-    } catch (error) {
-      console.error('Exceção ao renovar sessão:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Executa uma operação com verificação automática de sessão
-   */
-  async withValidSession<T>(operation: () => Promise<T>): Promise<T> {
-    const session = await this.ensureValidSession();
-    
-    if (!session) {
-      throw new Error('Sessão expirada. Por favor, faça login novamente.');
-    }
-
-    try {
-      return await operation();
-    } catch (error: any) {
-      // Se o erro for relacionado à autenticação, tentar renovar uma vez
-      if (this.isAuthError(error)) {
-        console.log('Erro de autenticação detectado, tentando renovar sessão...');
-        const refreshedSession = await this.refreshSession();
+      if (expiresAt && expiresAt - now < fiveMinutes) {
+        console.log('Session expiring soon, attempting refresh...');
         
-        if (!refreshedSession) {
-          throw new Error('Sessão expirada. Por favor, faça login novamente.');
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError) {
+          console.error('Session refresh failed:', refreshError);
+          return { valid: false, error: 'Session refresh failed' };
         }
 
-        // Tentar a operação novamente com a sessão renovada
-        return await operation();
+        if (!refreshData.session) {
+          console.error('No session after refresh');
+          return { valid: false, error: 'No session after refresh' };
+        }
+
+        console.log('Session refreshed successfully');
+        return { valid: true, session: refreshData.session };
+      }
+
+      return { valid: true, session: sessionData.session };
+    } catch (error: any) {
+      console.error('Session validation exception:', error);
+      return { valid: false, error: error.message || 'Session validation failed' };
+    }
+  },
+
+  /**
+   * Executes a function with a valid session, refreshing if necessary
+   */
+  async withValidSession<T>(fn: () => Promise<T>): Promise<T> {
+    const validation = await this.validateSession();
+    
+    if (!validation.valid) {
+      throw new Error(validation.error || 'Invalid session. Please log in again.');
+    }
+
+    try {
+      return await fn();
+    } catch (error: any) {
+      // Check if error is related to authentication
+      if (error.message?.includes('JWT') || 
+          error.message?.includes('session') || 
+          error.message?.includes('unauthorized') ||
+          error.message?.includes('invalid_token')) {
+        
+        console.log('Auth error detected, attempting session refresh...');
+        const refreshValidation = await this.validateSession();
+        
+        if (!refreshValidation.valid) {
+          throw new Error('Session expired. Please log in again.');
+        }
+        
+        // Retry the operation once after refresh
+        return await fn();
       }
       
       throw error;
     }
-  }
+  },
 
-  private isAuthError(error: any): boolean {
-    if (!error) return false;
-    
-    const message = error.message?.toLowerCase() || '';
-    const code = error.code || '';
-    
-    return (
-      message.includes('jwt') ||
-      message.includes('token') ||
-      message.includes('unauthorized') ||
-      message.includes('authentication') ||
-      code === '401' ||
-      code === 'PGRST301'
-    );
-  }
-}
+  /**
+   * Check if user is currently authenticated
+   */
+  async isAuthenticated(): Promise<boolean> {
+    const validation = await this.validateSession();
+    return validation.valid;
+  },
 
-export const authService = AuthService.getInstance();
+  /**
+   * Get current user safely
+   */
+  async getCurrentUser() {
+    const validation = await this.validateSession();
+    if (validation.valid && validation.session) {
+      return validation.session.user;
+    }
+    return null;
+  }
+};
