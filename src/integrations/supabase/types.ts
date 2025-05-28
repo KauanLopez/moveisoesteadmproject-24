@@ -38,6 +38,7 @@ export type Database = {
           display_order: number | null
           id: string
           image_url: string
+          order: number | null
           title: string | null
           updated_at: string
         }
@@ -48,6 +49,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           image_url: string
+          order?: number | null
           title?: string | null
           updated_at?: string
         }
@@ -58,6 +60,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           image_url?: string
+          order?: number | null
           title?: string | null
           updated_at?: string
         }
@@ -192,6 +195,35 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_items: {
+        Row: {
+          catalog_id: string
+          created_at: string
+          id: string
+          image_url: string
+        }
+        Insert: {
+          catalog_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+        }
+        Update: {
+          catalog_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_items_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           created_at: string
@@ -254,7 +286,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_slug: {
+        Args: { input_title: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
