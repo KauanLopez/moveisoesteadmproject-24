@@ -14,10 +14,20 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!username.trim() || !password.trim()) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha usuário e senha",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const success = await login(username, password);
+      const success = await login(username.trim(), password);
       if (!success) {
         toast({
           title: "Falha no login",
@@ -29,11 +39,16 @@ const LoginForm = () => {
           title: "Login bem-sucedido",
           description: "Bem-vindo ao painel administrativo",
         });
+        // Force a small delay to show the success message
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao fazer login",
+        description: "Ocorreu um erro ao fazer login. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -62,6 +77,7 @@ const LoginForm = () => {
               required
               className="mt-1"
               placeholder="Digite seu usuário"
+              autoComplete="username"
             />
           </div>
           
@@ -77,6 +93,7 @@ const LoginForm = () => {
               required
               className="mt-1"
               placeholder="Digite sua senha"
+              autoComplete="current-password"
             />
           </div>
         </div>

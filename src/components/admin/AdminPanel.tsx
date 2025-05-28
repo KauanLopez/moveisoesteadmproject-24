@@ -12,6 +12,7 @@ const AdminPanel = () => {
     { id: 'projects', label: 'Capas de Catálogos' },
     { id: 'products', label: 'Produtos em Destaque' },
     { id: 'manager', label: 'Gerente' },
+    { id: 'messages', label: 'Mensagens' },
     { id: 'users', label: 'Gerenciar Usuários' },
   ];
 

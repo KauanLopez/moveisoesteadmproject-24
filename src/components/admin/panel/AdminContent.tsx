@@ -3,6 +3,7 @@ import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import ContentSection from '../ContentSection';
 import UserManagement from '../user-management';
+import MessageManagement from '../MessageManagement';
 
 interface AdminContentProps {
   activeTab: string;
@@ -30,6 +31,10 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeTab }) => {
           title="Gerente" 
           section="manager" 
         />
+      </TabsContent>
+      
+      <TabsContent value="messages" className="space-y-8 overflow-x-auto">
+        <MessageManagement />
       </TabsContent>
       
       <TabsContent value="users" className="space-y-8 overflow-x-auto">

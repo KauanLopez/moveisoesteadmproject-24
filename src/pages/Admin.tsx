@@ -1,17 +1,24 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/admin/LoginForm';
 import AdminPanel from '@/components/admin/AdminPanel';
 import { ContentProvider } from '@/context/ContentContext';
 
 const Admin = () => {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
   
-  // We're removing the auto-redirect that was causing the login page to close too quickly
-  // This allows users to see and interact with the login form
+  // Show loading while checking authentication status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-furniture-green mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-gray-50">
