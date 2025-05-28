@@ -12,6 +12,9 @@ interface CategoryFieldProps {
 }
 
 const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
+  // Filter out categories with empty or invalid IDs
+  const validCategories = categories.filter(category => category.id && category.id.trim() !== '');
+
   return (
     <FormField
       control={form.control}
@@ -30,7 +33,7 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {categories.map(category => (
+              {validCategories.map(category => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>
