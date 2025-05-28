@@ -83,3 +83,16 @@ export const externalCatalogService = {
     });
   }
 };
+
+// Export individual functions for easier importing
+export const fetchExternalCatalogs = externalCatalogService.getAllCatalogs;
+export const deleteExternalCatalog = externalCatalogService.deleteCatalog;
+
+export const saveExternalCatalog = async (catalogData: ExternalUrlCatalogFormData & { id?: string }) => {
+  if (catalogData.id) {
+    const { id, ...updateData } = catalogData;
+    return await externalCatalogService.updateCatalog(id, updateData);
+  } else {
+    return await externalCatalogService.createCatalog(catalogData);
+  }
+};
