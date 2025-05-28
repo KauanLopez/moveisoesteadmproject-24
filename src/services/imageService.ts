@@ -8,10 +8,34 @@ const generateUUID = () => {
 };
 
 /**
+ * Validate file before upload
+ */
+const validateImageFile = (file: File): void => {
+  // Check file size (5MB limit)
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    throw new Error(`Arquivo muito grande. Tamanho máximo: ${Math.round(maxSize / 1024 / 1024)}MB`);
+  }
+  
+  // Check file type
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Formato não suportado. Use PNG, JPG, JPEG ou WebP.');
+  }
+  
+  // Additional validation for file name
+  if (!file.name || file.name.trim() === '') {
+    throw new Error('Nome do arquivo inválido.');
+  }
+};
+
+/**
  * Verifica se um bucket existe e cria se não existir
  */
 const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
   try {
+    console.log(`Checking if bucket ${bucketName} exists...`);
+    
     // Verificar se o bucket existe
     const { data: bucketExists, error: checkError } = await supabase
       .storage
@@ -37,12 +61,16 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
         console.error('Error creating bucket:', bucketError);
         throw bucketError;
       }
+      
+      console.log(`Bucket ${bucketName} created successfully`);
+    } else {
+      console.log(`Bucket ${bucketName} already exists`);
     }
     
     return true;
   } catch (error: any) {
     console.error('Error ensuring bucket exists:', error);
-    throw error;
+    throw new Error(`Erro ao configurar storage: ${error.message}`);
   }
 };
 
@@ -50,6 +78,11 @@ const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
 export const uploadCatalogImage = async (file: File, folder: string = 'catalog-covers'): Promise<string> => {
   return await authService.withValidSession(async () => {
     try {
+      console.log(`Starting upload for file: ${file.name}, size: ${file.size} bytes`);
+      
+      // Validate file first
+      validateImageFile(file);
+      
       // Determinar qual bucket usar com base na pasta
       const bucketName = folder === 'catalog-images' ? 'catalog-images' : 'catalog-covers';
       
@@ -59,9 +92,15 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
       await ensureBucketExists(bucketName);
 
       // Preparar o nome do arquivo
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      if (!fileExt) {
+        throw new Error('Não foi possível determinar a extensão do arquivo.');
+      }
+      
       const fileName = `${generateUUID()}.${fileExt}`;
       const filePath = `${folder}/${fileName}`;
+      
+      console.log(`Uploading to path: ${filePath}`);
 
       // Upload the file
       const { data, error } = await supabase
@@ -74,7 +113,19 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
 
       if (error) {
         console.error('Error uploading image:', error);
-        throw error;
+        
+        // Provide more specific error messages
+        if (error.message?.includes('exceeded')) {
+          throw new Error('Arquivo muito grande para upload.');
+        }
+        if (error.message?.includes('mime')) {
+          throw new Error('Tipo de arquivo não permitido.');
+        }
+        if (error.message?.includes('duplicate')) {
+          throw new Error('Arquivo com este nome já existe.');
+        }
+        
+        throw new Error(`Erro no upload: ${error.message}`);
       }
 
       if (!data?.path) {
@@ -87,11 +138,23 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
         .from(bucketName)
         .getPublicUrl(filePath);
 
+      if (!urlData?.publicUrl) {
+        throw new Error("Falha ao obter URL pública da imagem.");
+      }
+
       console.log('Image uploaded successfully, URL:', urlData.publicUrl);
       return urlData.publicUrl;
     } catch (error: any) {
       console.error('Exception while uploading image:', error);
-      throw error;
+      
+      // Re-throw with context if it's our custom error, otherwise wrap it
+      if (error.message?.includes('Arquivo muito grande') || 
+          error.message?.includes('Formato não suportado') ||
+          error.message?.includes('Nome do arquivo inválido')) {
+        throw error;
+      }
+      
+      throw new Error(`Erro no upload da imagem: ${error.message || 'Erro desconhecido'}`);
     }
   });
 };

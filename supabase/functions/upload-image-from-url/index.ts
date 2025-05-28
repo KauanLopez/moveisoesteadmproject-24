@@ -18,7 +18,35 @@ serve(async (req) => {
     
     if (!imageUrl) {
       return new Response(
-        JSON.stringify({ error: 'URL da imagem é obrigatória' }),
+        JSON.stringify({ 
+          success: false,
+          error: 'URL da imagem é obrigatória' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate URL format
+    let parsedUrl
+    try {
+      parsedUrl = new URL(imageUrl)
+    } catch {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'URL fornecida não é válida' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check if URL is HTTPS (security requirement)
+    if (parsedUrl.protocol !== 'https:') {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Apenas URLs HTTPS são permitidas por segurança' 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -30,28 +58,62 @@ serve(async (req) => {
 
     console.log('Fazendo download da imagem:', imageUrl)
     
-    // Fetch the image from the URL
-    const imageResponse = await fetch(imageUrl)
+    // Fetch the image from the URL with timeout and size limits
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+    
+    let imageResponse
+    try {
+      imageResponse = await fetch(imageUrl, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Moveis-Oeste-Admin/1.0'
+        }
+      })
+      clearTimeout(timeoutId)
+    } catch (error) {
+      clearTimeout(timeoutId)
+      console.error('Fetch error:', error)
+      
+      if (error.name === 'AbortError') {
+        throw new Error('Timeout: A imagem demorou muito para ser baixada')
+      }
+      throw new Error('Não foi possível acessar a URL da imagem')
+    }
+
     if (!imageResponse.ok) {
       throw new Error(`Falha ao baixar imagem: ${imageResponse.status} ${imageResponse.statusText}`)
+    }
+
+    // Check content type before downloading
+    const contentType = imageResponse.headers.get('content-type')
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    
+    if (!contentType || !allowedTypes.some(type => contentType.includes(type))) {
+      throw new Error('O arquivo na URL não é uma imagem válida (JPG, PNG ou WebP)')
+    }
+
+    // Check content length if available
+    const contentLength = imageResponse.headers.get('content-length')
+    if (contentLength && parseInt(contentLength) > 5 * 1024 * 1024) {
+      throw new Error('Imagem muito grande. Limite máximo: 5MB.')
     }
 
     // Get the image as blob
     const imageBlob = await imageResponse.blob()
     
-    // Validate image type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-    if (!allowedTypes.includes(imageBlob.type)) {
-      throw new Error('Formato de imagem não suportado. Use JPG, PNG ou WebP.')
-    }
-
-    // Validate image size (5MB limit)
+    // Double-check the blob size
     if (imageBlob.size > 5 * 1024 * 1024) {
       throw new Error('Imagem muito grande. Limite máximo: 5MB.')
     }
 
+    // Validate image type from blob
+    if (!allowedTypes.includes(imageBlob.type)) {
+      throw new Error('Formato de imagem não suportado. Use JPG, PNG ou WebP.')
+    }
+
     // Generate filename if not provided
-    const fileExtension = imageBlob.type.split('/')[1]
+    const fileExtension = imageBlob.type.split('/')[1] === 'jpeg' ? 'jpg' : imageBlob.type.split('/')[1]
     const generatedFilename = filename || `${crypto.randomUUID()}.${fileExtension}`
     const filePath = `${generatedFilename}`
 
@@ -68,13 +130,17 @@ serve(async (req) => {
 
     if (error) {
       console.error('Erro no upload:', error)
-      throw new Error(`Erro no upload: ${error.message}`)
+      throw new Error(`Erro no upload para storage: ${error.message}`)
     }
 
     // Get public URL
     const { data: urlData } = supabase.storage
       .from(bucketName)
       .getPublicUrl(filePath)
+
+    if (!urlData?.publicUrl) {
+      throw new Error('Falha ao obter URL pública da imagem')
+    }
 
     console.log('Upload concluído com sucesso:', urlData.publicUrl)
 
@@ -96,6 +162,7 @@ serve(async (req) => {
     console.error('Erro na função:', error)
     return new Response(
       JSON.stringify({ 
+        success: false,
         error: error.message || 'Erro interno do servidor'
       }),
       { 

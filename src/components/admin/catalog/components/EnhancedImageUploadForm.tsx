@@ -6,9 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, Loader2, Plus, Upload, Link, Check } from 'lucide-react';
+import { AlertCircle, Loader2, Plus, Upload, Link, Check, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { uploadCatalogImage } from '@/services/imageService';
 import { uploadImageFromUrl, validateImageUrl } from '@/services/urlImageService';
 
 interface EnhancedImageUploadFormProps {
@@ -34,7 +33,19 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [urlValidated, setUrlValidated] = useState(false);
+  const [urlUploading, setUrlUploading] = useState(false);
   const { toast } = useToast();
+
+  const validateFile = (file: File): boolean => {
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+      return false;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    return allowedTypes.includes(file.type);
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -51,17 +62,8 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
       return;
     }
 
-    // Validate file size
-    if (file.size > 5 * 1024 * 1024) {
-      setLocalError("O tamanho máximo permitido é 5MB.");
-      event.target.value = '';
-      return;
-    }
-    
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setLocalError("Formato não suportado. Utilize JPG, PNG ou WebP.");
+    if (!validateFile(file)) {
+      setLocalError("Arquivo inválido. Verifique o tamanho (máx 5MB) e formato (JPG, PNG, WebP).");
       event.target.value = '';
       return;
     }
@@ -106,6 +108,11 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
         // Reset the file input
         const fileInput = document.getElementById('file-upload') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
+        
+        toast({
+          title: "Upload concluído",
+          description: "Imagem enviada com sucesso."
+        });
       }
     } catch (error: any) {
       setLocalError(error.message || "Erro ao processar upload da imagem.");
@@ -131,8 +138,9 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
       return;
     }
     
+    setUrlUploading(true);
+    
     try {
-      // Use the URL upload service if available, otherwise upload directly
       if (onUrlUpload) {
         const success = await onUrlUpload(imageUrl, title, description);
         if (success) {
@@ -140,9 +148,13 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
           setDescription('');
           setImageUrl('');
           setUrlValidated(false);
+          toast({
+            title: "Upload concluído",
+            description: "Imagem carregada da URL com sucesso."
+          });
         }
       } else {
-        // Fallback: download and upload as file
+        // Fallback: use the URL upload service directly
         const uploadedUrl = await uploadImageFromUrl(imageUrl, bucketName);
         if (uploadedUrl) {
           toast({
@@ -157,7 +169,15 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
       }
     } catch (error: any) {
       setLocalError(error.message || "Erro ao processar upload da URL.");
+    } finally {
+      setUrlUploading(false);
     }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   if (!isAuthenticated) {
@@ -224,13 +244,35 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
 
             <div>
               <Label htmlFor="file-upload">Selecionar Arquivo</Label>
-              <Input 
-                id="file-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                disabled={uploading}
-              />
+              <div className="mt-1 flex items-center space-x-2">
+                <Input 
+                  id="file-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  disabled={uploading}
+                  className="flex-1"
+                />
+                {selectedFile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSelectedFile}
+                    disabled={uploading}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              
+              {selectedFile && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                  <p className="text-sm text-green-700">
+                    ✓ {selectedFile.name} ({Math.round(selectedFile.size / 1024)}KB)
+                  </p>
+                </div>
+              )}
             </div>
             
             <Button 
@@ -262,7 +304,7 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Título da imagem"
-                disabled={uploading}
+                disabled={uploading || urlUploading}
               />
             </div>
             
@@ -274,33 +316,40 @@ const EnhancedImageUploadForm: React.FC<EnhancedImageUploadFormProps> = ({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Descrição da imagem"
                 rows={2}
-                disabled={uploading}
+                disabled={uploading || urlUploading}
               />
             </div>
 
             <div>
               <Label htmlFor="image-url">URL da Imagem</Label>
-              <div className="relative">
+              <div className="relative mt-1">
                 <Input 
                   id="image-url"
                   type="url"
                   value={imageUrl}
                   onChange={handleUrlChange}
                   placeholder="https://exemplo.com/imagem.jpg"
-                  disabled={uploading}
+                  disabled={uploading || urlUploading}
+                  className={urlValidated ? "pr-10" : ""}
                 />
                 {urlValidated && (
                   <Check className="absolute right-3 top-3 h-4 w-4 text-green-500" />
                 )}
               </div>
+              
+              {imageUrl && !urlValidated && (
+                <p className="text-sm text-amber-600 mt-1">
+                  ⚠️ Verifique se a URL é de uma imagem válida
+                </p>
+              )}
             </div>
             
             <Button 
               type="submit"
               className="w-full"
-              disabled={!imageUrl || !urlValidated || uploading}
+              disabled={!imageUrl || !urlValidated || uploading || urlUploading}
             >
-              {uploading ? (
+              {(uploading || urlUploading) ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Baixando e enviando...
