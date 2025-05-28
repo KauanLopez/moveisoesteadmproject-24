@@ -4,7 +4,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
 import CatalogViewModal from './catalog/CatalogViewModal';
+import PdfCatalogModal from './pdf-catalog/PdfCatalogModal';
 import { useContent } from '@/context/ContentContext';
+import { fetchCompletedPdfCatalogs, PdfCatalog } from '@/services/pdfCatalogService';
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,8 +18,23 @@ const Projects = () => {
     containScroll: "trimSnaps"
   });
   const [selectedCatalog, setSelectedCatalog] = useState<string | null>(null);
+  const [selectedPdfCatalog, setSelectedPdfCatalog] = useState<PdfCatalog | null>(null);
+  const [pdfCatalogs, setPdfCatalogs] = useState<PdfCatalog[]>([]);
   const { content } = useContent();
   const projects = content.filter(item => item.section === 'projects');
+  
+  // Combine regular projects with PDF catalogs
+  const allProjects = [
+    ...projects,
+    ...pdfCatalogs.map(catalog => ({
+      id: catalog.id,
+      title: catalog.title,
+      description: catalog.description || '',
+      image: catalog.cover_image_url || '/placeholder.svg',
+      isPdfCatalog: true,
+      pdfCatalog: catalog
+    }))
+  ];
   
   React.useEffect(() => {
     if (emblaApi) {
@@ -27,7 +44,6 @@ const Projects = () => {
       
       emblaApi.on('select', onSelect);
       
-      // Add a listener for when the user stops scrolling
       const onSettled = () => {
         emblaApi.scrollTo(emblaApi.selectedScrollSnap());
       };
@@ -41,21 +57,39 @@ const Projects = () => {
     }
   }, [emblaApi]);
 
+  useEffect(() => {
+    const loadPdfCatalogs = async () => {
+      try {
+        const catalogs = await fetchCompletedPdfCatalogs();
+        setPdfCatalogs(catalogs);
+      } catch (error) {
+        console.error('Error loading PDF catalogs:', error);
+      }
+    };
+
+    loadPdfCatalogs();
+  }, []);
+
   const scrollTo = (index: number) => {
     if (emblaApi) {
       emblaApi.scrollTo(index);
     }
   };
 
-  const handleOpenCatalog = (id: string) => {
-    setSelectedCatalog(id);
+  const handleOpenCatalog = (project: any) => {
+    if (project.isPdfCatalog) {
+      setSelectedPdfCatalog(project.pdfCatalog);
+    } else {
+      setSelectedCatalog(project.id);
+    }
   };
 
   const handleCloseCatalog = () => {
     setSelectedCatalog(null);
+    setSelectedPdfCatalog(null);
   };
 
-  if (projects.length === 0) {
+  if (allProjects.length === 0) {
     return <div className="py-16 text-center">Nenhum catálogo disponível.</div>;
   }
   
@@ -70,9 +104,8 @@ const Projects = () => {
           </p>
         </div>
         
-        {projects.length > 0 && (
+        {allProjects.length > 0 && (
           <div className="max-w-5xl mx-auto px-4 md:px-16 relative">
-            {/* Botões de navegação posicionados fora das imagens, visíveis em todos os dispositivos */}
             <Button 
               onClick={() => emblaApi?.scrollPrev()}
               className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
@@ -89,10 +122,9 @@ const Projects = () => {
               <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
             </Button>
             
-            {/* Carrossel centralizado */}
             <div className="overflow-hidden" ref={emblaRef}>
               <div className="flex">
-                {projects.map((project: any) => (
+                {allProjects.map((project: any) => (
                   <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4 transition-transform duration-300">
                     <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
                       <img 
@@ -109,7 +141,7 @@ const Projects = () => {
                         <p className="text-white/80 mt-2">{project.description}</p>
                         <div className="mt-4">
                           <Button 
-                            onClick={() => handleOpenCatalog(project.id)}
+                            onClick={() => handleOpenCatalog(project)}
                             className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black"
                           >
                             Ver Catálogo
@@ -122,9 +154,8 @@ const Projects = () => {
               </div>
             </div>
             
-            {/* Indicadores (bolinhas) */}
             <div className="flex justify-center mt-8">
-              {projects.map((_: any, index: number) => (
+              {allProjects.map((_: any, index: number) => (
                 <button
                   key={index}
                   onClick={() => scrollTo(index)}
@@ -139,11 +170,18 @@ const Projects = () => {
         )}
       </div>
 
-      {/* Modal para visualizar o catálogo */}
       {selectedCatalog && (
         <CatalogViewModal 
           catalogId={selectedCatalog}
           isOpen={!!selectedCatalog} 
+          onClose={handleCloseCatalog} 
+        />
+      )}
+
+      {selectedPdfCatalog && (
+        <PdfCatalogModal 
+          catalog={selectedPdfCatalog}
+          isOpen={!!selectedPdfCatalog} 
           onClose={handleCloseCatalog} 
         />
       )}

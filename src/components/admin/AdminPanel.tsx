@@ -10,6 +10,7 @@ const AdminPanel = () => {
 
   const adminTabs = [
     { id: 'projects', label: 'Capas de Catálogos' },
+    { id: 'pdf-catalogs', label: 'Catálogos PDF' },
     { id: 'products', label: 'Produtos em Destaque' },
     { id: 'manager', label: 'Gerente' },
     { id: 'messages', label: 'Mensagens' },

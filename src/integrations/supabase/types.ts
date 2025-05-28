@@ -254,6 +254,51 @@ export type Database = {
         }
         Relationships: []
       }
+      pdf_derived_catalogs: {
+        Row: {
+          content_image_urls: Json | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          original_pdf_filename: string | null
+          original_pdf_url: string
+          processing_error: string | null
+          processing_status: string | null
+          title: string | null
+          total_pages: number | null
+          updated_at: string
+        }
+        Insert: {
+          content_image_urls?: Json | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          original_pdf_filename?: string | null
+          original_pdf_url: string
+          processing_error?: string | null
+          processing_status?: string | null
+          title?: string | null
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Update: {
+          content_image_urls?: Json | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          original_pdf_filename?: string | null
+          original_pdf_url?: string
+          processing_error?: string | null
+          processing_status?: string | null
+          title?: string | null
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
