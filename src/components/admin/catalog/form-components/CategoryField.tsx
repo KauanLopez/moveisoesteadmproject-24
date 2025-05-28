@@ -23,7 +23,7 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
       return false;
     }
     
-    // Check if category has valid id
+    // Check if category has valid id - must be non-empty string
     if (!category.id || typeof category.id !== 'string' || category.id.trim().length === 0) {
       console.log('CategoryField - Invalid category ID:', category);
       return false;
@@ -40,6 +40,32 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
 
   console.log('CategoryField - Valid categories after filtering:', validCategories);
 
+  // Safety function to ensure we never pass empty values to SelectItem
+  const renderSelectItems = () => {
+    if (validCategories.length === 0) {
+      return (
+        <SelectItem value="placeholder-no-categories" disabled>
+          Nenhuma categoria disponível
+        </SelectItem>
+      );
+    }
+
+    return validCategories.map(category => {
+      // Triple check the category ID before rendering
+      const categoryId = category.id?.toString().trim();
+      if (!categoryId || categoryId === '') {
+        console.error('CategoryField - Skipping category with invalid ID:', category);
+        return null;
+      }
+      
+      return (
+        <SelectItem key={categoryId} value={categoryId}>
+          {category.name}
+        </SelectItem>
+      );
+    }).filter(Boolean); // Remove any null items
+  };
+
   return (
     <FormField
       control={form.control}
@@ -48,7 +74,12 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
         <FormItem>
           <FormLabel>Categoria</FormLabel>
           <Select 
-            onValueChange={field.onChange} 
+            onValueChange={(value) => {
+              // Ensure we never set empty string
+              if (value && value.trim() !== '' && value !== 'placeholder-no-categories') {
+                field.onChange(value);
+              }
+            }} 
             defaultValue={field.value || ""}
             value={field.value || ""}
           >
@@ -58,25 +89,7 @@ const CategoryField: React.FC<CategoryFieldProps> = ({ form, categories }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {validCategories.length > 0 ? (
-                validCategories.map(category => {
-                  // Double-check the category ID before rendering
-                  if (!category.id || category.id.trim() === '') {
-                    console.error('CategoryField - Attempting to render SelectItem with invalid ID:', category);
-                    return null;
-                  }
-                  
-                  return (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  );
-                }).filter(Boolean) // Remove any null items
-              ) : (
-                <SelectItem value="no-categories-available" disabled>
-                  Nenhuma categoria disponível
-                </SelectItem>
-              )}
+              {renderSelectItems()}
             </SelectContent>
           </Select>
           <FormMessage />
