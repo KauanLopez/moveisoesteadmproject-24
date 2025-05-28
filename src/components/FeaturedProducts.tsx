@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import ProductImageDialog from './featured/ProductImageDialog';
 import ProductCarousel from './featured/ProductCarousel';
-import { useContent } from '@/context/ContentContext';
+import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
+import { ImageContent } from '@/types/customTypes';
 
 const FeaturedProducts = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -13,8 +14,9 @@ const FeaturedProducts = () => {
     scale: number;
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const { content } = useContent();
-  const products = content.filter(item => item.section === 'products');
+  
+  // Use useFeaturedProducts instead of useContent for fresh data
+  const { products, loading: productsLoading } = useFeaturedProducts();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -29,7 +31,7 @@ const FeaturedProducts = () => {
     };
   }, []);
 
-  const handleImageClick = (product: any) => {
+  const handleImageClick = (product: ImageContent) => {
     setSelectedImage(product.image);
     setSelectedImageData({
       src: product.image,
@@ -37,6 +39,11 @@ const FeaturedProducts = () => {
       scale: product.scale || 1
     });
   };
+
+  // Add loading state for products
+  if (productsLoading) {
+    return <div className="py-16 text-center">Carregando produtos...</div>;
+  }
 
   if (products.length === 0) {
     return <div className="py-16 text-center">Nenhum produto em destaque disponível.</div>;
