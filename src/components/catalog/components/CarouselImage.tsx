@@ -34,11 +34,11 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
         transition: isDragging ? 'none' : 'transform 0.3s ease-out'
       }}
     >
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center p-8">
         <img
           src={imageUrl}
           alt={imageTitle}
-          className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none rounded-lg shadow-sm"
+          className="object-contain pointer-events-none rounded-lg shadow-sm"
           draggable={false}
           style={{
             maxWidth: '100%',

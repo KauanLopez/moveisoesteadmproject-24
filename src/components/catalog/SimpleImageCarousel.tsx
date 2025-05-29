@@ -70,20 +70,18 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => 
         showNavigation={images.length > 1}
       />
 
-      {/* Main image container with better height management */}
-      <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden p-4">
-        <div className="w-full h-full max-w-full max-h-full flex items-center justify-center">
-          <CarouselImage
-            imageUrl={currentImage.url}
-            imageTitle={currentImage.title}
-            isDragging={isDragging}
-            translateX={translateX}
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          />
-        </div>
+      {/* Main image container - garante que a imagem use todo o espaço disponível */}
+      <div className="flex-1 min-h-0 overflow-hidden bg-gray-50">
+        <CarouselImage
+          imageUrl={currentImage.url}
+          imageTitle={currentImage.title}
+          isDragging={isDragging}
+          translateX={translateX}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        />
       </div>
       
       {/* Bottom section with spacing */}
