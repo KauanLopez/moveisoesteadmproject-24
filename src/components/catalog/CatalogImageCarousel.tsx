@@ -51,24 +51,29 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
   console.log('CatalogImageCarousel: Rendering carousel with', images.length, 'images');
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full min-h-[70vh]">
       <div className="w-full h-full">
-        <div ref={sliderRef} className="keen-slider h-full">
+        <div ref={sliderRef} className="keen-slider w-full h-full">
           {images.map((image, idx) => {
             console.log(`CatalogImageCarousel: Rendering slide ${idx + 1}:`, image.image_url);
             return (
-              <div key={image.id} className="keen-slider__slide">
-                <div className="h-full flex flex-col bg-white">
-                  <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gray-50" style={{ minHeight: '60vh' }}>
+              <div key={image.id} className="keen-slider__slide flex items-center justify-center">
+                <div className="w-full h-full flex flex-col bg-white">
+                  <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
                     <img
                       src={image.image_url}
                       alt={image.title || `Imagem ${idx + 1}`}
                       className="max-w-full max-h-full object-contain"
-                      style={{ maxHeight: '80vh' }}
+                      style={{ 
+                        maxHeight: '70vh',
+                        width: 'auto',
+                        height: 'auto'
+                      }}
                       onError={(e) => {
                         console.error('CatalogImageCarousel: Failed to load image:', image.image_url);
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
+                        target.style.display = 'block';
+                        target.alt = 'Erro ao carregar imagem';
                       }}
                       onLoad={() => {
                         console.log('CatalogImageCarousel: Image loaded successfully:', image.image_url);
@@ -93,7 +98,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
           <Button
             onClick={() => instanceRef.current?.prev()}
             disabled={currentSlide === 0}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-20"
             size="icon"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -101,7 +106,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
           <Button
             onClick={() => instanceRef.current?.next()}
             disabled={currentSlide === instanceRef.current.track.details.slides.length - 1}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-20"
             size="icon"
           >
             <ChevronRight className="h-5 w-5" />
@@ -110,7 +115,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
       )}
       
       {loaded && instanceRef.current && images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {[...Array(instanceRef.current.track.details.slides.length)].map((_, idx) => (
             <button
               key={idx}
