@@ -20,28 +20,39 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
 }) => {
   console.log('ExternalCatalogViewModal: Opening catalog:', catalog.title);
   console.log('ExternalCatalogViewModal: Cover image URL:', catalog.external_cover_image_url);
-  console.log('ExternalCatalogViewModal: Content images count:', catalog.external_content_image_urls?.length || 0);
+  console.log('ExternalCatalogViewModal: Content images:', catalog.external_content_image_urls);
   
-  // Create images array with cover + content images
-  const allImageUrls = [
-    catalog.external_cover_image_url,
-    ...(catalog.external_content_image_urls || [])
-  ].filter(url => url && url.trim() !== ''); // Remove any null/undefined/empty URLs
+  // Create images array starting with cover image, then adding content images
+  const images = [];
+  
+  // Add cover image first
+  if (catalog.external_cover_image_url) {
+    images.push({
+      id: `${catalog.id}-cover`,
+      image_url: catalog.external_cover_image_url,
+      title: `${catalog.title} - Capa`,
+      description: 'Capa do catálogo'
+    });
+  }
+  
+  // Add content images
+  if (catalog.external_content_image_urls && catalog.external_content_image_urls.length > 0) {
+    catalog.external_content_image_urls.forEach((url, index) => {
+      if (url && url.trim() !== '') {
+        images.push({
+          id: `${catalog.id}-content-${index}`,
+          image_url: url,
+          title: `Página ${index + 1}`,
+          description: ''
+        });
+      }
+    });
+  }
 
-  console.log('ExternalCatalogViewModal: All image URLs to display:', allImageUrls);
-  
-  const images = allImageUrls.map((url, index) => {
-    const isFirstImage = index === 0;
-    console.log(`ExternalCatalogViewModal: Mapping image ${index + 1}:`, url, isFirstImage ? '(CAPA)' : '');
-    return {
-      id: `${catalog.id}-${index}`,
-      image_url: url,
-      title: isFirstImage ? `${catalog.title} - Capa` : `Página ${index}`,
-      description: isFirstImage ? 'Capa do catálogo' : ''
-    };
+  console.log('ExternalCatalogViewModal: Total images prepared for carousel:', images.length);
+  images.forEach((img, idx) => {
+    console.log(`Image ${idx + 1}:`, img.title, '-', img.image_url);
   });
-
-  console.log('ExternalCatalogViewModal: Final images array for carousel:', images.length, 'images');
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

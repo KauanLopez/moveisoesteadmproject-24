@@ -29,14 +29,8 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
     },
   });
 
-  console.log('CatalogImageCarousel: Rendering with images count:', images?.length || 0);
+  console.log('CatalogImageCarousel: Received images:', images?.length || 0);
   
-  if (images && images.length > 0) {
-    images.forEach((image, index) => {
-      console.log(`CatalogImageCarousel: Image ${index + 1}:`, image.image_url);
-    });
-  }
-
   // Reset slider when images change
   useEffect(() => {
     if (instanceRef.current && images.length > 0) {
@@ -54,27 +48,27 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
     );
   }
 
+  console.log('CatalogImageCarousel: Rendering carousel with', images.length, 'images');
+
   return (
-    <div className="relative w-full">
-      <div className="w-full">
-        <div ref={sliderRef} className="keen-slider" style={{ height: '70vh', minHeight: '400px', maxHeight: '600px' }}>
+    <div className="relative w-full h-full">
+      <div className="w-full h-full">
+        <div ref={sliderRef} className="keen-slider h-full">
           {images.map((image, idx) => {
-            console.log(`CatalogImageCarousel: Rendering slide ${idx + 1} with image:`, image.image_url);
+            console.log(`CatalogImageCarousel: Rendering slide ${idx + 1}:`, image.image_url);
             return (
-              <div key={image.id || `image-${idx}`} className="keen-slider__slide">
+              <div key={image.id} className="keen-slider__slide">
                 <div className="h-full flex flex-col bg-white">
-                  <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gray-50">
+                  <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gray-50" style={{ minHeight: '60vh' }}>
                     <img
                       src={image.image_url}
                       alt={image.title || `Imagem ${idx + 1}`}
                       className="max-w-full max-h-full object-contain"
-                      crossOrigin="anonymous"
+                      style={{ maxHeight: '80vh' }}
                       onError={(e) => {
-                        console.error('CatalogImageCarousel: Error loading image:', image.image_url);
+                        console.error('CatalogImageCarousel: Failed to load image:', image.image_url);
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'block';
-                        target.alt = `Erro ao carregar imagem ${idx + 1}`;
-                        target.src = '/placeholder.svg';
+                        target.style.display = 'none';
                       }}
                       onLoad={() => {
                         console.log('CatalogImageCarousel: Image loaded successfully:', image.image_url);
@@ -99,7 +93,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
           <Button
             onClick={() => instanceRef.current?.prev()}
             disabled={currentSlide === 0}
-            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
             size="icon"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -107,7 +101,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
           <Button
             onClick={() => instanceRef.current?.next()}
             disabled={currentSlide === instanceRef.current.track.details.slides.length - 1}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
             size="icon"
           >
             <ChevronRight className="h-5 w-5" />
@@ -116,13 +110,13 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
       )}
       
       {loaded && instanceRef.current && images.length > 1 && (
-        <div className="flex justify-center mt-4 gap-1">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
           {[...Array(instanceRef.current.track.details.slides.length)].map((_, idx) => (
             <button
               key={idx}
               onClick={() => instanceRef.current?.moveToIdx(idx)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                currentSlide === idx ? 'bg-furniture-yellow' : 'bg-gray-300'
+              className={`w-3 h-3 rounded-full transition-colors ${
+                currentSlide === idx ? 'bg-furniture-yellow' : 'bg-white/60'
               }`}
               aria-label={`Ir para slide ${idx + 1}`}
             />
