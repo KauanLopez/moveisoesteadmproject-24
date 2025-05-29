@@ -24,7 +24,7 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
 }) => {
   return (
     <div 
-      className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+      className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none overflow-hidden"
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
@@ -34,15 +34,15 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
         transition: isDragging ? 'none' : 'transform 0.3s ease-out'
       }}
     >
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center p-4">
         <img
           src={imageUrl}
           alt={imageTitle}
           className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none rounded-lg shadow-sm"
           draggable={false}
           style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
+            maxWidth: 'calc(100% - 2rem)',
+            maxHeight: 'calc(100% - 2rem)',
             width: 'auto',
             height: 'auto'
           }}

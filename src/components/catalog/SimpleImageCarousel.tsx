@@ -70,17 +70,19 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => 
         showNavigation={images.length > 1}
       />
 
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-0">
-        <CarouselImage
-          imageUrl={currentImage.url}
-          imageTitle={currentImage.title}
-          isDragging={isDragging}
-          translateX={translateX}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        />
+      <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
+        <div className="w-full h-full max-w-full max-h-full">
+          <CarouselImage
+            imageUrl={currentImage.url}
+            imageTitle={currentImage.title}
+            isDragging={isDragging}
+            translateX={translateX}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          />
+        </div>
       </div>
       
       <CarouselImageInfo
