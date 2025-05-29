@@ -29,35 +29,46 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
     },
   });
 
+  console.log('CatalogImageCarousel: Rendering with images count:', images.length);
+  images.forEach((image, index) => {
+    console.log(`CatalogImageCarousel: Image ${index + 1}:`, image.image_url);
+  });
+
   return (
     <div className="relative w-full">
       <div className="w-full">
         <div ref={sliderRef} className="keen-slider" style={{ height: '70vh', minHeight: '400px', maxHeight: '600px' }}>
-          {images.map((image, idx) => (
-            <div key={image.id} className="keen-slider__slide">
-              <div className="h-full flex flex-col bg-white">
-                <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gray-50">
-                  <img
-                    src={image.image_url}
-                    alt={image.title || `Imagem ${idx + 1}`}
-                    className="max-w-full max-h-full object-contain"
-                    style={{ maxWidth: '100%', maxHeight: '100%' }}
-                    onError={(e) => {
-                      console.error('Error loading image:', image.image_url);
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder.svg';
-                    }}
-                  />
-                </div>
-                {(image.title || image.description) && (
-                  <div className="bg-white p-4 border-t">
-                    {image.title && <h4 className="font-medium text-lg">{image.title}</h4>}
-                    {image.description && <p className="text-gray-600 mt-1">{image.description}</p>}
+          {images.map((image, idx) => {
+            console.log(`CatalogImageCarousel: Rendering slide ${idx + 1} with image:`, image.image_url);
+            return (
+              <div key={image.id} className="keen-slider__slide">
+                <div className="h-full flex flex-col bg-white">
+                  <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gray-50">
+                    <img
+                      src={image.image_url}
+                      alt={image.title || `Imagem ${idx + 1}`}
+                      className="max-w-full max-h-full object-contain"
+                      style={{ maxWidth: '100%', maxHeight: '100%' }}
+                      onError={(e) => {
+                        console.error('CatalogImageCarousel: Error loading image:', image.image_url);
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                      onLoad={() => {
+                        console.log('CatalogImageCarousel: Image loaded successfully:', image.image_url);
+                      }}
+                    />
                   </div>
-                )}
+                  {(image.title || image.description) && (
+                    <div className="bg-white p-4 border-t">
+                      {image.title && <h4 className="font-medium text-lg">{image.title}</h4>}
+                      {image.description && <p className="text-gray-600 mt-1">{image.description}</p>}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       

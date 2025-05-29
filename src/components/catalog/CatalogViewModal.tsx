@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { dbOperations } from '@/lib/supabase-helpers';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import CatalogImageCarousel from './CatalogImageCarousel';
 import { fetchCatalogPdfPages } from '@/services/pdfService';
 
@@ -29,6 +30,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
     const loadCatalogImages = async () => {
       if (!catalogId) return;
 
+      console.log('CatalogViewModal: Loading catalog images for:', catalogId);
       setLoading(true);
       try {
         // First get catalog details
@@ -36,14 +38,16 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
 
         if (catalog) {
           setCatalogTitle(catalog.title || 'Catálogo');
+          console.log('CatalogViewModal: Catalog loaded:', catalog.title);
         }
 
         // Check if this catalog has PDF pages
         if (catalog?.pdf_file_url) {
-          console.log('Loading PDF pages for catalog:', catalogId);
+          console.log('CatalogViewModal: Loading PDF pages for catalog:', catalogId);
           const pdfPages = await fetchCatalogPdfPages(catalogId);
           
           if (pdfPages && pdfPages.length > 0) {
+            console.log('CatalogViewModal: PDF pages found:', pdfPages.length);
             const pdfImages = pdfPages.map(page => ({
               id: page.id,
               image_url: page.image_url,
@@ -52,6 +56,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
             }));
             setImages(pdfImages);
           } else {
+            console.log('CatalogViewModal: No PDF pages found, using cover image');
             // Fallback to catalog cover if no PDF pages found
             if (catalog.cover_image) {
               setImages([
@@ -67,12 +72,15 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
             }
           }
         } else {
+          console.log('CatalogViewModal: No PDF file, trying catalog items');
           // Legacy: Try to fetch individual catalog items
           const { data: catalogItems } = await dbOperations.catalogItems.selectByCatalogId(catalogId);
 
           if (catalogItems && catalogItems.length > 0) {
+            console.log('CatalogViewModal: Catalog items found:', catalogItems.length);
             setImages(catalogItems as CatalogImage[]);
           } else {
+            console.log('CatalogViewModal: No catalog items, using cover image as fallback');
             // Final fallback to catalog cover
             if (catalog && catalog.cover_image) {
               setImages([
@@ -89,7 +97,7 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
           }
         }
       } catch (error) {
-        console.error('Error loading catalog images:', error);
+        console.error('CatalogViewModal: Error loading catalog images:', error);
       } finally {
         setLoading(false);
       }
@@ -103,6 +111,13 @@ const CatalogViewModal: React.FC<CatalogViewModalProps> = ({ catalogId, isOpen, 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-4xl bg-white rounded-lg p-0 overflow-hidden">
+        <VisuallyHidden>
+          <DialogTitle>{catalogTitle}</DialogTitle>
+          <DialogDescription>
+            Visualização do catálogo {catalogTitle}
+          </DialogDescription>
+        </VisuallyHidden>
+        
         <div className="flex flex-col h-full max-h-[80vh]">
           <div className="flex justify-between items-center p-4 border-b">
             <h2 className="text-xl font-bold">{catalogTitle}</h2>
