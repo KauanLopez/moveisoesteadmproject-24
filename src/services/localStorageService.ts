@@ -1,4 +1,3 @@
-
 // Local storage service to replace backend functionality
 export interface StoredCatalog {
   id: string;
@@ -192,10 +191,10 @@ class LocalStorageService {
 
   // Initialize with default data
   initializeDefaultData(): void {
-    // Force clear and reinitialize external catalogs to ensure only new ones appear
+    // Force clear and reinitialize all data to ensure clean state
     this.clearAllData();
     
-    // Initialize content if empty
+    // Don't initialize any content for projects section - only external catalogs should appear
     this.setContent([
       {
         id: "hero-1",
@@ -212,42 +211,6 @@ class LocalStorageService {
         title: "Nossa História",
         description: "Com mais de 20 anos de experiência, criamos móveis que contam histórias",
         image_url: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?q=80&w=2070&auto=format&fit=crop",
-        object_position: "center",
-        scale: 1
-      },
-      {
-        id: "projects-1",
-        section: "projects",
-        title: "Sala de Estar Moderna",
-        description: "Design contemporâneo com funcionalidade premium",
-        image_url: "https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=2127&auto=format&fit=crop",
-        object_position: "center",
-        scale: 1
-      },
-      {
-        id: "projects-2",
-        section: "projects",
-        title: "Quarto de Luxo",
-        description: "Conforto e elegância em cada detalhe",
-        image_url: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?q=80&w=2080&auto=format&fit=crop",
-        object_position: "center",
-        scale: 1
-      },
-      {
-        id: "projects-3",
-        section: "projects",
-        title: "Escritório Minimalista",
-        description: "Produtividade em um ambiente clean e organizado",
-        image_url: "https://images.unsplash.com/photo-1593476550610-87baa860004a?q=80&w=1974&auto=format&fit=crop",
-        object_position: "center",
-        scale: 1
-      },
-      {
-        id: "projects-4",
-        section: "projects",
-        title: "Experiência Gastronômica",
-        description: "Mesa de jantar que reúne família e amigos",
-        image_url: "https://images.unsplash.com/photo-1615800002234-05c4d488696c?q=80&w=1974&auto=format&fit=crop",
         object_position: "center",
         scale: 1
       }
@@ -547,6 +510,9 @@ class LocalStorageService {
         created_at: new Date().toISOString()
       }
     ]);
+
+    // Clear PDF catalogs to avoid duplication
+    this.setPdfCatalogs([]);
   }
 }
 

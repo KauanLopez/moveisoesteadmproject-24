@@ -26,20 +26,21 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl bg-white rounded-lg p-0 overflow-hidden">
-        <div className="flex flex-col h-full max-h-[80vh]">
-          <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="text-xl font-bold">{catalog.title}</h2>
-            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full p-2">
+      <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full bg-white rounded-lg p-0 overflow-hidden">
+        <div className="flex flex-col h-full">
+          <div className="flex justify-between items-center p-4 border-b bg-white">
+            <div className="min-w-0 flex-1 mr-4">
+              <h2 className="text-xl font-bold truncate">{catalog.title}</h2>
+              {catalog.description && (
+                <p className="text-gray-600 text-sm truncate">{catalog.description}</p>
+              )}
+            </div>
+            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full p-2 flex-shrink-0">
               <X className="h-5 w-5" />
             </Button>
           </div>
           
-          <div className="flex-1 overflow-auto p-4">
-            {catalog.description && (
-              <p className="text-gray-600 mb-4">{catalog.description}</p>
-            )}
-            
+          <div className="flex-1 overflow-hidden">
             {images.length === 0 ? (
               <div className="text-center py-12">
                 <p>Nenhuma imagem de conteúdo encontrada para este catálogo.</p>

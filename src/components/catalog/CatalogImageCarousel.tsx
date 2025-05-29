@@ -30,21 +30,27 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
   });
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <div className="w-full">
-        <div ref={sliderRef} className="keen-slider h-[500px]">
+        <div ref={sliderRef} className="keen-slider" style={{ height: '70vh', minHeight: '400px', maxHeight: '600px' }}>
           {images.map((image, idx) => (
             <div key={image.id} className="keen-slider__slide">
-              <div className="h-full flex flex-col">
-                <div className="flex-1 relative overflow-hidden">
+              <div className="h-full flex flex-col bg-white">
+                <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gray-50">
                   <img
                     src={image.image_url}
                     alt={image.title || `Imagem ${idx + 1}`}
-                    className="w-full h-full object-contain"
+                    className="max-w-full max-h-full object-contain"
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
+                    onError={(e) => {
+                      console.error('Error loading image:', image.image_url);
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
                   />
                 </div>
                 {(image.title || image.description) && (
-                  <div className="bg-white p-4">
+                  <div className="bg-white p-4 border-t">
                     {image.title && <h4 className="font-medium text-lg">{image.title}</h4>}
                     {image.description && <p className="text-gray-600 mt-1">{image.description}</p>}
                   </div>
@@ -55,12 +61,12 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
         </div>
       </div>
       
-      {loaded && instanceRef.current && (
+      {loaded && instanceRef.current && images.length > 1 && (
         <>
           <Button
             onClick={() => instanceRef.current?.prev()}
             disabled={currentSlide === 0}
-            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white text-gray-800 hover:bg-gray-100 shadow-md"
+            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
             size="icon"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -68,7 +74,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
           <Button
             onClick={() => instanceRef.current?.next()}
             disabled={currentSlide === instanceRef.current.track.details.slides.length - 1}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white text-gray-800 hover:bg-gray-100 shadow-md"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-white/90 text-gray-800 hover:bg-white shadow-lg z-10"
             size="icon"
           >
             <ChevronRight className="h-5 w-5" />
@@ -77,13 +83,13 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
       )}
       
       {/* Pagination indicator */}
-      {loaded && instanceRef.current && (
+      {loaded && instanceRef.current && images.length > 1 && (
         <div className="flex justify-center mt-4 gap-1">
           {[...Array(instanceRef.current.track.details.slides.length)].map((_, idx) => (
             <button
               key={idx}
               onClick={() => instanceRef.current?.moveToIdx(idx)}
-              className={`w-2 h-2 rounded-full ${
+              className={`w-2 h-2 rounded-full transition-colors ${
                 currentSlide === idx ? 'bg-furniture-yellow' : 'bg-gray-300'
               }`}
               aria-label={`Go to slide ${idx + 1}`}
