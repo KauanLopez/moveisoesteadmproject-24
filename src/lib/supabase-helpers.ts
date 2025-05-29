@@ -19,5 +19,21 @@ export const dbOperations = {
     async delete(id: string) {
       return { error: new Error('Database operations not available in frontend-only mode') };
     }
+  },
+
+  catalogs: {
+    async selectById(id: string) {
+      return { data: null, error: new Error('Database operations not available in frontend-only mode') };
+    },
+    
+    async selectAll() {
+      return { data: null, error: new Error('Database operations not available in frontend-only mode') };
+    }
+  },
+
+  catalogItems: {
+    async selectByCatalogId(catalogId: string) {
+      return { data: null, error: new Error('Database operations not available in frontend-only mode') };
+    }
   }
 };

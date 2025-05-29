@@ -1,55 +1,75 @@
 
+import { authService } from "../authService";
 import { PdfCatalog } from './types';
-import { localStorageService } from '../localStorageService';
 
 /**
- * Fetch all PDF catalogs
+ * Mock fetch function for frontend-only implementation
  */
 export const fetchPdfCatalogs = async (): Promise<PdfCatalog[]> => {
-  try {
-    const catalogs = localStorageService.getPdfCatalogs();
-    return catalogs.map(catalog => ({
-      id: catalog.id,
-      title: catalog.title,
-      description: catalog.description,
-      cover_image_url: catalog.cover_image_url,
-      content_image_urls: catalog.content_image_urls,
-      created_at: catalog.created_at
-    }));
-  } catch (error) {
-    console.error('Error fetching PDF catalogs:', error);
-    throw error;
-  }
+  return await authService.withValidSession(async () => {
+    try {
+      console.log('Mock fetching all PDF catalogs');
+      
+      // Return mock data with all required properties
+      const mockCatalogs: PdfCatalog[] = [
+        {
+          id: 'mock-catalog-1',
+          title: 'Catálogo IMCAL',
+          description: 'Nosso catálogo principal de móveis',
+          cover_image_url: '/lovable-uploads/cc20161d-74c9-4c0a-9be6-51f6fdac8ee9.png',
+          content_image_urls: [
+            '/lovable-uploads/cc20161d-74c9-4c0a-9be6-51f6fdac8ee9.png',
+            '/lovable-uploads/39819c48-1850-4472-9fa7-3c63c408457a.png'
+          ],
+          created_at: new Date().toISOString(),
+          original_pdf_url: '',
+          original_pdf_filename: 'catalog-imcal.pdf',
+          total_pages: 12,
+          processing_status: 'completed',
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      return mockCatalogs;
+    } catch (error: any) {
+      console.error('Exception while fetching PDF catalogs:', error);
+      throw error;
+    }
+  });
 };
 
 /**
- * Fetch completed PDF catalogs for public display
+ * Mock fetch function for completed PDF catalogs
  */
 export const fetchCompletedPdfCatalogs = async (): Promise<PdfCatalog[]> => {
-  try {
-    console.log('FetchService: Starting to fetch completed PDF catalogs...');
-    
-    const catalogs = localStorageService.getPdfCatalogs();
-    console.log('FetchService: Total records found:', catalogs.length);
-    
-    // Filter catalogs that have a cover image
-    const catalogsWithCover = catalogs.filter(catalog => catalog.cover_image_url);
-    
-    console.log('FetchService: Catalogs with cover images count:', catalogsWithCover.length);
-    
-    const result = catalogsWithCover.map(catalog => ({
-      id: catalog.id,
-      title: catalog.title,
-      description: catalog.description,
-      cover_image_url: catalog.cover_image_url,
-      content_image_urls: catalog.content_image_urls,
-      created_at: catalog.created_at
-    }));
-    
-    console.log('FetchService: Final return count:', result.length);
-    return result;
-  } catch (error) {
-    console.error('FetchService: Exception fetching completed PDF catalogs:', error);
-    throw error;
-  }
+  return await authService.withValidSession(async () => {
+    try {
+      console.log('Mock fetching completed PDF catalogs');
+      
+      // Return mock data with all required properties
+      const mockCatalogs: PdfCatalog[] = [
+        {
+          id: 'mock-catalog-1',
+          title: 'Catálogo IMCAL',
+          description: 'Nosso catálogo principal de móveis',
+          cover_image_url: '/lovable-uploads/cc20161d-74c9-4c0a-9be6-51f6fdac8ee9.png',
+          content_image_urls: [
+            '/lovable-uploads/cc20161d-74c9-4c0a-9be6-51f6fdac8ee9.png',
+            '/lovable-uploads/39819c48-1850-4472-9fa7-3c63c408457a.png'
+          ],
+          created_at: new Date().toISOString(),
+          original_pdf_url: '',
+          original_pdf_filename: 'catalog-imcal.pdf',
+          total_pages: 12,
+          processing_status: 'completed',
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      return mockCatalogs;
+    } catch (error: any) {
+      console.error('Exception while fetching completed PDF catalogs:', error);
+      throw error;
+    }
+  });
 };
