@@ -56,7 +56,7 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-full bg-white rounded-lg p-0 overflow-hidden">
+      <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full bg-white rounded-lg p-0 overflow-hidden">
         <VisuallyHidden>
           <DialogTitle>{catalog.title}</DialogTitle>
           <DialogDescription>
@@ -65,7 +65,7 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
         </VisuallyHidden>
         
         <div className="flex flex-col w-full h-full">
-          <div className="flex justify-between items-center p-4 border-b bg-white z-10">
+          <div className="flex justify-between items-center p-4 border-b bg-white z-40 flex-shrink-0">
             <div className="min-w-0 flex-1 mr-4">
               <h2 className="text-xl font-bold truncate">{catalog.title}</h2>
               {catalog.description && (
@@ -77,7 +77,7 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
             </Button>
           </div>
           
-          <div className="flex-1 w-full overflow-hidden">
+          <div className="flex-1 w-full overflow-hidden bg-gray-50">
             {images.length > 0 ? (
               <div className="w-full h-full">
                 <CatalogImageCarousel images={images} />
