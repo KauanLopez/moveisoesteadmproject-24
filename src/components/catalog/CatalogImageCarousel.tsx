@@ -34,6 +34,15 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
     console.log(`CatalogImageCarousel: Image ${index + 1}:`, image.image_url);
   });
 
+  if (!images || images.length === 0) {
+    console.log('CatalogImageCarousel: No images to display');
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        <p>Nenhuma imagem encontrada para este catálogo.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full">
       <div className="w-full">
@@ -41,7 +50,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
           {images.map((image, idx) => {
             console.log(`CatalogImageCarousel: Rendering slide ${idx + 1} with image:`, image.image_url);
             return (
-              <div key={image.id} className="keen-slider__slide">
+              <div key={image.id || `image-${idx}`} className="keen-slider__slide">
                 <div className="h-full flex flex-col bg-white">
                   <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gray-50">
                     <img
@@ -52,7 +61,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
                       onError={(e) => {
                         console.error('CatalogImageCarousel: Error loading image:', image.image_url);
                         const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
+                        target.style.display = 'none';
                       }}
                       onLoad={() => {
                         console.log('CatalogImageCarousel: Image loaded successfully:', image.image_url);
@@ -103,7 +112,7 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
               className={`w-2 h-2 rounded-full transition-colors ${
                 currentSlide === idx ? 'bg-furniture-yellow' : 'bg-gray-300'
               }`}
-              aria-label={`Go to slide ${idx + 1}`}
+              aria-label={`Ir para slide ${idx + 1}`}
             />
           ))}
         </div>

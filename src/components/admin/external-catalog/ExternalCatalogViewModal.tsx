@@ -57,13 +57,7 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
           </div>
           
           <div className="flex-1 overflow-hidden">
-            {images.length === 0 ? (
-              <div className="text-center py-12">
-                <p>Nenhuma imagem de conteúdo encontrada para este catálogo.</p>
-              </div>
-            ) : (
-              <CatalogImageCarousel images={images} />
-            )}
+            <CatalogImageCarousel images={images} />
           </div>
         </div>
       </DialogContent>

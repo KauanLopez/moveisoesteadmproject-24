@@ -1,25 +1,24 @@
 
+import { localStorageService } from '../localStorageService';
 import { defaultContent } from '@/data/defaultContent';
 import { defaultExternalCatalogs } from '@/data/defaultExternalCatalogs';
-import { ContentStorageService } from './contentStorageService';
-import { ExternalCatalogStorageService } from './externalCatalogStorageService';
-import { BaseStorageService } from './baseStorageService';
 
-export class DataInitializer extends BaseStorageService {
-  private contentService = new ContentStorageService();
-  private externalCatalogService = new ExternalCatalogStorageService();
-
+export class DataInitializer {
   initializeDefaultData(): void {
-    // Force clear and reinitialize all data to ensure clean state
-    this.clearAllData();
+    console.log('DataInitializer: Starting initialization...');
     
-    // Initialize content (hero and about sections only)
-    this.contentService.setContent(defaultContent);
+    // Initialize content if empty
+    if (localStorageService.getContent().length === 0) {
+      console.log('DataInitializer: Setting default content...');
+      localStorageService.setContent(defaultContent);
+    }
 
-    // Initialize with the three external catalogs
-    this.externalCatalogService.setExternalCatalogs(defaultExternalCatalogs);
+    // Initialize external catalogs if empty
+    if (localStorageService.getExternalCatalogs().length === 0) {
+      console.log('DataInitializer: Setting default external catalogs...');
+      localStorageService.setExternalCatalogs(defaultExternalCatalogs);
+    }
 
-    // Clear PDF catalogs to avoid duplication
-    this.set(this.getKey('pdf_catalogs'), []);
+    console.log('DataInitializer: Initialization complete');
   }
 }
