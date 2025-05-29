@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
 import { fetchCompletedPdfCatalogs, PdfCatalog } from '@/services/pdfCatalogService';
-import PdfCatalogModal from './PdfCatalogModal';
+import UniversalCatalogModal from '@/components/catalog/UniversalCatalogModal';
+import { useCatalogModal } from '@/hooks/useCatalogModal';
 
 const PdfCatalogCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -15,9 +15,9 @@ const PdfCatalogCarousel = () => {
     dragFree: false,
     containScroll: "trimSnaps"
   });
-  const [selectedCatalog, setSelectedCatalog] = useState<PdfCatalog | null>(null);
   const [pdfCatalogs, setPdfCatalogs] = useState<PdfCatalog[]>([]);
   const [loading, setLoading] = useState(true);
+  const { selectedCatalog, isOpen, openPdfCatalog, closeCatalog } = useCatalogModal();
   
   React.useEffect(() => {
     if (emblaApi) {
@@ -62,11 +62,7 @@ const PdfCatalogCarousel = () => {
   };
 
   const handleOpenCatalog = (catalog: PdfCatalog) => {
-    setSelectedCatalog(catalog);
-  };
-
-  const handleCloseCatalog = () => {
-    setSelectedCatalog(null);
+    openPdfCatalog(catalog);
   };
 
   if (loading) {
@@ -155,13 +151,11 @@ const PdfCatalogCarousel = () => {
         </div>
       </div>
 
-      {selectedCatalog && (
-        <PdfCatalogModal 
-          catalog={selectedCatalog}
-          isOpen={!!selectedCatalog} 
-          onClose={handleCloseCatalog} 
-        />
-      )}
+      <UniversalCatalogModal 
+        catalog={selectedCatalog}
+        isOpen={isOpen} 
+        onClose={closeCatalog} 
+      />
     </section>
   );
 };

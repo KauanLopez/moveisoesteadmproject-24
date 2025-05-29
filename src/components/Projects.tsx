@@ -1,15 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import ExternalCatalogModal from './catalog/ExternalCatalogModal';
 import { fetchExternalCatalogs } from '@/services/externalCatalogService';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 import ProjectsHeader from './projects/ProjectsHeader';
 import CatalogCarousel from './projects/CatalogCarousel';
+import UniversalCatalogModal from './catalog/UniversalCatalogModal';
+import { useCatalogModal } from '@/hooks/useCatalogModal';
 
 const Projects = () => {
-  const [selectedExternalCatalog, setSelectedExternalCatalog] = useState<ExternalUrlCatalog | null>(null);
   const [externalCatalogs, setExternalCatalogs] = useState<ExternalUrlCatalog[]>([]);
   const [loading, setLoading] = useState(true);
+  const { selectedCatalog, isOpen, openExternalCatalog, closeCatalog } = useCatalogModal();
   
   useEffect(() => {
     const loadCatalogs = async () => {
@@ -34,11 +35,7 @@ const Projects = () => {
 
   const handleOpenCatalog = (catalog: ExternalUrlCatalog) => {
     console.log('Projects: Opening catalog:', catalog.title);
-    setSelectedExternalCatalog(catalog);
-  };
-
-  const handleCloseCatalog = () => {
-    setSelectedExternalCatalog(null);
+    openExternalCatalog(catalog);
   };
 
   console.log('Projects: Rendering - loading:', loading, 'catalogs count:', externalCatalogs.length);
@@ -58,7 +55,6 @@ const Projects = () => {
     );
   }
 
-  // Force render carousel even if no catalogs for debugging
   console.log('Projects: Rendering section with catalogs:', externalCatalogs);
   
   return (
@@ -83,13 +79,11 @@ const Projects = () => {
         )}
       </div>
 
-      {selectedExternalCatalog && (
-        <ExternalCatalogModal 
-          catalog={selectedExternalCatalog}
-          isOpen={!!selectedExternalCatalog} 
-          onClose={handleCloseCatalog} 
-        />
-      )}
+      <UniversalCatalogModal 
+        catalog={selectedCatalog}
+        isOpen={isOpen} 
+        onClose={closeCatalog} 
+      />
     </section>
   );
 };
