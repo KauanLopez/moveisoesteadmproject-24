@@ -51,21 +51,22 @@ const CatalogCarousel: React.FC<CatalogCarouselProps> = ({ catalogs, onOpenCatal
   console.log('CatalogCarousel: Rendering carousel with', catalogs.length, 'catalogs');
   
   return (
-    <div className="max-w-5xl mx-auto px-4 md:px-16 relative">
+    <div className="max-w-6xl mx-auto px-4 relative">
+      {/* Navigation Arrows - Always visible with better positioning */}
       <Button 
         onClick={() => emblaApi?.scrollPrev()}
-        className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
+        className="absolute top-1/2 -translate-y-1/2 left-0 sm:-left-8 lg:-left-16 bg-white/90 text-gray-800 hover:bg-white rounded-full p-2 sm:p-3 z-20 shadow-lg border"
         aria-label="Slide anterior"
       >
-        <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+        <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
       </Button>
       
       <Button 
         onClick={() => emblaApi?.scrollNext()}
-        className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 bg-white text-gray-800 hover:bg-gray-100 rounded-full p-2 z-10 shadow-md"
+        className="absolute top-1/2 -translate-y-1/2 right-0 sm:-right-8 lg:-right-16 bg-white/90 text-gray-800 hover:bg-white rounded-full p-2 sm:p-3 z-20 shadow-lg border"
         aria-label="Próximo slide"
       >
-        <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
       </Button>
       
       <div className="overflow-hidden" ref={emblaRef}>
@@ -80,12 +81,13 @@ const CatalogCarousel: React.FC<CatalogCarouselProps> = ({ catalogs, onOpenCatal
         </div>
       </div>
       
-      <div className="flex justify-center mt-8">
+      {/* Dots indicator */}
+      <div className="flex justify-center mt-6 sm:mt-8">
         {catalogs.map((_: ExternalUrlCatalog, index: number) => (
           <button
             key={index}
             onClick={() => scrollTo(index)}
-            className={`w-3 h-3 rounded-full mx-2 transition-colors ${
+            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full mx-1 sm:mx-2 transition-colors ${
               currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
             }`}
             aria-label={`Ir para slide ${index + 1}`}

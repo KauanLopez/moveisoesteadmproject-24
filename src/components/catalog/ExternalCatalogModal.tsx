@@ -47,7 +47,7 @@ const ExternalCatalogModal: React.FC<ExternalCatalogModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-full p-0">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[800px] p-0 rounded-lg overflow-hidden">
         <VisuallyHidden>
           <DialogTitle>{catalog.title}</DialogTitle>
           <DialogDescription>
@@ -56,26 +56,26 @@ const ExternalCatalogModal: React.FC<ExternalCatalogModalProps> = ({
         </VisuallyHidden>
         
         <div className="flex flex-col w-full h-full">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b bg-white z-50 flex-shrink-0">
+          {/* Header - Fixed height */}
+          <div className="flex justify-between items-center p-3 sm:p-4 border-b bg-white z-50 flex-shrink-0 min-h-[60px]">
             <div className="min-w-0 flex-1 mr-4">
-              <h2 className="text-xl font-bold truncate">{catalog.title}</h2>
+              <h2 className="text-lg sm:text-xl font-bold truncate">{catalog.title}</h2>
               {catalog.description && (
-                <p className="text-gray-600 text-sm truncate">{catalog.description}</p>
+                <p className="text-gray-600 text-xs sm:text-sm truncate">{catalog.description}</p>
               )}
             </div>
             <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full p-2 flex-shrink-0">
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
           
-          {/* Content */}
-          <div className="flex-1 overflow-hidden">
+          {/* Content - Flexible height */}
+          <div className="flex-1 overflow-hidden bg-gray-50">
             {images.length > 0 ? (
               <SimpleImageCarousel images={images} />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                <p>Nenhuma imagem encontrada para este catálogo.</p>
+                <p className="text-sm sm:text-base">Nenhuma imagem encontrada para este catálogo.</p>
               </div>
             )}
           </div>
