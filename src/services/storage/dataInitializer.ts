@@ -19,10 +19,18 @@ export class DataInitializer {
       localStorageService.setExternalCatalogs(defaultExternalCatalogs);
     }
 
-    // Clear any existing PDF catalogs to avoid duplication
-    console.log('DataInitializer: Clearing PDF catalogs to avoid duplication...');
+    // Clear PDF catalogs completely since we only use external URL catalogs
+    console.log('DataInitializer: Clearing all PDF catalogs - using only external URL catalogs...');
     localStorageService.setPdfCatalogs([]);
 
-    console.log('DataInitializer: Initialization complete');
+    // Also clear regular catalogs to avoid confusion
+    console.log('DataInitializer: Clearing regular catalogs - using only external URL catalogs...');
+    const existingCatalogs = localStorageService.getCatalogs();
+    if (existingCatalogs.length > 0) {
+      // Clear all catalogs from localStorage
+      localStorage.removeItem('catalogs');
+    }
+
+    console.log('DataInitializer: Initialization complete - only external URL catalogs will be displayed');
   }
 }

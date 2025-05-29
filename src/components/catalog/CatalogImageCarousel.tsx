@@ -37,6 +37,14 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
     });
   }
 
+  // Reset slider when images change
+  useEffect(() => {
+    if (instanceRef.current && images.length > 0) {
+      instanceRef.current.moveToIdx(0);
+      setCurrentSlide(0);
+    }
+  }, [images, instanceRef]);
+
   if (!images || images.length === 0) {
     console.log('CatalogImageCarousel: No images to display');
     return (
@@ -61,11 +69,13 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
                       alt={image.title || `Imagem ${idx + 1}`}
                       className="max-w-full max-h-full object-contain"
                       style={{ maxWidth: '100%', maxHeight: '100%' }}
+                      crossOrigin="anonymous"
                       onError={(e) => {
                         console.error('CatalogImageCarousel: Error loading image:', image.image_url);
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'block';
                         target.alt = `Erro ao carregar imagem ${idx + 1}`;
+                        target.src = '/placeholder.svg'; // Fallback image
                       }}
                       onLoad={() => {
                         console.log('CatalogImageCarousel: Image loaded successfully:', image.image_url);
