@@ -70,8 +70,9 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => 
         showNavigation={images.length > 1}
       />
 
-      <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-        <div className="w-full h-full max-w-full max-h-full">
+      {/* Main image container with better height management */}
+      <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden p-4">
+        <div className="w-full h-full max-w-full max-h-full flex items-center justify-center">
           <CarouselImage
             imageUrl={currentImage.url}
             imageTitle={currentImage.title}
@@ -85,17 +86,22 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => 
         </div>
       </div>
       
-      <CarouselImageInfo
-        title={currentImage.title}
-        currentIndex={currentIndex}
-        totalImages={images.length}
-      />
-      
-      <CarouselDots
-        totalImages={images.length}
-        currentIndex={currentIndex}
-        onSlideSelect={goToSlide}
-      />
+      {/* Bottom section with spacing */}
+      <div className="flex-shrink-0 bg-white border-t">
+        <CarouselImageInfo
+          title={currentImage.title}
+          currentIndex={currentIndex}
+          totalImages={images.length}
+        />
+        
+        <div className="px-4 pb-4">
+          <CarouselDots
+            totalImages={images.length}
+            currentIndex={currentIndex}
+            onSlideSelect={goToSlide}
+          />
+        </div>
+      </div>
     </div>
   );
 };
