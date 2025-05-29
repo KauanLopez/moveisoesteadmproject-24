@@ -25,7 +25,7 @@ const UniversalCatalogModal: React.FC<CatalogModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[800px] p-0 rounded-lg overflow-hidden">
+      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] max-h-[90vh] p-0 rounded-lg overflow-hidden border-0 shadow-2xl">
         <VisuallyHidden>
           <DialogTitle>{catalog.title}</DialogTitle>
           <DialogDescription>
@@ -33,27 +33,35 @@ const UniversalCatalogModal: React.FC<CatalogModalProps> = ({
           </DialogDescription>
         </VisuallyHidden>
         
-        <div className="flex flex-col w-full h-full">
-          {/* Header - Fixed height */}
-          <div className="flex justify-between items-center p-3 sm:p-4 border-b bg-white z-50 flex-shrink-0 min-h-[60px]">
+        <div className="flex flex-col w-full h-full bg-white">
+          {/* Header compacto - altura fixa mínima */}
+          <div className="flex justify-between items-center px-4 py-3 border-b bg-white z-50 flex-shrink-0 min-h-[64px]">
             <div className="min-w-0 flex-1 mr-4">
-              <h2 className="text-lg sm:text-xl font-bold truncate">{catalog.title}</h2>
+              <h2 className="text-lg sm:text-xl font-bold truncate text-gray-900">{catalog.title}</h2>
               {catalog.description && (
-                <p className="text-gray-600 text-xs sm:text-sm truncate">{catalog.description}</p>
+                <p className="text-gray-600 text-xs sm:text-sm truncate mt-1">{catalog.description}</p>
               )}
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full p-2 flex-shrink-0">
-              <X className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onClose} 
+              className="rounded-full p-2 flex-shrink-0 hover:bg-gray-100 transition-colors"
+            >
+              <X className="h-5 w-5" />
             </Button>
           </div>
           
-          {/* Content - Flexible height */}
-          <div className="flex-1 overflow-hidden bg-gray-50">
+          {/* Container do carrossel - usa todo espaço restante */}
+          <div className="flex-1 min-h-0 overflow-hidden">
             {carouselImages.length > 0 ? (
               <SimpleImageCarousel images={carouselImages} />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                <p className="text-sm sm:text-base">Nenhuma imagem encontrada para este catálogo.</p>
+              <div className="flex items-center justify-center h-full text-gray-500 bg-gray-50">
+                <div className="text-center">
+                  <p className="text-sm sm:text-base mb-2">Nenhuma imagem encontrada para este catálogo.</p>
+                  <p className="text-xs text-gray-400">Verifique se as imagens foram carregadas corretamente.</p>
+                </div>
               </div>
             )}
           </div>
