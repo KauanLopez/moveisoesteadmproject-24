@@ -19,14 +19,14 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
   onClose 
 }) => {
   console.log('ExternalCatalogViewModal: Opening catalog:', catalog.title);
-  console.log('ExternalCatalogViewModal: Cover image:', catalog.external_cover_image_url);
+  console.log('ExternalCatalogViewModal: Cover image URL:', catalog.external_cover_image_url);
   console.log('ExternalCatalogViewModal: Content images count:', catalog.external_content_image_urls?.length || 0);
   
   // Create images array with cover + content images
   const allImageUrls = [
     catalog.external_cover_image_url,
     ...(catalog.external_content_image_urls || [])
-  ].filter(Boolean); // Remove any null/undefined URLs
+  ].filter(url => url && url.trim() !== ''); // Remove any null/undefined/empty URLs
 
   console.log('ExternalCatalogViewModal: All image URLs to display:', allImageUrls);
   
@@ -41,7 +41,7 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
     };
   });
 
-  console.log('ExternalCatalogViewModal: Final images array for carousel:', images);
+  console.log('ExternalCatalogViewModal: Final images array for carousel:', images.length, 'images');
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

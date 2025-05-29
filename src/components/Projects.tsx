@@ -1,27 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
-import CatalogViewModal from './catalog/CatalogViewModal';
-import PdfCatalogModal from './pdf-catalog/PdfCatalogModal';
 import ExternalCatalogViewModal from './admin/external-catalog/ExternalCatalogViewModal';
-import { useContent } from '@/context/ContentContext';
-import { fetchCompletedPdfCatalogs, PdfCatalog } from '@/services/pdfCatalogService';
 import { fetchExternalCatalogs } from '@/services/externalCatalogService';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
-
-interface CarouselProject {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  isPdfCatalog?: boolean;
-  isExternalCatalog?: boolean;
-  pdfCatalog?: PdfCatalog;
-  externalCatalog?: ExternalUrlCatalog;
-  objectPosition?: string;
-  scale?: number;
-}
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,41 +16,21 @@ const Projects = () => {
     dragFree: false,
     containScroll: "trimSnaps"
   });
-  const [selectedCatalog, setSelectedCatalog] = useState<string | null>(null);
-  const [selectedPdfCatalog, setSelectedPdfCatalog] = useState<PdfCatalog | null>(null);
   const [selectedExternalCatalog, setSelectedExternalCatalog] = useState<ExternalUrlCatalog | null>(null);
-  const [pdfCatalogs, setPdfCatalogs] = useState<PdfCatalog[]>([]);
   const [externalCatalogs, setExternalCatalogs] = useState<ExternalUrlCatalog[]>([]);
   const [loading, setLoading] = useState(true);
-  const { content } = useContent();
-  const projects = content.filter(item => item.section === 'projects');
   
   useEffect(() => {
     const loadCatalogs = async () => {
-      console.log('Projects: Starting to load catalogs...');
+      console.log('Projects: Loading external catalogs...');
       setLoading(true);
       try {
-        // Load PDF catalogs
-        try {
-          const pdfCatalogData = await fetchCompletedPdfCatalogs();
-          console.log('Projects: PDF catalogs loaded:', pdfCatalogData.length);
-          setPdfCatalogs(pdfCatalogData);
-        } catch (error) {
-          console.error('Projects: Error loading PDF catalogs:', error);
-          setPdfCatalogs([]);
-        }
-        
-        // Load external catalogs
-        try {
-          const externalCatalogData = await fetchExternalCatalogs();
-          console.log('Projects: External catalogs loaded:', externalCatalogData.length);
-          setExternalCatalogs(externalCatalogData);
-        } catch (error) {
-          console.error('Projects: Error loading external catalogs:', error);
-          setExternalCatalogs([]);
-        }
+        const catalogData = await fetchExternalCatalogs();
+        console.log('Projects: External catalogs loaded:', catalogData.length);
+        setExternalCatalogs(catalogData);
       } catch (error) {
-        console.error('Projects: Error loading catalogs:', error);
+        console.error('Projects: Error loading external catalogs:', error);
+        setExternalCatalogs([]);
       } finally {
         setLoading(false);
         console.log('Projects: Loading finished');
@@ -75,46 +39,6 @@ const Projects = () => {
 
     loadCatalogs();
   }, []);
-  
-  const allProjects: CarouselProject[] = [
-    // Convert regular projects to CarouselProject type
-    ...projects.map(project => ({
-      id: project.id,
-      title: project.title || '',
-      description: project.description || '',
-      image: project.image || '/placeholder.svg',
-      objectPosition: project.objectPosition,
-      scale: project.scale,
-      isPdfCatalog: false,
-      isExternalCatalog: false
-    })),
-    // Convert PDF catalogs to CarouselProject type
-    ...pdfCatalogs.map(catalog => ({
-      id: catalog.id,
-      title: catalog.title,
-      description: catalog.description || '',
-      image: catalog.cover_image_url || '/placeholder.svg',
-      isPdfCatalog: true,
-      isExternalCatalog: false,
-      pdfCatalog: catalog
-    })),
-    // Convert external catalogs to CarouselProject type
-    ...externalCatalogs.map(catalog => ({
-      id: catalog.id,
-      title: catalog.title,
-      description: catalog.description || '',
-      image: catalog.external_cover_image_url,
-      isPdfCatalog: false,
-      isExternalCatalog: true,
-      externalCatalog: catalog
-    }))
-  ];
-
-  console.log('Projects: Final combination results:');
-  console.log('Projects: Regular projects count:', projects.length);
-  console.log('Projects: PDF catalogs count:', pdfCatalogs.length);
-  console.log('Projects: External catalogs count:', externalCatalogs.length);
-  console.log('Projects: All projects combined count:', allProjects.length);
   
   React.useEffect(() => {
     if (emblaApi) {
@@ -143,19 +67,12 @@ const Projects = () => {
     }
   };
 
-  const handleOpenCatalog = (project: CarouselProject) => {
-    if (project.isPdfCatalog && project.pdfCatalog) {
-      setSelectedPdfCatalog(project.pdfCatalog);
-    } else if (project.isExternalCatalog && project.externalCatalog) {
-      setSelectedExternalCatalog(project.externalCatalog);
-    } else {
-      setSelectedCatalog(project.id);
-    }
+  const handleOpenCatalog = (catalog: ExternalUrlCatalog) => {
+    console.log('Projects: Opening catalog:', catalog.title);
+    setSelectedExternalCatalog(catalog);
   };
 
   const handleCloseCatalog = () => {
-    setSelectedCatalog(null);
-    setSelectedPdfCatalog(null);
     setSelectedExternalCatalog(null);
   };
 
@@ -175,8 +92,8 @@ const Projects = () => {
     );
   }
 
-  if (allProjects.length === 0) {
-    console.log('Projects: No projects to display - showing empty state');
+  if (externalCatalogs.length === 0) {
+    console.log('Projects: No catalogs to display - showing empty state');
     return (
       <section id="projects" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -192,7 +109,7 @@ const Projects = () => {
     );
   }
   
-  console.log('Projects: Rendering carousel with', allProjects.length, 'projects');
+  console.log('Projects: Rendering carousel with', externalCatalogs.length, 'catalogs');
   
   return (
     <section id="projects" className="py-16 bg-gray-50">
@@ -224,34 +141,30 @@ const Projects = () => {
           
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {allProjects.map((project: CarouselProject) => {
-                console.log('Projects: Rendering project:', project.title, 'with image:', project.image);
+              {externalCatalogs.map((catalog: ExternalUrlCatalog) => {
+                console.log('Projects: Rendering catalog:', catalog.title, 'with cover image:', catalog.external_cover_image_url);
                 return (
-                  <div key={project.id} className="flex-[0_0_100%] min-w-0 px-4 transition-transform duration-300">
+                  <div key={catalog.id} className="flex-[0_0_100%] min-w-0 px-4 transition-transform duration-300">
                     <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
                       <img 
-                        src={project.image} 
-                        alt={project.title} 
+                        src={catalog.external_cover_image_url} 
+                        alt={catalog.title} 
                         className="w-full h-full object-cover"
-                        style={{ 
-                          objectPosition: project.objectPosition || 'center',
-                          transform: project.scale ? `scale(${project.scale})` : 'scale(1)'
-                        }}
                         onError={(e) => {
-                          console.error('Projects: Image load error for', project.title, '- URL:', project.image);
+                          console.error('Projects: Image load error for', catalog.title, '- URL:', catalog.external_cover_image_url);
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder.svg';
                         }}
                         onLoad={() => {
-                          console.log('Projects: Image loaded successfully for', project.title);
+                          console.log('Projects: Cover image loaded successfully for', catalog.title);
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-8">
-                        <h3 className="text-2xl font-bold text-white">{project.title}</h3>
-                        <p className="text-white/80 mt-2">{project.description}</p>
+                        <h3 className="text-2xl font-bold text-white">{catalog.title}</h3>
+                        <p className="text-white/80 mt-2">{catalog.description}</p>
                         <div className="mt-4">
                           <Button 
-                            onClick={() => handleOpenCatalog(project)}
+                            onClick={() => handleOpenCatalog(catalog)}
                             className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black"
                           >
                             Ver Catálogo
@@ -266,7 +179,7 @@ const Projects = () => {
           </div>
           
           <div className="flex justify-center mt-8">
-            {allProjects.map((_: CarouselProject, index: number) => (
+            {externalCatalogs.map((_: ExternalUrlCatalog, index: number) => (
               <button
                 key={index}
                 onClick={() => scrollTo(index)}
@@ -279,22 +192,6 @@ const Projects = () => {
           </div>
         </div>
       </div>
-
-      {selectedCatalog && (
-        <CatalogViewModal 
-          catalogId={selectedCatalog}
-          isOpen={!!selectedCatalog} 
-          onClose={handleCloseCatalog} 
-        />
-      )}
-
-      {selectedPdfCatalog && (
-        <PdfCatalogModal 
-          catalog={selectedPdfCatalog}
-          isOpen={!!selectedPdfCatalog} 
-          onClose={handleCloseCatalog} 
-        />
-      )}
 
       {selectedExternalCatalog && (
         <ExternalCatalogViewModal 
