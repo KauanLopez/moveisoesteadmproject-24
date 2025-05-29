@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
-import ExternalCatalogViewModal from './admin/external-catalog/ExternalCatalogViewModal';
+import ExternalCatalogModal from './catalog/ExternalCatalogModal';
 import { fetchExternalCatalogs } from '@/services/externalCatalogService';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 
@@ -194,7 +194,7 @@ const Projects = () => {
       </div>
 
       {selectedExternalCatalog && (
-        <ExternalCatalogViewModal 
+        <ExternalCatalogModal 
           catalog={selectedExternalCatalog}
           isOpen={!!selectedExternalCatalog} 
           onClose={handleCloseCatalog} 
