@@ -49,6 +49,18 @@ const CatalogCarousel: React.FC<CatalogCarouselProps> = ({ catalogs, onOpenCatal
   };
 
   console.log('CatalogCarousel: Rendering carousel with', catalogs.length, 'catalogs');
+  console.log('CatalogCarousel: Catalogs data:', catalogs);
+  
+  // Add safety check and debugging
+  if (!catalogs || catalogs.length === 0) {
+    console.log('CatalogCarousel: No catalogs provided, showing debug info');
+    return (
+      <div className="max-w-6xl mx-auto px-4 text-center">
+        <p className="text-gray-600 mb-2">Debug: Carrossel sem catálogos</p>
+        <p className="text-sm text-gray-500">Catálogos recebidos: {catalogs ? catalogs.length : 'undefined'}</p>
+      </div>
+    );
+  }
   
   return (
     <div className="max-w-6xl mx-auto px-4 relative">

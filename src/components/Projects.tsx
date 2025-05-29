@@ -18,6 +18,7 @@ const Projects = () => {
       try {
         const catalogData = await fetchExternalCatalogs();
         console.log('Projects: External catalogs loaded:', catalogData.length);
+        console.log('Projects: Catalog data:', catalogData);
         setExternalCatalogs(catalogData);
       } catch (error) {
         console.error('Projects: Error loading external catalogs:', error);
@@ -40,6 +41,8 @@ const Projects = () => {
     setSelectedExternalCatalog(null);
   };
 
+  console.log('Projects: Rendering - loading:', loading, 'catalogs count:', externalCatalogs.length);
+
   if (loading) {
     return (
       <section id="projects" className="py-16 bg-gray-50">
@@ -55,30 +58,29 @@ const Projects = () => {
     );
   }
 
-  if (externalCatalogs.length === 0) {
-    console.log('Projects: No catalogs to display - showing empty state');
-    return (
-      <section id="projects" className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <ProjectsHeader />
-          <div className="text-center">
-            <p className="max-w-2xl mx-auto text-gray-600">
-              Nenhum catálogo disponível.
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Force render carousel even if no catalogs for debugging
+  console.log('Projects: Rendering section with catalogs:', externalCatalogs);
   
   return (
     <section id="projects" className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <ProjectsHeader />
-        <CatalogCarousel 
-          catalogs={externalCatalogs}
-          onOpenCatalog={handleOpenCatalog}
-        />
+        
+        {externalCatalogs.length === 0 ? (
+          <div className="text-center">
+            <p className="max-w-2xl mx-auto text-gray-600 mb-4">
+              Nenhum catálogo disponível no momento.
+            </p>
+            <p className="text-sm text-gray-500">
+              Debug: Tentando carregar catálogos...
+            </p>
+          </div>
+        ) : (
+          <CatalogCarousel 
+            catalogs={externalCatalogs}
+            onOpenCatalog={handleOpenCatalog}
+          />
+        )}
       </div>
 
       {selectedExternalCatalog && (
