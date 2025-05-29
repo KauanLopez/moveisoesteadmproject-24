@@ -29,10 +29,13 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
     },
   });
 
-  console.log('CatalogImageCarousel: Rendering with images count:', images.length);
-  images.forEach((image, index) => {
-    console.log(`CatalogImageCarousel: Image ${index + 1}:`, image.image_url);
-  });
+  console.log('CatalogImageCarousel: Rendering with images count:', images?.length || 0);
+  
+  if (images && images.length > 0) {
+    images.forEach((image, index) => {
+      console.log(`CatalogImageCarousel: Image ${index + 1}:`, image.image_url);
+    });
+  }
 
   if (!images || images.length === 0) {
     console.log('CatalogImageCarousel: No images to display');
@@ -61,7 +64,8 @@ const CatalogImageCarousel: React.FC<CatalogImageCarouselProps> = ({ images }) =
                       onError={(e) => {
                         console.error('CatalogImageCarousel: Error loading image:', image.image_url);
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
+                        target.style.display = 'block';
+                        target.alt = `Erro ao carregar imagem ${idx + 1}`;
                       }}
                       onLoad={() => {
                         console.log('CatalogImageCarousel: Image loaded successfully:', image.image_url);

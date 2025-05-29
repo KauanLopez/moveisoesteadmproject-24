@@ -19,9 +19,13 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
   onClose 
 }) => {
   console.log('ExternalCatalogViewModal: Opening catalog:', catalog.title);
-  console.log('ExternalCatalogViewModal: Content images count:', catalog.external_content_image_urls.length);
+  console.log('ExternalCatalogViewModal: Content images count:', catalog.external_content_image_urls?.length || 0);
   
-  const images = catalog.external_content_image_urls.map((url, index) => {
+  // Ensure we have the image URLs and map them correctly
+  const imageUrls = catalog.external_content_image_urls || [];
+  console.log('ExternalCatalogViewModal: Image URLs:', imageUrls);
+  
+  const images = imageUrls.map((url, index) => {
     console.log(`ExternalCatalogViewModal: Mapping image ${index + 1}:`, url);
     return {
       id: `${catalog.id}-${index}`,
@@ -31,7 +35,7 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
     };
   });
 
-  console.log('ExternalCatalogViewModal: Final images array:', images);
+  console.log('ExternalCatalogViewModal: Final images array for carousel:', images);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -57,7 +61,13 @@ const ExternalCatalogViewModal: React.FC<ExternalCatalogViewModalProps> = ({
           </div>
           
           <div className="flex-1 overflow-hidden">
-            <CatalogImageCarousel images={images} />
+            {images.length > 0 ? (
+              <CatalogImageCarousel images={images} />
+            ) : (
+              <div className="flex items-center justify-center h-64 text-gray-500">
+                <p>Nenhuma imagem encontrada para este catálogo.</p>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

@@ -19,6 +19,10 @@ export class DataInitializer {
       localStorageService.setExternalCatalogs(defaultExternalCatalogs);
     }
 
+    // Clear any existing PDF catalogs to avoid duplication
+    console.log('DataInitializer: Clearing PDF catalogs to avoid duplication...');
+    localStorageService.setPdfCatalogs([]);
+
     console.log('DataInitializer: Initialization complete');
   }
 }
