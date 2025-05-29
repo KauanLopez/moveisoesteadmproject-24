@@ -20,14 +20,14 @@ const CarouselNavigation: React.FC<CarouselNavigationProps> = ({
     <>
       <Button
         onClick={onPrevious}
-        className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 sm:p-3 bg-white/95 text-gray-800 hover:bg-white shadow-lg z-30 border transition-all duration-200 hover:scale-110"
+        className="fixed left-4 top-1/2 -translate-y-1/2 rounded-full p-2 sm:p-3 bg-white/95 text-gray-800 hover:bg-white shadow-lg z-50 border transition-all duration-200 hover:scale-110"
         size="icon"
       >
         <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
       </Button>
       <Button
         onClick={onNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 sm:p-3 bg-white/95 text-gray-800 hover:bg-white shadow-lg z-30 border transition-all duration-200 hover:scale-110"
+        className="fixed right-4 top-1/2 -translate-y-1/2 rounded-full p-2 sm:p-3 bg-white/95 text-gray-800 hover:bg-white shadow-lg z-50 border transition-all duration-200 hover:scale-110"
         size="icon"
       >
         <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
