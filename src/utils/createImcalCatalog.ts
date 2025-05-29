@@ -1,13 +1,10 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { localStorageService } from '@/services/localStorageService';
 
 export const createImcalCatalog = async () => {
   // First check if IMCAL catalog already exists
-  const { data: existingCatalog } = await supabase
-    .from('external_url_catalogs')
-    .select('id')
-    .eq('title', 'IMCAL')
-    .single();
+  const existingCatalogs = localStorageService.getExternalCatalogs();
+  const existingCatalog = existingCatalogs.find(catalog => catalog.title === 'IMCAL');
 
   if (existingCatalog) {
     console.log('IMCAL catalog already exists, skipping creation');
@@ -15,6 +12,7 @@ export const createImcalCatalog = async () => {
   }
 
   const catalogData = {
+    id: crypto.randomUUID(),
     title: "IMCAL",
     description: "Criando ambientes que tocam os sentidos e emocionam.",
     external_cover_image_url: "https://i.imgur.com/7l0H29Q.jpeg",
@@ -90,23 +88,14 @@ export const createImcalCatalog = async () => {
       "https://i.imgur.com/eKP16bI.jpeg",
       "https://i.imgur.com/leuXKtH.jpeg",
       "https://i.imgur.com/TQShmIe.jpeg"
-    ]
+    ],
+    created_at: new Date().toISOString()
   };
 
   try {
-    const { data, error } = await supabase
-      .from('external_url_catalogs')
-      .insert([catalogData])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating IMCAL catalog:', error);
-      throw error;
-    }
-
-    console.log('IMCAL catalog created successfully:', data);
-    return data;
+    localStorageService.addExternalCatalog(catalogData);
+    console.log('IMCAL catalog created successfully:', catalogData);
+    return catalogData;
   } catch (error) {
     console.error('Failed to create IMCAL catalog:', error);
     throw error;

@@ -1,86 +1,70 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { ExternalUrlCatalog, ExternalUrlCatalogFormData } from '@/types/externalCatalogTypes';
-import { authService } from './authService';
+import { localStorageService } from './localStorageService';
 
 export const externalCatalogService = {
   async getAllCatalogs(): Promise<ExternalUrlCatalog[]> {
-    const { data, error } = await supabase
-      .from('external_url_catalogs')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
+    try {
+      const catalogs = localStorageService.getExternalCatalogs();
+      return catalogs.map(catalog => ({
+        id: catalog.id,
+        title: catalog.title,
+        description: catalog.description,
+        external_cover_image_url: catalog.external_cover_image_url,
+        external_content_image_urls: catalog.external_content_image_urls,
+        created_at: catalog.created_at
+      }));
+    } catch (error) {
       console.error('Error fetching external catalogs:', error);
       throw new Error('Erro ao buscar catálogos externos');
     }
-
-    // Convert the Json type to string[] for external_content_image_urls
-    return (data || []).map(item => ({
-      ...item,
-      external_content_image_urls: Array.isArray(item.external_content_image_urls) 
-        ? item.external_content_image_urls as string[]
-        : []
-    }));
   },
 
   async createCatalog(catalogData: ExternalUrlCatalogFormData): Promise<ExternalUrlCatalog> {
-    return await authService.withValidSession(async () => {
-      const { data, error } = await supabase
-        .from('external_url_catalogs')
-        .insert([catalogData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating external catalog:', error);
-        throw new Error('Erro ao criar catálogo externo');
-      }
-
-      return {
-        ...data,
-        external_content_image_urls: Array.isArray(data.external_content_image_urls) 
-          ? data.external_content_image_urls as string[]
-          : []
+    try {
+      const newCatalog = {
+        id: crypto.randomUUID(),
+        ...catalogData,
+        created_at: new Date().toISOString()
       };
-    });
+      
+      localStorageService.addExternalCatalog(newCatalog);
+      return newCatalog;
+    } catch (error) {
+      console.error('Error creating external catalog:', error);
+      throw new Error('Erro ao criar catálogo externo');
+    }
   },
 
   async updateCatalog(id: string, catalogData: Partial<ExternalUrlCatalogFormData>): Promise<ExternalUrlCatalog> {
-    return await authService.withValidSession(async () => {
-      const { data, error } = await supabase
-        .from('external_url_catalogs')
-        .update(catalogData)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating external catalog:', error);
-        throw new Error('Erro ao atualizar catálogo externo');
+    try {
+      const catalogs = localStorageService.getExternalCatalogs();
+      const existingCatalog = catalogs.find(c => c.id === id);
+      
+      if (!existingCatalog) {
+        throw new Error('Catálogo não encontrado');
       }
-
-      return {
-        ...data,
-        external_content_image_urls: Array.isArray(data.external_content_image_urls) 
-          ? data.external_content_image_urls as string[]
-          : []
+      
+      const updatedCatalog = {
+        ...existingCatalog,
+        ...catalogData
       };
-    });
+      
+      localStorageService.addExternalCatalog(updatedCatalog);
+      return updatedCatalog;
+    } catch (error) {
+      console.error('Error updating external catalog:', error);
+      throw new Error('Erro ao atualizar catálogo externo');
+    }
   },
 
   async deleteCatalog(id: string): Promise<void> {
-    return await authService.withValidSession(async () => {
-      const { error } = await supabase
-        .from('external_url_catalogs')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting external catalog:', error);
-        throw new Error('Erro ao deletar catálogo externo');
-      }
-    });
+    try {
+      localStorageService.deleteExternalCatalog(id);
+    } catch (error) {
+      console.error('Error deleting external catalog:', error);
+      throw new Error('Erro ao deletar catálogo externo');
+    }
   }
 };
 

@@ -1,8 +1,7 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { ImageContent } from '@/types/customTypes';
-import { defaultContent } from '@/utils/contentUtils';
-import { dbOperations } from '@/lib/supabase-helpers';
+import { localStorageService } from '@/services/localStorageService';
 
 type ContentContextType = {
   content: ImageContent[];
@@ -19,54 +18,34 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Function to map database content to ImageContent
-  const mapDbContentToImageContent = (dbContent: any): ImageContent => {
+  const mapStorageContentToImageContent = (storageContent: any): ImageContent => {
     return {
-      id: dbContent.id,
-      section: dbContent.section,
-      title: dbContent.title || '',
-      description: dbContent.description || '',
-      image: dbContent.image_url || '',
-      objectPosition: dbContent.object_position || 'center',
-      scale: dbContent.scale || 1
+      id: storageContent.id,
+      section: storageContent.section,
+      title: storageContent.title || '',
+      description: storageContent.description || '',
+      image: storageContent.image_url || '',
+      objectPosition: storageContent.object_position || 'center',
+      scale: storageContent.scale || 1
     };
   };
 
   useEffect(() => {
     const loadContent = async () => {
       try {
-        // Try to load content from Supabase
-        const { data, error } = await dbOperations.content.selectAll();
+        // Initialize default data if needed
+        localStorageService.initializeDefaultData();
         
-        if (error) {
-          throw error;
-        }
+        // Load content from localStorage
+        const storageContent = localStorageService.getContent();
         
-        if (data && data.length > 0) {
-          console.log('Loaded content from Supabase:', data);
-          const mappedContent = data.map(mapDbContentToImageContent);
+        if (storageContent && storageContent.length > 0) {
+          console.log('Loaded content from localStorage:', storageContent);
+          const mappedContent = storageContent.map(mapStorageContentToImageContent);
           setContent(mappedContent);
-        } else {
-          console.log('No content in database, using default content');
-          setContent(defaultContent);
-          // Save default content to Supabase
-          for (const item of defaultContent) {
-            const dbItem = {
-              id: item.id,
-              section: item.section,
-              title: item.title,
-              description: item.description,
-              image_url: item.image,
-              object_position: item.objectPosition,
-              scale: item.scale
-            };
-            
-            await dbOperations.content.upsert(dbItem);
-          }
         }
       } catch (err) {
         console.error('Error in content loading:', err);
-        // Fallback to default content if Supabase fails
-        setContent(defaultContent);
       } finally {
         setIsLoaded(true);
       }
@@ -85,23 +64,18 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const saveContent = async () => {
     try {
-      // Save all content to Supabase
-      for (const item of content) {
-        const dbItem = {
-          id: item.id,
-          section: item.section,
-          title: item.title,
-          description: item.description,
-          image_url: item.image,
-          object_position: item.objectPosition,
-          scale: item.scale
-        };
-        
-        const { error } = await dbOperations.content.upsert(dbItem);
-          
-        if (error) throw error;
-      }
+      // Save all content to localStorage
+      const storageContent = content.map(item => ({
+        id: item.id,
+        section: item.section,
+        title: item.title,
+        description: item.description,
+        image_url: item.image,
+        object_position: item.objectPosition,
+        scale: item.scale
+      }));
       
+      localStorageService.setContent(storageContent);
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(error);
@@ -110,13 +84,24 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   
   const addContent = (newItem: ImageContent) => {
     setContent(prevContent => [...prevContent, newItem]);
+    
+    // Also save to localStorage
+    const storageItem = {
+      id: newItem.id,
+      section: newItem.section,
+      title: newItem.title,
+      description: newItem.description,
+      image_url: newItem.image,
+      object_position: newItem.objectPosition,
+      scale: newItem.scale
+    };
+    
+    localStorageService.addContent(storageItem);
   };
   
   const deleteContent = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await dbOperations.content.delete(id);
-        
-      if (error) throw error;
+      localStorageService.deleteContent(id);
       
       // Update local state
       setContent(prevContent => prevContent.filter(item => item.id !== id));

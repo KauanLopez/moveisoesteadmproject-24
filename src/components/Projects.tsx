@@ -56,14 +56,24 @@ const Projects = () => {
         }
 
         // Load PDF catalogs
-        const pdfCatalogData = await fetchCompletedPdfCatalogs();
-        console.log('Projects: PDF catalogs loaded:', pdfCatalogData.length);
-        setPdfCatalogs(pdfCatalogData);
+        try {
+          const pdfCatalogData = await fetchCompletedPdfCatalogs();
+          console.log('Projects: PDF catalogs loaded:', pdfCatalogData.length);
+          setPdfCatalogs(pdfCatalogData);
+        } catch (error) {
+          console.error('Projects: Error loading PDF catalogs:', error);
+          setPdfCatalogs([]);
+        }
         
         // Load external catalogs
-        const externalCatalogData = await fetchExternalCatalogs();
-        console.log('Projects: External catalogs loaded:', externalCatalogData.length);
-        setExternalCatalogs(externalCatalogData);
+        try {
+          const externalCatalogData = await fetchExternalCatalogs();
+          console.log('Projects: External catalogs loaded:', externalCatalogData.length);
+          setExternalCatalogs(externalCatalogData);
+        } catch (error) {
+          console.error('Projects: Error loading external catalogs:', error);
+          setExternalCatalogs([]);
+        }
       } catch (error) {
         console.error('Projects: Error loading catalogs:', error);
       } finally {
@@ -75,7 +85,6 @@ const Projects = () => {
     loadCatalogs();
   }, []);
   
-  // Combine regular projects, PDF catalogs, and external catalogs using the unified type
   const allProjects: CarouselProject[] = [
     // Convert regular projects to CarouselProject type
     ...projects.map(project => ({
