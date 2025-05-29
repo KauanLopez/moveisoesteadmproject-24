@@ -9,7 +9,6 @@ import { useContent } from '@/context/ContentContext';
 import { fetchCompletedPdfCatalogs, PdfCatalog } from '@/services/pdfCatalogService';
 import { fetchExternalCatalogs } from '@/services/externalCatalogService';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
-import { createImcalCatalog } from '@/utils/createImcalCatalog';
 
 interface CarouselProject {
   id: string;
@@ -47,14 +46,6 @@ const Projects = () => {
       console.log('Projects: Starting to load catalogs...');
       setLoading(true);
       try {
-        // Create IMCAL catalog if it doesn't exist
-        try {
-          await createImcalCatalog();
-          console.log('Projects: IMCAL catalog ensured');
-        } catch (error) {
-          console.error('Projects: Error ensuring IMCAL catalog:', error);
-        }
-
         // Load PDF catalogs
         try {
           const pdfCatalogData = await fetchCompletedPdfCatalogs();
