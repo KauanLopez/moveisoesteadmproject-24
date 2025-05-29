@@ -24,7 +24,10 @@ export const externalCatalogService = {
     try {
       const newCatalog = {
         id: crypto.randomUUID(),
-        ...catalogData,
+        title: catalogData.title,
+        description: catalogData.description || '',
+        external_cover_image_url: catalogData.external_cover_image_url,
+        external_content_image_urls: catalogData.external_content_image_urls,
         created_at: new Date().toISOString()
       };
       
@@ -47,7 +50,8 @@ export const externalCatalogService = {
       
       const updatedCatalog = {
         ...existingCatalog,
-        ...catalogData
+        ...catalogData,
+        description: catalogData.description || existingCatalog.description
       };
       
       localStorageService.addExternalCatalog(updatedCatalog);

@@ -1,5 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { authService } from "./authService";
 
 export interface FeaturedItem {
@@ -9,45 +8,29 @@ export interface FeaturedItem {
   created_at: string;
 }
 
-// Fetch all featured items
+// Mock functions for frontend-only implementation
 export const fetchFeaturedItems = async (): Promise<FeaturedItem[]> => {
   try {
-    const { data, error } = await supabase
-      .from('featured_items')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching featured items:', error);
-      throw error;
-    }
-    
-    return data || [];
+    // Since we don't have a database, return empty array
+    return [];
   } catch (error: any) {
     console.error('Exception fetching featured items:', error);
     throw error;
   }
 };
 
-// Add featured item
 export const addFeaturedItem = async (catalogId: string, imageUrl: string): Promise<FeaturedItem | null> => {
   return await authService.withValidSession(async () => {
     try {
-      const { data, error } = await supabase
-        .from('featured_items')
-        .insert({
-          catalog_id: catalogId,
-          image_url: imageUrl
-        })
-        .select()
-        .single();
+      // Since we don't have a database, return mock data
+      const mockItem: FeaturedItem = {
+        id: crypto.randomUUID(),
+        catalog_id: catalogId,
+        image_url: imageUrl,
+        created_at: new Date().toISOString()
+      };
       
-      if (error) {
-        console.error('Error adding featured item:', error);
-        throw error;
-      }
-      
-      return data;
+      return mockItem;
     } catch (error: any) {
       console.error('Exception adding featured item:', error);
       throw error;
@@ -55,20 +38,10 @@ export const addFeaturedItem = async (catalogId: string, imageUrl: string): Prom
   });
 };
 
-// Remove featured item
 export const removeFeaturedItem = async (id: string): Promise<boolean> => {
   return await authService.withValidSession(async () => {
     try {
-      const { error } = await supabase
-        .from('featured_items')
-        .delete()
-        .eq('id', id);
-      
-      if (error) {
-        console.error('Error removing featured item:', error);
-        throw error;
-      }
-      
+      // Since we don't have a database, return true
       return true;
     } catch (error: any) {
       console.error('Error removing featured item:', error);

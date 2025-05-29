@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
 import { getFavoriteItems } from "@/services/favoriteService";
 import { ImageContent, mapDbContentToImageContent } from '@/types/customTypes';
 
@@ -19,26 +18,12 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
           // Use mapDbContentToImageContent for consistency
           setProducts(favoriteItems.map(mapDbContentToImageContent));
         } else {
-          // Fallback to regular content
-          const { data, error } = await supabase
-            .from('content')
-            .select('*')
-            .eq('section', 'products');
-          
-          if (error) {
-            throw error;
-          }
-          
-          if (data && data.length > 0) {
-            setProducts(data.map(mapDbContentToImageContent));
-          } else {
-            // Fallback to localStorage
-            const storedContent = localStorage.getItem('moveis_oeste_content');
-            if (storedContent) {
-              const allContent = JSON.parse(storedContent);
-              const productItems = allContent.filter((item: any) => item.section === 'products');
-              setProducts(productItems.map(mapDbContentToImageContent));
-            }
+          // Fallback to localStorage
+          const storedContent = localStorage.getItem('moveis_oeste_content');
+          if (storedContent) {
+            const allContent = JSON.parse(storedContent);
+            const productItems = allContent.filter((item: any) => item.section === 'products');
+            setProducts(productItems.map(mapDbContentToImageContent));
           }
         }
       } catch (error) {

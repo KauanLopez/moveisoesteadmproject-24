@@ -1,27 +1,15 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { authService } from "../authService";
 import { PdfCatalogFormData } from './types';
 
 /**
- * Update PDF catalog metadata
+ * Mock update function for frontend-only implementation
  */
 export const updatePdfCatalog = async (id: string, data: PdfCatalogFormData): Promise<boolean> => {
   return await authService.withValidSession(async () => {
     try {
-      const { error } = await supabase
-        .from('pdf_derived_catalogs')
-        .update({
-          title: data.title,
-          description: data.description
-        })
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error updating PDF catalog:', error);
-        throw error;
-      }
-
+      console.log('Mock updating PDF catalog:', id, data);
+      // Since we don't have a database, return true
       return true;
     } catch (error: any) {
       console.error('Exception updating PDF catalog:', error);
@@ -31,21 +19,13 @@ export const updatePdfCatalog = async (id: string, data: PdfCatalogFormData): Pr
 };
 
 /**
- * Delete PDF catalog and associated files
+ * Mock delete function for frontend-only implementation
  */
 export const deletePdfCatalog = async (id: string): Promise<boolean> => {
   return await authService.withValidSession(async () => {
     try {
-      const { error } = await supabase
-        .from('pdf_derived_catalogs')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting PDF catalog:', error);
-        throw error;
-      }
-
+      console.log('Mock deleting PDF catalog:', id);
+      // Since we don't have a database, return true
       return true;
     } catch (error: any) {
       console.error('Exception deleting PDF catalog:', error);

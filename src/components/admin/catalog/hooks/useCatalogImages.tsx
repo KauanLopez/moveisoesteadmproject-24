@@ -4,7 +4,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { CatalogItem } from '@/types/catalogTypes';
 import { fetchCatalogItems, deleteCatalogItem, saveCatalogItem } from '@/services/catalogService';
 import { uploadCatalogImage } from '@/services/imageService';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
 export const useCatalogImages = (catalogId: string) => {
@@ -99,12 +98,6 @@ export const useCatalogImages = (catalogId: string) => {
 
     setUploading(true);
     try {
-      // Verify authentication once more before upload
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        throw new Error("Sessão expirada. Por favor, faça login novamente.");
-      }
-      
       const imageUrl = await uploadCatalogImage(file, 'catalog-images');
       
       if (imageUrl) {

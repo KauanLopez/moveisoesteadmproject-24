@@ -1,29 +1,15 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { PdfCatalogFormData } from './types';
 
-// Update an existing catalog with new cover and content images
+// Mock update function for frontend-only implementation
 export const updateCatalogWithImages = async (
   catalogId: string, 
   coverImageUrl: string, 
   contentImageUrls: string[]
 ): Promise<boolean> => {
   try {
-    // Update the catalog with the new cover image
-    const { error: updateError } = await supabase
-      .from('pdf_derived_catalogs')
-      .update({
-        cover_image_url: coverImageUrl,
-        content_image_urls: contentImageUrls,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', catalogId);
-
-    if (updateError) {
-      console.error('Error updating catalog:', updateError);
-      throw updateError;
-    }
-
+    console.log('Mock updating catalog with images:', catalogId, coverImageUrl, contentImageUrls);
+    // Since we don't have a database, return true
     return true;
   } catch (error: any) {
     console.error('Error in updateCatalogWithImages:', error);
@@ -31,21 +17,12 @@ export const updateCatalogWithImages = async (
   }
 };
 
-// Find catalog by title
+// Mock find function for frontend-only implementation
 export const findCatalogByTitle = async (title: string) => {
   try {
-    const { data, error } = await supabase
-      .from('pdf_derived_catalogs')
-      .select('*')
-      .eq('title', title)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error finding catalog:', error);
-      throw error;
-    }
-
-    return data;
+    console.log('Mock finding catalog by title:', title);
+    // Since we don't have a database, return null
+    return null;
   } catch (error: any) {
     console.error('Error in findCatalogByTitle:', error);
     throw error;

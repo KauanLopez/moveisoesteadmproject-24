@@ -1,15 +1,14 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { Catalog, CatalogItem, CatalogWithCategory, CatalogFormData } from "@/types/catalogTypes";
+import { localStorageService } from './localStorageService';
 
-// Verificar autenticação
+// Mock authentication check for frontend-only
 const checkAuthenticated = async () => {
-  const { data, error } = await supabase.auth.getSession();
-  if (!data.session || error) {
-    console.error("Authentication error:", error);
+  const isAuthenticated = localStorage.getItem('frontend_auth') === 'true';
+  if (!isAuthenticated) {
     throw new Error("Usuário não autenticado. Faça login para continuar.");
   }
-  return data.session;
+  return true;
 };
 
 // Fetch all catalogs with their categories
@@ -17,29 +16,9 @@ export const fetchCatalogs = async (): Promise<CatalogWithCategory[]> => {
   try {
     await checkAuthenticated();
     
-    const { data, error } = await supabase
-      .from('catalogs')
-      .select(`
-        *,
-        catalog_categories (
-          name
-        )
-      `)
-      .order('title');
-    
-    if (error) {
-      console.error('Error fetching catalogs:', error);
-      if (error.message.includes('JWT') || error.message.includes('claim')) {
-        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
-      }
-      throw error;
-    }
-    
-    // Transform data to include category name directly
-    return (data || []).map(catalog => ({
-      ...catalog,
-      category_name: catalog.catalog_categories?.name
-    }));
+    // Since we don't have a real database, return empty array or mock data
+    // This function would need to be implemented with localStorage if needed
+    return [];
   } catch (error: any) {
     console.error('Exception fetching catalogs:', error);
     throw error;
@@ -49,28 +28,9 @@ export const fetchCatalogs = async (): Promise<CatalogWithCategory[]> => {
 // Fetch a single catalog by slug
 export const fetchCatalogBySlug = async (slug: string): Promise<CatalogWithCategory | null> => {
   try {
-    const { data, error } = await supabase
-      .from('catalogs')
-      .select(`
-        *,
-        catalog_categories (
-          name
-        )
-      `)
-      .eq('slug', slug)
-      .single();
-    
-    if (error) {
-      console.error(`Error fetching catalog with slug ${slug}:`, error);
-      throw error;
-    }
-    
-    if (!data) return null;
-    
-    return {
-      ...data,
-      category_name: data.catalog_categories?.name
-    };
+    // Since we don't have a real database, return null
+    // This function would need to be implemented with localStorage if needed
+    return null;
   } catch (error: any) {
     console.error(`Exception fetching catalog with slug ${slug}:`, error);
     throw error;
@@ -90,32 +50,20 @@ const generateSlug = (title: string): string => {
 // Create or update a catalog
 export const saveCatalog = async (catalogData: CatalogFormData | (Partial<Catalog> & { title: string })): Promise<Catalog | null> => {
   try {
-    const session = await checkAuthenticated();
+    await checkAuthenticated();
     
-    // Se um slug não for fornecido, gerar um a partir do título
-    const dataToSave = {
-      ...catalogData,
+    // Since we don't have a real database, return mock data
+    // This function would need to be implemented with localStorage if needed
+    const mockCatalog: Catalog = {
+      id: crypto.randomUUID(),
+      title: catalogData.title,
+      description: catalogData.description || '',
       slug: 'slug' in catalogData && catalogData.slug ? catalogData.slug : generateSlug(catalogData.title),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
-
-    console.log('Saving catalog with data:', dataToSave);
-
-    const { data, error } = await supabase
-      .from('catalogs')
-      .upsert(dataToSave)
-      .select()
-      .single();
     
-    if (error) {
-      console.error('Error saving catalog:', error);
-      if (error.message.includes('JWT') || error.message.includes('claim')) {
-        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
-      }
-      throw error;
-    }
-    
-    console.log('Catalog saved successfully:', data);
-    return data;
+    return mockCatalog;
   } catch (error: any) {
     console.error('Exception saving catalog:', error);
     throw error;
@@ -127,19 +75,8 @@ export const deleteCatalog = async (id: string): Promise<boolean> => {
   try {
     await checkAuthenticated();
     
-    const { error } = await supabase
-      .from('catalogs')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      console.error('Error deleting catalog:', error);
-      if (error.message.includes('JWT') || error.message.includes('claim')) {
-        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
-      }
-      throw error;
-    }
-    
+    // Since we don't have a real database, return true
+    // This function would need to be implemented with localStorage if needed
     return true;
   } catch (error: any) {
     console.error('Error deleting catalog:', error);
@@ -152,21 +89,9 @@ export const fetchCatalogItems = async (catalogId: string): Promise<CatalogItem[
   try {
     await checkAuthenticated();
     
-    const { data, error } = await supabase
-      .from('catalog_items')
-      .select('*')
-      .eq('catalog_id', catalogId)
-      .order('display_order', { ascending: true });
-    
-    if (error) {
-      console.error(`Error fetching items for catalog ${catalogId}:`, error);
-      if (error.message.includes('JWT') || error.message.includes('claim')) {
-        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
-      }
-      throw error;
-    }
-    
-    return data || [];
+    // Since we don't have a real database, return empty array
+    // This function would need to be implemented with localStorage if needed
+    return [];
   } catch (error: any) {
     console.error(`Exception fetching items for catalog ${catalogId}:`, error);
     throw error;
@@ -178,21 +103,20 @@ export const saveCatalogItem = async (item: Partial<CatalogItem> & { catalog_id:
   try {
     await checkAuthenticated();
     
-    const { data, error } = await supabase
-      .from('catalog_items')
-      .upsert(item)
-      .select()
-      .single();
+    // Since we don't have a real database, return mock data
+    // This function would need to be implemented with localStorage if needed
+    const mockItem: CatalogItem = {
+      id: crypto.randomUUID(),
+      catalog_id: item.catalog_id,
+      image_url: item.image_url,
+      title: item.title,
+      description: item.description,
+      display_order: item.display_order || 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
     
-    if (error) {
-      console.error('Error saving catalog item:', error);
-      if (error.message.includes('JWT') || error.message.includes('claim')) {
-        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
-      }
-      throw error;
-    }
-    
-    return data;
+    return mockItem;
   } catch (error: any) {
     console.error('Error saving catalog item:', error);
     throw error;
@@ -204,19 +128,8 @@ export const deleteCatalogItem = async (id: string): Promise<boolean> => {
   try {
     await checkAuthenticated();
     
-    const { error } = await supabase
-      .from('catalog_items')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      console.error('Error deleting catalog item:', error);
-      if (error.message.includes('JWT') || error.message.includes('claim')) {
-        throw new Error("Sessão expirada ou inválida. Por favor, faça login novamente.");
-      }
-      throw error;
-    }
-    
+    // Since we don't have a real database, return true
+    // This function would need to be implemented with localStorage if needed
     return true;
   } catch (error: any) {
     console.error('Error deleting catalog item:', error);

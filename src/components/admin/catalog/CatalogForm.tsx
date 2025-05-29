@@ -8,7 +8,6 @@ import { Catalog, CatalogCategory } from '@/types/catalogTypes';
 import { uploadCatalogImage } from '@/services/imageService';
 import { saveCatalog } from '@/services/catalogService';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { AlertCircle } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 
@@ -51,8 +50,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) {
+        if (!isAuthenticated) {
           setAuthError("Usuário não autenticado. Por favor, faça login para continuar.");
         } else {
           setAuthError(null);
@@ -84,8 +82,7 @@ const CatalogForm: React.FC<CatalogFormProps> = ({ catalog, categories, onClose 
     setUploadError(null);
     
     // Verificar novamente autenticação antes de submeter
-    const { data: session, error: sessionError } = await supabase.auth.getSession();
-    if (!session.session || sessionError) {
+    if (!isAuthenticated) {
       setAuthError("Usuário não autenticado. Por favor, faça login para continuar.");
       setSubmitting(false);
       return;

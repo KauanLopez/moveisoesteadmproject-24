@@ -1,5 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { authService } from "./authService";
 
 export interface UrlUploadResponse {
@@ -12,7 +11,7 @@ export interface UrlUploadResponse {
 }
 
 /**
- * Upload an image from URL using Supabase Edge Function
+ * Mock upload function for frontend-only implementation
  */
 export const uploadImageFromUrl = async (
   imageUrl: string, 
@@ -21,55 +20,18 @@ export const uploadImageFromUrl = async (
 ): Promise<string> => {
   return await authService.withValidSession(async () => {
     try {
-      console.log('Starting URL upload:', imageUrl);
+      console.log('Mock starting URL upload:', imageUrl);
 
       // Validate URL format first
       if (!validateImageUrl(imageUrl)) {
         throw new Error('URL fornecida não é uma URL de imagem válida');
       }
 
-      // Check URL accessibility before sending to edge function
-      const isAccessible = await checkUrlAccessibility(imageUrl);
-      if (!isAccessible) {
-        throw new Error('Não foi possível acessar a imagem na URL fornecida');
-      }
-
-      const { data, error } = await supabase.functions.invoke('upload-image-from-url', {
-        body: {
-          imageUrl,
-          bucketName,
-          filename
-        }
-      });
-
-      if (error) {
-        console.error('Edge Function error:', error);
-        throw new Error(error.message || 'Erro ao processar upload da URL');
-      }
-
-      if (!data || !data.success) {
-        throw new Error(data?.error || 'Falha no upload da imagem');
-      }
-
-      console.log('URL upload completed:', data.url);
-      return data.url;
+      // For frontend-only, just return the original URL
+      console.log('Mock URL upload completed:', imageUrl);
+      return imageUrl;
     } catch (error: any) {
       console.error('URL upload error:', error);
-      
-      // Provide more specific error messages
-      if (error.message?.includes('CORS')) {
-        throw new Error('Erro de CORS: A imagem não pode ser acessada devido a restrições do servidor');
-      }
-      if (error.message?.includes('timeout')) {
-        throw new Error('Timeout: A imagem demorou muito para ser baixada');
-      }
-      if (error.message?.includes('404')) {
-        throw new Error('Imagem não encontrada na URL fornecida');
-      }
-      if (error.message?.includes('403')) {
-        throw new Error('Acesso negado: Sem permissão para acessar a imagem');
-      }
-      
       throw error;
     }
   });
@@ -108,42 +70,13 @@ export const validateImageUrl = (url: string): boolean => {
 };
 
 /**
- * Check if URL is accessible with better error handling
+ * Mock accessibility check for frontend-only implementation
  */
 export const checkUrlAccessibility = async (url: string): Promise<boolean> => {
   try {
-    // Use AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    const response = await fetch(url, { 
-      method: 'HEAD',
-      signal: controller.signal,
-      mode: 'no-cors' // This will help with CORS issues for basic accessibility check
-    });
-    
-    clearTimeout(timeoutId);
-    
-    // With no-cors mode, we can't check response.ok, but if no error is thrown, URL is accessible
-    return true;
-  } catch (error: any) {
-    console.warn('URL accessibility check failed:', error.message);
-    
-    // If HEAD request fails, try a GET request with no-cors
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
-      await fetch(url, { 
-        method: 'GET',
-        signal: controller.signal,
-        mode: 'no-cors'
-      });
-      
-      clearTimeout(timeoutId);
-      return true;
-    } catch {
-      return false;
-    }
+    // For frontend-only, always return true if URL is valid
+    return validateImageUrl(url);
+  } catch {
+    return false;
   }
 };
