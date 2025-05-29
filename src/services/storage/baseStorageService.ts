@@ -34,9 +34,9 @@ export class BaseStorageService {
     this.set(key, items);
   }
 
-  protected deleteItem(key: string, id: string): void {
-    const items = this.get(key);
-    const filtered = items.filter(item => item.id !== id);
+  protected deleteItem<T extends { id: string }>(key: string, id: string): void {
+    const items = this.get<T>(key);
+    const filtered = items.filter((item: T) => item.id !== id);
     this.set(key, filtered);
   }
 
