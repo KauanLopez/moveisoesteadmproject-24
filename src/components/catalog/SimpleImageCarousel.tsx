@@ -70,18 +70,39 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => 
         showNavigation={images.length > 1}
       />
 
-      {/* Container principal da imagem - ocupa todo espaço disponível */}
-      <div className="flex-1 min-h-0 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 relative">
-        <CarouselImage
-          imageUrl={currentImage.url}
-          imageTitle={currentImage.title}
-          isDragging={isDragging}
-          translateX={translateX}
+      {/* Container principal da imagem - altura fixa calculada */}
+      <div className="flex-1 min-h-0 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 relative flex items-center justify-center">
+        <div 
+          className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-        />
+          style={{
+            transform: `translateX(${translateX}px)`,
+            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+          }}
+        >
+          <img
+            src={currentImage.url}
+            alt={currentImage.title}
+            className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none rounded-lg shadow-lg"
+            style={{
+              maxWidth: 'calc(100% - 2rem)',
+              maxHeight: 'calc(100% - 2rem)'
+            }}
+            draggable={false}
+            onError={(e) => {
+              console.error('SimpleImageCarousel: Failed to load image:', currentImage.url);
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'block';
+              target.alt = 'Erro ao carregar imagem';
+            }}
+            onLoad={() => {
+              console.log('SimpleImageCarousel: Image loaded successfully:', currentImage.url);
+            }}
+          />
+        </div>
       </div>
       
       {/* Seção inferior fixa com informações */}

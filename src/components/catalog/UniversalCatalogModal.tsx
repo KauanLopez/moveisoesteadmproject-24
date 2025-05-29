@@ -25,7 +25,7 @@ const UniversalCatalogModal: React.FC<CatalogModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] max-h-[90vh] p-0 rounded-lg overflow-hidden border-0 shadow-2xl">
+      <DialogContent className="w-[95vw] max-w-6xl h-[90vh] max-h-[90vh] p-0 rounded-lg overflow-hidden border-0 shadow-2xl">
         <VisuallyHidden>
           <DialogTitle>{catalog.title}</DialogTitle>
           <DialogDescription>
@@ -52,8 +52,8 @@ const UniversalCatalogModal: React.FC<CatalogModalProps> = ({
             </Button>
           </div>
           
-          {/* Container do carrossel - usa todo espaço restante */}
-          <div className="flex-1 min-h-0 overflow-hidden">
+          {/* Container do carrossel - usa todo espaço restante disponível */}
+          <div className="flex-1 min-h-0 overflow-hidden" style={{ height: 'calc(90vh - 64px)' }}>
             {carouselImages.length > 0 ? (
               <SimpleImageCarousel images={carouselImages} />
             ) : (
