@@ -14,8 +14,8 @@ const CatalogSlide: React.FC<CatalogSlideProps> = ({ catalog, onOpenCatalog }) =
   return (
     <div className="flex-[0_0_100%] min-w-0 px-2 sm:px-4 transition-transform duration-300">
       <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
-        {/* Fixed aspect ratio container */}
-        <div className="aspect-[3/4] w-full">
+        {/* Container com proporção 16:9 fixa */}
+        <div className="aspect-[16/9] w-full">
           <img 
             src={catalog.external_cover_image_url} 
             alt={catalog.title} 
