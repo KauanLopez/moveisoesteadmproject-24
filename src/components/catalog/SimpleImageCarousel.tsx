@@ -1,7 +1,10 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useRef } from 'react';
+import { useDragHandlers } from './hooks/useDragHandlers';
+import CarouselNavigation from './components/CarouselNavigation';
+import CarouselDots from './components/CarouselDots';
+import CarouselImage from './components/CarouselImage';
+import CarouselImageInfo from './components/CarouselImageInfo';
 
 interface CarouselImage {
   url: string;
@@ -14,9 +17,6 @@ interface SimpleImageCarouselProps {
 
 const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [translateX, setTranslateX] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   console.log('SimpleImageCarousel: Rendering with', images.length, 'images');
@@ -45,81 +45,17 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => 
     setCurrentIndex(index);
   };
 
-  // Touch/Mouse drag handlers
-  const handleStart = (clientX: number) => {
-    setIsDragging(true);
-    setStartX(clientX);
-    setTranslateX(0);
-  };
-
-  const handleMove = (clientX: number) => {
-    if (!isDragging) return;
-    const diff = clientX - startX;
-    setTranslateX(diff);
-  };
-
-  const handleEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    
-    const threshold = 50; // Minimum distance to trigger slide change
-    
-    if (translateX > threshold) {
-      goToPrevious();
-    } else if (translateX < -threshold) {
-      goToNext();
-    }
-    
-    setTranslateX(0);
-  };
-
-  // Mouse events
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    handleStart(e.clientX);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    handleMove(e.clientX);
-  };
-
-  const handleMouseUp = () => {
-    handleEnd();
-  };
-
-  // Touch events
-  const handleTouchStart = (e: React.TouchEvent) => {
-    handleStart(e.touches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    handleEnd();
-  };
-
-  // Add global mouse event listeners
-  useEffect(() => {
-    if (isDragging) {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
-        handleMove(e.clientX);
-      };
-      
-      const handleGlobalMouseUp = () => {
-        handleEnd();
-      };
-
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
-      };
-    }
-  }, [isDragging, startX]);
+  const {
+    isDragging,
+    translateX,
+    handleMouseDown,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd
+  } = useDragHandlers({
+    onPrevious: goToPrevious,
+    onNext: goToNext
+  });
 
   const currentImage = images[currentIndex];
 
@@ -128,90 +64,36 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({ images }) => 
       className="relative w-full h-full bg-gray-100 flex flex-col overflow-hidden"
       ref={containerRef}
     >
-      {/* Fixed navigation arrows - always in the same position */}
-      {images.length > 1 && (
-        <>
-          <Button
-            onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 sm:p-3 bg-white/95 text-gray-800 hover:bg-white shadow-lg z-30 border transition-all duration-200 hover:scale-110"
-            size="icon"
-          >
-            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Button>
-          <Button
-            onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 sm:p-3 bg-white/95 text-gray-800 hover:bg-white shadow-lg z-30 border transition-all duration-200 hover:scale-110"
-            size="icon"
-          >
-            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Button>
-        </>
-      )}
+      <CarouselNavigation
+        onPrevious={goToPrevious}
+        onNext={goToNext}
+        showNavigation={images.length > 1}
+      />
 
-      {/* Main image area with proper sizing */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-0">
-        <div 
-          className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+        <CarouselImage
+          imageUrl={currentImage.url}
+          imageTitle={currentImage.title}
+          isDragging={isDragging}
+          translateX={translateX}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          style={{
-            transform: `translateX(${translateX}px)`,
-            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
-          }}
-        >
-          <div className="w-full h-full flex items-center justify-center">
-            <img
-              src={currentImage.url}
-              alt={currentImage.title}
-              className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none rounded-lg shadow-sm"
-              draggable={false}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                width: 'auto',
-                height: 'auto'
-              }}
-              onError={(e) => {
-                console.error('SimpleImageCarousel: Failed to load image:', currentImage.url);
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'block';
-                target.alt = 'Erro ao carregar imagem';
-              }}
-              onLoad={() => {
-                console.log('SimpleImageCarousel: Image loaded successfully:', currentImage.url);
-              }}
-            />
-          </div>
-        </div>
+        />
       </div>
       
-      {/* Image title and counter */}
-      {currentImage.title && (
-        <div className="bg-white border-t p-3 sm:p-4 text-center flex-shrink-0">
-          <h4 className="font-medium text-sm sm:text-base lg:text-lg">{currentImage.title}</h4>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            {currentIndex + 1} de {images.length}
-          </p>
-        </div>
-      )}
+      <CarouselImageInfo
+        title={currentImage.title}
+        currentIndex={currentIndex}
+        totalImages={images.length}
+      />
       
-      {/* Dots indicator */}
-      {images.length > 1 && (
-        <div className="absolute bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-20 bg-black/30 rounded-full px-3 py-2">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all duration-200 ${
-                currentIndex === index ? 'bg-furniture-yellow scale-125' : 'bg-white/70 hover:bg-white/90'
-              }`}
-              aria-label={`Ir para slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
+      <CarouselDots
+        totalImages={images.length}
+        currentIndex={currentIndex}
+        onSlideSelect={goToSlide}
+      />
     </div>
   );
 };
