@@ -409,21 +409,21 @@ const CatalogSection: React.FC = () => {
 
           {/* Carousel Container */}
           <div className="relative max-w-4xl mx-auto">
-            {/* Navigation Arrows - Responsive sizes */}
+            {/* Navigation Arrows - Positioned outside content area */}
             <Button
               onClick={prevCatalog}
-              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full shadow-lg border"
+              className="absolute left-0 md:-left-6 lg:-left-12 top-1/3 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
               size="icon"
             >
-              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
+              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
             
             <Button
               onClick={nextCatalog}
-              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full shadow-lg border"
+              className="absolute right-0 md:-right-6 lg:-right-12 top-1/3 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
               size="icon"
             >
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
 
             {/* Catalog Card - With drag functionality */}
@@ -453,12 +453,12 @@ const CatalogSection: React.FC = () => {
                 />
               </div>
               
-              {/* Overlay content - Responsive text sizes */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3 md:p-6 lg:p-8">
-                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white mb-1 md:mb-2">
+              {/* Overlay content - More space for content */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4 md:p-6 lg:p-8">
+                <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white mb-1 md:mb-2">
                   {currentCatalog.name}
                 </h3>
-                <p className="text-white/80 text-xs sm:text-sm md:text-base mb-2 md:mb-4 line-clamp-2">
+                <p className="text-white/90 text-xs sm:text-sm md:text-base mb-3 md:mb-4 line-clamp-2 max-w-3xl">
                   {currentCatalog.description}
                 </p>
                 <div>
