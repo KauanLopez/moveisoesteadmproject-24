@@ -41,32 +41,38 @@ const Navbar = () => {
 
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'}`}>
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-6">
         <div className="flex justify-between items-center">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img
-              src="/lovable-uploads/11eea643-cd94-4f02-8576-c1478d45960d.png"
-              alt="Móveis Oeste"
-              className="h-14 md:h-17 w-auto object-contain"
-            />
-          </Link>
+          {/* Logo - Left Side with increased padding */}
+          <div className="flex-shrink-0 pl-2">
+            <Link to="/" className="flex items-center">
+              <img
+                src="/lovable-uploads/636b600d-cab1-4922-9a44-7868ac3d73e5.png"
+                alt="Móveis Oeste"
+                className="h-14 md:h-17 w-auto object-contain"
+              />
+            </Link>
+          </div>
 
-          {/* Menu para Desktop */}
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* Centered Navigation Links - Desktop Only */}
+          <nav className="hidden md:flex items-center justify-center flex-1 space-x-8">
             {filteredRoutes.map((route) => (
               <Link
                 key={route.path}
                 to={route.path}
-                className="text-gray-700 hover:text-primary transition-colors"
+                className="text-gray-700 hover:text-primary transition-colors font-medium"
               >
                 {route.label}
               </Link>
             ))}
+          </nav>
+
+          {/* Contact Button - Right Side with increased padding */}
+          <div className="hidden md:flex flex-shrink-0 pr-2">
             <Button asChild>
               <a href="#contato">Contato</a>
             </Button>
-          </nav>
+          </div>
 
           {/* Menu Hambúrguer para Mobile */}
           <button
