@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -60,7 +59,7 @@ const Navbar = () => {
               <Link
                 key={route.path}
                 to={route.path}
-                className="text-gray-700 hover:text-primary transition-colors font-medium"
+                className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-primary transition-colors font-medium`}
               >
                 {route.label}
               </Link>
