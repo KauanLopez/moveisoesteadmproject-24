@@ -1,53 +1,49 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import ProductImageDialog from './featured/ProductImageDialog';
-import ProductCarousel from './featured/ProductCarousel';
-import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
-import { ImageContent } from '@/types/customTypes';
+import ModernProductCarousel from './featured/ModernProductCarousel';
 
 const FeaturedProducts = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedImageData, setSelectedImageData] = useState<{
-    src: string;
-    position: string;
-    scale: number;
-  } | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  
-  // Use useFeaturedProducts instead of useContent for fresh data
-  const { products, loading: productsLoading } = useFeaturedProducts();
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile(); // Initial check
-    window.addEventListener('resize', checkMobile);
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
+  // Use the provided image URLs
+  const products = [
+    {
+      id: 'product1',
+      title: 'Produto 1',
+      image: 'https://i.imgur.com/cprFFbE.jpeg'
+    },
+    {
+      id: 'product2', 
+      title: 'Produto 2',
+      image: 'https://i.imgur.com/52e2KQf.jpeg'
+    },
+    {
+      id: 'product3',
+      title: 'Produto 3', 
+      image: 'https://i.imgur.com/zT3javQ.jpeg'
+    },
+    {
+      id: 'product4',
+      title: 'Produto 4',
+      image: 'https://i.imgur.com/XhMDFqh.jpeg'
+    },
+    {
+      id: 'product5',
+      title: 'Produto 5',
+      image: 'https://i.imgur.com/FHfJvDx.jpeg'
+    },
+    {
+      id: 'product6',
+      title: 'Produto 6',
+      image: 'https://i.imgur.com/foRmZ8L.jpeg'
+    }
+  ];
 
-  const handleImageClick = (product: ImageContent) => {
-    setSelectedImage(product.image);
-    setSelectedImageData({
-      src: product.image,
-      position: product.objectPosition || 'center',
-      scale: product.scale || 1
-    });
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
   };
-
-  // Add loading state for products
-  if (productsLoading) {
-    return <div className="py-16 text-center">Carregando produtos...</div>;
-  }
-
-  if (products.length === 0) {
-    return <div className="py-16 text-center">Nenhum produto em destaque disponível.</div>;
-  }
 
   return (
     <section id="featured-products" className="py-16 bg-white">
@@ -57,9 +53,8 @@ const FeaturedProducts = () => {
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
         </div>
 
-        <ProductCarousel 
+        <ModernProductCarousel 
           products={products}
-          isMobile={isMobile}
           onImageClick={handleImageClick}
         />
         
@@ -70,13 +65,11 @@ const FeaturedProducts = () => {
         </div>
       </div>
 
-      {/* Modal de imagem em tela cheia */}
+      {/* Fullscreen Modal */}
       <ProductImageDialog
         isOpen={!!selectedImage}
         onOpenChange={(open) => !open && setSelectedImage(null)}
         selectedImage={selectedImage}
-        position={selectedImageData?.position}
-        scale={selectedImageData?.scale}
       />
     </section>
   );

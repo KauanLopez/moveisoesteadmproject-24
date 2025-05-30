@@ -8,22 +8,17 @@ interface ProductImageDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedImage: string | null;
-  position?: string;
-  scale?: number;
 }
 
 const ProductImageDialog = ({ 
   isOpen, 
   onOpenChange, 
-  selectedImage, 
-  position = 'center', 
-  scale = 1 
+  selectedImage
 }: ProductImageDialogProps) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState(false);
 
   React.useEffect(() => {
-    // Reset loading state when a new image is selected
     if (selectedImage) {
       setIsLoading(true);
       setLoadError(false);
@@ -46,11 +41,7 @@ const ProductImageDialog = ({
             <img 
               src={selectedImage} 
               alt="Visualização em tela cheia" 
-              className="max-w-full max-h-[80vh] object-contain"
-              style={{
-                objectPosition: position,
-                transform: `scale(${scale})`
-              }}
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
               onLoad={() => setIsLoading(false)}
               onError={() => {
                 setIsLoading(false);
