@@ -1,5 +1,9 @@
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { useMobileDetection } from './useMobileDetection';
+import { useUserInteraction } from './useUserInteraction';
+import { useScrollLogic } from './useScrollLogic';
+import { useAutoScroll } from './useAutoScroll';
 
 interface Product {
   id: string;
@@ -8,107 +12,29 @@ interface Product {
 }
 
 export const useCarouselLogic = (products: Product[]) => {
-  const carouselRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isUserInteracting, setIsUserInteracting] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const autoScrollRef = useRef<NodeJS.Timeout>();
-  const userInteractionTimeoutRef = useRef<NodeJS.Timeout>();
-
+  const isMobile = useMobileDetection();
+  
   // Create infinite scroll items (duplicate items for seamless loop)
   const extendedProducts = [...products, ...products, ...products];
-  const itemsPerView = isMobile ? 1 : 3;
   const totalItems = products.length;
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const {
+    isUserInteracting,
+    handleUserInteraction,
+    handleTouchStart,
+    handleMouseDown
+  } = useUserInteraction();
 
-  const scrollToIndex = useCallback((index: number, smooth = true) => {
-    if (!carouselRef.current) return;
-    
-    const container = carouselRef.current;
-    const itemWidth = container.scrollWidth / extendedProducts.length;
-    const scrollPosition = index * itemWidth;
-    
-    container.scrollTo({
-      left: scrollPosition,
-      behavior: smooth ? 'smooth' : 'auto'
-    });
-  }, [extendedProducts.length]);
+  const {
+    carouselRef,
+    scrollToIndex,
+    handleScroll: baseHandleScroll
+  } = useScrollLogic(extendedProducts, totalItems);
 
-  // Auto-scroll functionality
-  useEffect(() => {
-    if (isUserInteracting) return;
+  const handleScroll = () => baseHandleScroll(setCurrentIndex);
 
-    autoScrollRef.current = setInterval(() => {
-      setCurrentIndex(prev => {
-        const next = prev + 1;
-        const targetIndex = totalItems + next; // Start from middle set
-        scrollToIndex(targetIndex);
-        return next % totalItems;
-      });
-    }, 3000);
-
-    return () => {
-      if (autoScrollRef.current) {
-        clearInterval(autoScrollRef.current);
-      }
-    };
-  }, [isUserInteracting, scrollToIndex, totalItems]);
-
-  // Handle user interaction pause
-  const handleUserInteraction = useCallback(() => {
-    setIsUserInteracting(true);
-    
-    if (userInteractionTimeoutRef.current) {
-      clearTimeout(userInteractionTimeoutRef.current);
-    }
-    
-    userInteractionTimeoutRef.current = setTimeout(() => {
-      setIsUserInteracting(false);
-    }, 5000); // Resume auto-scroll after 5 seconds of no interaction
-  }, []);
-
-  // Snap to center logic
-  const handleScroll = useCallback(() => {
-    if (!carouselRef.current) return;
-    
-    const container = carouselRef.current;
-    const itemWidth = container.scrollWidth / extendedProducts.length;
-    const scrollLeft = container.scrollLeft;
-    const centerIndex = Math.round(scrollLeft / itemWidth);
-    
-    // Handle infinite loop repositioning
-    if (centerIndex < totalItems) {
-      // If we're in the first set, jump to the middle set
-      const newIndex = centerIndex + totalItems;
-      setTimeout(() => scrollToIndex(newIndex, false), 0);
-    } else if (centerIndex >= totalItems * 2) {
-      // If we're in the last set, jump to the middle set
-      const newIndex = centerIndex - totalItems;
-      setTimeout(() => scrollToIndex(newIndex, false), 0);
-    }
-    
-    // Update current index for indicators
-    const actualIndex = centerIndex % totalItems;
-    setCurrentIndex(actualIndex);
-  }, [extendedProducts.length, totalItems, scrollToIndex]);
-
-  // Touch and drag handlers
-  const handleTouchStart = useCallback(() => {
-    handleUserInteraction();
-  }, [handleUserInteraction]);
-
-  const handleMouseDown = useCallback(() => {
-    handleUserInteraction();
-  }, [handleUserInteraction]);
+  useAutoScroll(isUserInteracting, totalItems, scrollToIndex, setCurrentIndex);
 
   // Initialize position to middle set
   useEffect(() => {
