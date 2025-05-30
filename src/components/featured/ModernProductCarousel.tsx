@@ -197,12 +197,6 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
       <div className="text-center mt-2 text-sm text-gray-500">
         {currentIndex + 1} de {totalItems}
       </div>
-
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 };
