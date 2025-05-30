@@ -409,12 +409,12 @@ const CatalogSection: React.FC = () => {
 
           {/* Carousel Container */}
           <div className="relative max-w-4xl mx-auto">
-            {/* Image Container with Navigation */}
-            <div className="relative mb-6">
+            {/* Carousel Frame with Image and Button */}
+            <div className="relative mb-4">
               {/* Navigation Arrows - Positioned over image only */}
               <Button
                 onClick={prevCatalog}
-                className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
+                className="absolute left-2 md:left-4 top-1/3 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
                 size="icon"
               >
                 <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
@@ -422,7 +422,7 @@ const CatalogSection: React.FC = () => {
               
               <Button
                 onClick={nextCatalog}
-                className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
+                className="absolute right-2 md:right-4 top-1/3 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
                 size="icon"
               >
                 <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
@@ -454,40 +454,44 @@ const CatalogSection: React.FC = () => {
                     }}
                   />
                 </div>
+
+                {/* Ver Catálogos Button - Inside carousel, bottom-right corner */}
+                <div className="absolute bottom-4 right-4 z-30">
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCatalogClick(currentCatalog);
+                    }}
+                    className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-xs md:text-sm px-3 py-1.5 md:px-4 md:py-2 shadow-lg"
+                  >
+                    Ver Catálogo
+                  </Button>
+                </div>
+              </div>
+
+              {/* Dots indicator - Directly below the carousel image */}
+              <div className="flex justify-center mt-4 md:mt-6">
+                {catalogsData.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`w-2 h-2 md:w-3 md:h-3 rounded-full mx-1 md:mx-2 transition-colors ${
+                      currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
+                    }`}
+                    aria-label={`Ir para catálogo ${index + 1}`}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* Catalog Information - Below the image */}
-            <div className="text-center px-4 md:px-6">
-              <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mb-3">
+            {/* Catalog Information - Below the carousel frame */}
+            <div className="text-center px-4 md:px-6 mt-6">
+              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-2">
                 {currentCatalog.name}
               </h3>
-              <p className="text-gray-600 text-sm md:text-base mb-4 max-w-2xl mx-auto">
+              <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
                 {currentCatalog.description}
               </p>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCatalogClick(currentCatalog);
-                }}
-                className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-sm md:text-base px-6 py-2"
-              >
-                Ver Catálogo
-              </Button>
-            </div>
-
-            {/* Dots indicator - Responsive */}
-            <div className="flex justify-center mt-6 md:mt-8">
-              {catalogsData.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-2 h-2 md:w-3 md:h-3 rounded-full mx-1 md:mx-2 transition-colors ${
-                    currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
-                  }`}
-                  aria-label={`Ir para catálogo ${index + 1}`}
-                />
-              ))}
             </div>
           </div>
         </div>
