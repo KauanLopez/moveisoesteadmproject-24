@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { CatalogModalProps } from '@/types/unifiedCatalogTypes';
 import SimpleImageCarousel from './SimpleImageCarousel';
+import CatalogModalHeader from './components/CatalogModalHeader';
 
 const UniversalCatalogModal: React.FC<CatalogModalProps> = ({ 
   catalog, 
@@ -34,23 +33,11 @@ const UniversalCatalogModal: React.FC<CatalogModalProps> = ({
         </VisuallyHidden>
         
         <div className="flex flex-col w-full h-full bg-white">
-          {/* Header compacto - altura fixa mínima */}
-          <div className="flex justify-between items-center px-4 py-3 border-b bg-white z-50 flex-shrink-0 min-h-[64px]">
-            <div className="min-w-0 flex-1 mr-4">
-              <h2 className="text-lg sm:text-xl font-bold truncate text-gray-900">{catalog.title}</h2>
-              {catalog.description && (
-                <p className="text-gray-600 text-xs sm:text-sm truncate mt-1">{catalog.description}</p>
-              )}
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onClose} 
-              className="rounded-full p-2 flex-shrink-0 hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+          <CatalogModalHeader
+            title={catalog.title}
+            description={catalog.description}
+            onClose={onClose}
+          />
           
           {/* Container do carrossel - usa todo espaço restante disponível */}
           <div className="flex-1 min-h-0 overflow-hidden" style={{ height: 'calc(90vh - 64px)' }}>
