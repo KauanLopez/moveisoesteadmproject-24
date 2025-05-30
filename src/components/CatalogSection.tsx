@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import CatalogModal from './catalog/CatalogModal';
 
 interface CatalogImage {
   url: string;
@@ -169,7 +171,102 @@ const catalogsData: Catalog[] = [
       { url: 'https://i.imgur.com/8ckCBz2.jpeg', title: 'Página 66' },
       { url: 'https://i.imgur.com/MBBaLiu.jpeg', title: 'Página 67' },
       { url: 'https://i.imgur.com/1ynDt33.jpeg', title: 'Página 68' },
-      { url: 'https://i.imgur.com/iyfxqrh.jpeg', title: 'Página 69' }
+      { url: 'https://i.imgur.com/iyfxqrh.jpeg', title: 'Página 69' },
+      { url: 'https://i.imgur.com/0SNPAE9.jpeg', title: 'Página 70' },
+      { url: 'https://i.imgur.com/YNul91f.jpeg', title: 'Página 71' },
+      { url: 'https://i.imgur.com/lfo3ZY4.jpeg', title: 'Página 72' },
+      { url: 'https://i.imgur.com/WP6Ocio.jpeg', title: 'Página 73' },
+      { url: 'https://i.imgur.com/nDyECDS.jpeg', title: 'Página 74' },
+      { url: 'https://i.imgur.com/UC2QiZ0.jpeg', title: 'Página 75' },
+      { url: 'https://i.imgur.com/qYvHamY.jpeg', title: 'Página 76' },
+      { url: 'https://i.imgur.com/aOR25SK.jpeg', title: 'Página 77' },
+      { url: 'https://i.imgur.com/70laq6k.jpeg', title: 'Página 78' },
+      { url: 'https://i.imgur.com/GwRLahz.jpeg', title: 'Página 79' },
+      { url: 'https://i.imgur.com/aYM1Upn.jpeg', title: 'Página 80' },
+      { url: 'https://i.imgur.com/htVDgiK.jpeg', title: 'Página 81' },
+      { url: 'https://i.imgur.com/kOYcj4C.jpeg', title: 'Página 82' },
+      { url: 'https://i.imgur.com/C0kv6aN.jpeg', title: 'Página 83' },
+      { url: 'https://i.imgur.com/swtw7mp.jpeg', title: 'Página 84' },
+      { url: 'https://i.imgur.com/BGtBGf5.jpeg', title: 'Página 85' },
+      { url: 'https://i.imgur.com/0MAJO2A.jpeg', title: 'Página 86' },
+      { url: 'https://i.imgur.com/Gc0VpjZ.jpeg', title: 'Página 87' },
+      { url: 'https://i.imgur.com/Wj5KDbH.jpeg', title: 'Página 88' },
+      { url: 'https://i.imgur.com/ebaFux6.jpeg', title: 'Página 89' },
+      { url: 'https://i.imgur.com/KelLGQS.jpeg', title: 'Página 90' },
+      { url: 'https://i.imgur.com/bOIjJ2S.jpeg', title: 'Página 91' },
+      { url: 'https://i.imgur.com/NbIupa4.jpeg', title: 'Página 92' },
+      { url: 'https://i.imgur.com/CyDNiBW.jpeg', title: 'Página 93' },
+      { url: 'https://i.imgur.com/qhvtp6P.jpeg', title: 'Página 94' },
+      { url: 'https://i.imgur.com/8M3neAY.jpeg', title: 'Página 95' },
+      { url: 'https://i.imgur.com/q3lxL5m.jpeg', title: 'Página 96' },
+      { url: 'https://i.imgur.com/wGolL45.jpeg', title: 'Página 97' },
+      { url: 'https://i.imgur.com/7VGWLnX.jpeg', title: 'Página 98' },
+      { url: 'https://i.imgur.com/m4bMoYx.jpeg', title: 'Página 99' },
+      { url: 'https://i.imgur.com/f5ffSId.jpeg', title: 'Página 100' },
+      { url: 'https://i.imgur.com/3EOiYLj.jpeg', title: 'Página 101' },
+      { url: 'https://i.imgur.com/DQAKsY4.jpeg', title: 'Página 102' },
+      { url: 'https://i.imgur.com/DAy1ut4.jpeg', title: 'Página 103' },
+      { url: 'https://i.imgur.com/HbkuOHT.jpeg', title: 'Página 104' },
+      { url: 'https://i.imgur.com/YiPj3TN.jpeg', title: 'Página 105' },
+      { url: 'https://i.imgur.com/cmttiBR.jpeg', title: 'Página 106' },
+      { url: 'https://i.imgur.com/NdNgDEJ.jpeg', title: 'Página 107' },
+      { url: 'https://i.imgur.com/AnAGU5B.jpeg', title: 'Página 108' },
+      { url: 'https://i.imgur.com/Ybm9V8o.jpeg', title: 'Página 109' },
+      { url: 'https://i.imgur.com/ubBoXBY.jpeg', title: 'Página 110' },
+      { url: 'https://i.imgur.com/k0OchZG.jpeg', title: 'Página 111' },
+      { url: 'https://i.imgur.com/PVrCC2U.jpeg', title: 'Página 112' },
+      { url: 'https://i.imgur.com/4G7rVb5.jpeg', title: 'Página 113' },
+      { url: 'https://i.imgur.com/xBw5GVT.jpeg', title: 'Página 114' },
+      { url: 'https://i.imgur.com/oTtnYmX.jpeg', title: 'Página 115' },
+      { url: 'https://i.imgur.com/5LSoF7L.jpeg', title: 'Página 116' },
+      { url: 'https://i.imgur.com/u80kihp.jpeg', title: 'Página 117' },
+      { url: 'https://i.imgur.com/qC8WdO1.jpeg', title: 'Página 118' },
+      { url: 'https://i.imgur.com/d5VFwSY.jpeg', title: 'Página 119' },
+      { url: 'https://i.imgur.com/yLlpV63.jpeg', title: 'Página 120' },
+      { url: 'https://i.imgur.com/MmZA69B.jpeg', title: 'Página 121' },
+      { url: 'https://i.imgur.com/ZacaVrC.jpeg', title: 'Página 122' },
+      { url: 'https://i.imgur.com/xHTEdRE.jpeg', title: 'Página 123' },
+      { url: 'https://i.imgur.com/fEgSzZ2.jpeg', title: 'Página 124' },
+      { url: 'https://i.imgur.com/LFtCSRI.jpeg', title: 'Página 125' },
+      { url: 'https://i.imgur.com/weXy4EC.jpeg', title: 'Página 126' },
+      { url: 'https://i.imgur.com/NX0BWE6.jpeg', title: 'Página 127' },
+      { url: 'https://i.imgur.com/oBkrlbB.jpeg', title: 'Página 128' },
+      { url: 'https://i.imgur.com/oSzDtlM.jpeg', title: 'Página 129' },
+      { url: 'https://i.imgur.com/ydR3tyW.jpeg', title: 'Página 130' },
+      { url: 'https://i.imgur.com/qhyqkgf.jpeg', title: 'Página 131' },
+      { url: 'https://i.imgur.com/OoSMZem.jpeg', title: 'Página 132' },
+      { url: 'https://i.imgur.com/3biVlZ4.jpeg', title: 'Página 133' },
+      { url: 'https://i.imgur.com/IyIFLCN.jpeg', title: 'Página 134' },
+      { url: 'https://i.imgur.com/W0SvHPD.jpeg', title: 'Página 135' },
+      { url: 'https://i.imgur.com/1cn7rog.jpeg', title: 'Página 136' },
+      { url: 'https://i.imgur.com/sd6zdof.jpeg', title: 'Página 137' },
+      { url: 'https://i.imgur.com/Z23HKPC.jpeg', title: 'Página 138' },
+      { url: 'https://i.imgur.com/sOIIeWU.jpeg', title: 'Página 139' },
+      { url: 'https://i.imgur.com/oXwm2em.jpeg', title: 'Página 140' },
+      { url: 'https://i.imgur.com/9rlMlFv.jpeg', title: 'Página 141' },
+      { url: 'https://i.imgur.com/iQFWUMB.jpeg', title: 'Página 142' },
+      { url: 'https://i.imgur.com/pDFSjy7.jpeg', title: 'Página 143' },
+      { url: 'https://i.imgur.com/A8WzXs8.jpeg', title: 'Página 144' },
+      { url: 'https://i.imgur.com/5X2qPiy.jpeg', title: 'Página 145' },
+      { url: 'https://i.imgur.com/IvnFxr5.jpeg', title: 'Página 146' },
+      { url: 'https://i.imgur.com/cAeZ61X.jpeg', title: 'Página 147' },
+      { url: 'https://i.imgur.com/53HAMwV.jpeg', title: 'Página 148' },
+      { url: 'https://i.imgur.com/LeA1Z7S.jpeg', title: 'Página 149' },
+      { url: 'https://i.imgur.com/On8xTZt.jpeg', title: 'Página 150' },
+      { url: 'https://i.imgur.com/vCXot19.jpeg', title: 'Página 151' },
+      { url: 'https://i.imgur.com/3VBIkKu.jpeg', title: 'Página 152' },
+      { url: 'https://i.imgur.com/fIH7foE.jpeg', title: 'Página 153' },
+      { url: 'https://i.imgur.com/nzRoNhP.jpeg', title: 'Página 154' },
+      { url: 'https://i.imgur.com/EmwnurQ.jpeg', title: 'Página 155' },
+      { url: 'https://i.imgur.com/jVMMuJH.jpeg', title: 'Página 156' },
+      { url: 'https://i.imgur.com/wxiUrOL.jpeg', title: 'Página 157' },
+      { url: 'https://i.imgur.com/7HSwi4j.jpeg', title: 'Página 158' },
+      { url: 'https://i.imgur.com/B0kAnNb.jpeg', title: 'Página 159' },
+      { url: 'https://i.imgur.com/zQ5fphA.jpeg', title: 'Página 160' },
+      { url: 'https://i.imgur.com/I8a68hQ.jpeg', title: 'Página 161' },
+      { url: 'https://i.imgur.com/vbA69FG.jpeg', title: 'Página 162' },
+      { url: 'https://i.imgur.com/CGtzeJK.jpeg', title: 'Página 163' },
+      { url: 'https://i.imgur.com/MiA7T4Q.jpeg', title: 'Página 164' }
     ]
   },
   {
@@ -213,6 +310,8 @@ const catalogsData: Catalog[] = [
 
 const CatalogSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedCatalog, setSelectedCatalog] = useState<Catalog | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const nextCatalog = () => {
     setCurrentIndex((prev) => (prev + 1) % catalogsData.length);
@@ -223,92 +322,105 @@ const CatalogSection: React.FC = () => {
   };
 
   const handleCatalogClick = (catalog: Catalog) => {
-    console.log('Catalog clicked:', catalog.name);
-    // Modal functionality has been removed
+    setSelectedCatalog(catalog);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedCatalog(null);
   };
 
   const currentCatalog = catalogsData[currentIndex];
 
   return (
-    <section id="catalogs" className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Nossos Catálogos</h2>
-          <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
-          <p className="max-w-2xl mx-auto text-gray-600">
-            Navegue por nossos catálogos e veja como nossos móveis transformam espaços.
-          </p>
-        </div>
+    <>
+      <section id="catalogs" className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          {/* Header */}
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Nossos Catálogos</h2>
+            <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
+            <p className="max-w-2xl mx-auto text-gray-600">
+              Navegue por nossos catálogos e veja como nossos móveis transformam espaços.
+            </p>
+          </div>
 
-        {/* Carousel Container */}
-        <div className="relative max-w-4xl mx-auto">
-          {/* Navigation Arrows */}
-          <Button
-            onClick={prevCatalog}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full p-3 shadow-lg border"
-            size="icon"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          
-          <Button
-            onClick={nextCatalog}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full p-3 shadow-lg border"
-            size="icon"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-
-          {/* Catalog Card */}
-          <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
-            <div className="aspect-[16/9] w-full">
-              <img
-                src={currentCatalog.coverImage}
-                alt={currentCatalog.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.svg';
-                }}
-              />
-            </div>
+          {/* Carousel Container */}
+          <div className="relative max-w-4xl mx-auto">
+            {/* Navigation Arrows */}
+            <Button
+              onClick={prevCatalog}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full p-3 shadow-lg border"
+              size="icon"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
             
-            {/* Overlay content */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 lg:p-8">
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">
-                {currentCatalog.name}
-              </h3>
-              <p className="text-white/80 text-sm sm:text-base mb-4 line-clamp-2">
-                {currentCatalog.description}
-              </p>
-              <div>
-                <Button
-                  onClick={() => handleCatalogClick(currentCatalog)}
-                  className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-sm sm:text-base px-6 py-2"
-                >
-                  Ver Catálogo
-                </Button>
+            <Button
+              onClick={nextCatalog}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full p-3 shadow-lg border"
+              size="icon"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
+
+            {/* Catalog Card */}
+            <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
+              <div className="aspect-[16/9] w-full">
+                <img
+                  src={currentCatalog.coverImage}
+                  alt={currentCatalog.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder.svg';
+                  }}
+                />
+              </div>
+              
+              {/* Overlay content */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 lg:p-8">
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">
+                  {currentCatalog.name}
+                </h3>
+                <p className="text-white/80 text-sm sm:text-base mb-4 line-clamp-2">
+                  {currentCatalog.description}
+                </p>
+                <div>
+                  <Button
+                    onClick={() => handleCatalogClick(currentCatalog)}
+                    className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-sm sm:text-base px-6 py-2"
+                  >
+                    Ver Catálogo
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Dots indicator */}
-          <div className="flex justify-center mt-6">
-            {catalogsData.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full mx-2 transition-colors ${
-                  currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
-                }`}
-                aria-label={`Ir para catálogo ${index + 1}`}
-              />
-            ))}
+            {/* Dots indicator */}
+            <div className="flex justify-center mt-6">
+              {catalogsData.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-3 h-3 rounded-full mx-2 transition-colors ${
+                    currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
+                  }`}
+                  aria-label={`Ir para catálogo ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <CatalogModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        catalog={selectedCatalog}
+      />
+    </>
   );
 };
 
