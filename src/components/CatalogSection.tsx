@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CatalogModal from './catalog/CatalogModal';
@@ -312,14 +312,17 @@ const CatalogSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedCatalog, setSelectedCatalog] = useState<Catalog | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [currentX, setCurrentX] = useState(0);
 
-  const nextCatalog = () => {
+  const nextCatalog = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % catalogsData.length);
-  };
+  }, []);
 
-  const prevCatalog = () => {
+  const prevCatalog = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + catalogsData.length) % catalogsData.length);
-  };
+  }, []);
 
   const handleCatalogClick = (catalog: Catalog) => {
     setSelectedCatalog(catalog);
@@ -331,42 +334,113 @@ const CatalogSection: React.FC = () => {
     setSelectedCatalog(null);
   };
 
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.clientX);
+    setCurrentX(e.clientX);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setCurrentX(e.clientX);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    
+    const diff = currentX - startX;
+    const threshold = 50;
+    
+    if (diff > threshold) {
+      prevCatalog();
+    } else if (diff < -threshold) {
+      nextCatalog();
+    }
+    
+    setIsDragging(false);
+    setStartX(0);
+    setCurrentX(0);
+  };
+
+  // Touch handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].clientX);
+    setCurrentX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    setCurrentX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    
+    const diff = currentX - startX;
+    const threshold = 50;
+    
+    if (diff > threshold) {
+      prevCatalog();
+    } else if (diff < -threshold) {
+      nextCatalog();
+    }
+    
+    setIsDragging(false);
+    setStartX(0);
+    setCurrentX(0);
+  };
+
   const currentCatalog = catalogsData[currentIndex];
 
   return (
     <>
-      <section id="catalogs" className="py-16 bg-gray-50">
+      <section id="catalogs" className="py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           {/* Header */}
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Nossos Catálogos</h2>
-            <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
-            <p className="max-w-2xl mx-auto text-gray-600">
+          <div className="mb-8 md:mb-12 text-center">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">Nossos Catálogos</h2>
+            <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-6 md:mb-8"></div>
+            <p className="max-w-2xl mx-auto text-gray-600 text-sm md:text-base">
               Navegue por nossos catálogos e veja como nossos móveis transformam espaços.
             </p>
           </div>
 
           {/* Carousel Container */}
           <div className="relative max-w-4xl mx-auto">
-            {/* Navigation Arrows */}
+            {/* Navigation Arrows - Responsive sizes */}
             <Button
               onClick={prevCatalog}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full p-3 shadow-lg border"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full shadow-lg border"
               size="icon"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
             </Button>
             
             <Button
               onClick={nextCatalog}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full p-3 shadow-lg border"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-gray-800 hover:bg-white rounded-full shadow-lg border"
               size="icon"
             >
-              <ChevronRight className="h-6 w-6" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
             </Button>
 
-            {/* Catalog Card */}
-            <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
+            {/* Catalog Card - With drag functionality */}
+            <div 
+              className="relative w-full overflow-hidden rounded-lg shadow-lg cursor-grab active:cursor-grabbing"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{
+                transform: isDragging ? `translateX(${(currentX - startX) * 0.1}px)` : 'translateX(0px)',
+                transition: isDragging ? 'none' : 'transform 0.3s ease'
+              }}
+            >
               <div className="aspect-[16/9] w-full">
                 <img
                   src={currentCatalog.coverImage}
@@ -379,18 +453,21 @@ const CatalogSection: React.FC = () => {
                 />
               </div>
               
-              {/* Overlay content */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 lg:p-8">
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">
+              {/* Overlay content - Responsive text sizes */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3 md:p-6 lg:p-8">
+                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white mb-1 md:mb-2">
                   {currentCatalog.name}
                 </h3>
-                <p className="text-white/80 text-sm sm:text-base mb-4 line-clamp-2">
+                <p className="text-white/80 text-xs sm:text-sm md:text-base mb-2 md:mb-4 line-clamp-2">
                   {currentCatalog.description}
                 </p>
                 <div>
                   <Button
-                    onClick={() => handleCatalogClick(currentCatalog)}
-                    className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-sm sm:text-base px-6 py-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCatalogClick(currentCatalog);
+                    }}
+                    className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-xs sm:text-sm md:text-base px-3 py-1.5 md:px-6 md:py-2"
                   >
                     Ver Catálogo
                   </Button>
@@ -398,13 +475,13 @@ const CatalogSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Dots indicator */}
-            <div className="flex justify-center mt-6">
+            {/* Dots indicator - Responsive */}
+            <div className="flex justify-center mt-4 md:mt-6">
               {catalogsData.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  className={`w-3 h-3 rounded-full mx-2 transition-colors ${
+                  className={`w-2 h-2 md:w-3 md:h-3 rounded-full mx-1 md:mx-2 transition-colors ${
                     currentIndex === index ? 'bg-furniture-green' : 'bg-gray-300'
                   }`}
                   aria-label={`Ir para catálogo ${index + 1}`}
