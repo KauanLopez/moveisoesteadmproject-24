@@ -4,13 +4,10 @@ import { fetchExternalCatalogs } from '@/services/externalCatalogService';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 import ProjectsHeader from './projects/ProjectsHeader';
 import CatalogCarousel from './projects/CatalogCarousel';
-import UniversalCatalogModal from './catalog/UniversalCatalogModal';
-import { useCatalogModal } from '@/hooks/useCatalogModal';
 
 const Projects = () => {
   const [externalCatalogs, setExternalCatalogs] = useState<ExternalUrlCatalog[]>([]);
   const [loading, setLoading] = useState(true);
-  const { selectedCatalog, isOpen, openExternalCatalog, closeCatalog } = useCatalogModal();
   
   useEffect(() => {
     const loadCatalogs = async () => {
@@ -34,8 +31,8 @@ const Projects = () => {
   }, []);
 
   const handleOpenCatalog = (catalog: ExternalUrlCatalog) => {
-    console.log('Projects: Opening catalog:', catalog.title);
-    openExternalCatalog(catalog);
+    console.log('Projects: Catalog click detected for:', catalog.title);
+    // Modal functionality has been removed
   };
 
   console.log('Projects: Rendering - loading:', loading, 'catalogs count:', externalCatalogs.length);
@@ -78,12 +75,6 @@ const Projects = () => {
           />
         )}
       </div>
-
-      <UniversalCatalogModal 
-        catalog={selectedCatalog}
-        isOpen={isOpen} 
-        onClose={closeCatalog} 
-      />
     </section>
   );
 };
