@@ -44,8 +44,12 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="text-xl font-bold text-primary">
-            Móveis Oeste
+          <Link to="/" className="flex items-center">
+            <img
+              src="/lovable-uploads/11eea643-cd94-4f02-8576-c1478d45960d.png"
+              alt="Móveis Oeste"
+              className="h-8 md:h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Menu para Desktop */}
