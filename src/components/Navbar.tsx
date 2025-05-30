@@ -49,7 +49,7 @@ const Navbar = () => {
               <img
                 src="/lovable-uploads/636b600d-cab1-4922-9a44-7868ac3d73e5.png"
                 alt="Móveis Oeste"
-                className="h-14 md:h-17 w-auto object-contain"
+                className="h-10 md:h-14 w-auto object-contain"
               />
             </Link>
           </div>
