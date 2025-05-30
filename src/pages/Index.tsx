@@ -8,6 +8,7 @@ import Manager from '@/components/Manager';
 import Location from '@/components/Location';
 import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
+import CatalogSection from '@/components/CatalogSection';
 import { ContentProvider } from '@/context/ContentContext';
 
 const Index = () => {
@@ -17,6 +18,7 @@ const Index = () => {
       <ContentProvider>
         <Hero />
         <FeaturedProducts />
+        <CatalogSection />
         <About />
         <Manager />
         <CTA />
