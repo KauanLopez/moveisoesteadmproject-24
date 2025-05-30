@@ -409,74 +409,75 @@ const CatalogSection: React.FC = () => {
 
           {/* Carousel Container */}
           <div className="relative max-w-4xl mx-auto">
-            {/* Navigation Arrows - Positioned outside content area */}
-            <Button
-              onClick={prevCatalog}
-              className="absolute left-0 md:-left-6 lg:-left-12 top-1/3 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
-              size="icon"
-            >
-              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
-            </Button>
-            
-            <Button
-              onClick={nextCatalog}
-              className="absolute right-0 md:-right-6 lg:-right-12 top-1/3 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
-              size="icon"
-            >
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
-            </Button>
-
-            {/* Catalog Card - With drag functionality */}
-            <div 
-              className="relative w-full overflow-hidden rounded-lg shadow-lg cursor-grab active:cursor-grabbing"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              style={{
-                transform: isDragging ? `translateX(${(currentX - startX) * 0.1}px)` : 'translateX(0px)',
-                transition: isDragging ? 'none' : 'transform 0.3s ease'
-              }}
-            >
-              <div className="aspect-[16/9] w-full">
-                <img
-                  src={currentCatalog.coverImage}
-                  alt={currentCatalog.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/placeholder.svg';
-                  }}
-                />
-              </div>
+            {/* Image Container with Navigation */}
+            <div className="relative mb-6">
+              {/* Navigation Arrows - Positioned over image only */}
+              <Button
+                onClick={prevCatalog}
+                className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
+                size="icon"
+              >
+                <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+              </Button>
               
-              {/* Overlay content - More space for content */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4 md:p-6 lg:p-8">
-                <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white mb-1 md:mb-2">
-                  {currentCatalog.name}
-                </h3>
-                <p className="text-white/90 text-xs sm:text-sm md:text-base mb-3 md:mb-4 line-clamp-2 max-w-3xl">
-                  {currentCatalog.description}
-                </p>
-                <div>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCatalogClick(currentCatalog);
+              <Button
+                onClick={nextCatalog}
+                className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/95 text-gray-800 hover:bg-white rounded-full shadow-lg border p-2 md:p-3"
+                size="icon"
+              >
+                <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+              </Button>
+
+              {/* Catalog Image - With drag functionality */}
+              <div 
+                className="relative w-full overflow-hidden rounded-lg shadow-lg cursor-grab active:cursor-grabbing"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                style={{
+                  transform: isDragging ? `translateX(${(currentX - startX) * 0.1}px)` : 'translateX(0px)',
+                  transition: isDragging ? 'none' : 'transform 0.3s ease'
+                }}
+              >
+                <div className="aspect-[16/9] w-full">
+                  <img
+                    src={currentCatalog.coverImage}
+                    alt={currentCatalog.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
                     }}
-                    className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-xs sm:text-sm md:text-base px-3 py-1.5 md:px-6 md:py-2"
-                  >
-                    Ver Catálogo
-                  </Button>
+                  />
                 </div>
               </div>
             </div>
 
+            {/* Catalog Information - Below the image */}
+            <div className="text-center px-4 md:px-6">
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mb-3">
+                {currentCatalog.name}
+              </h3>
+              <p className="text-gray-600 text-sm md:text-base mb-4 max-w-2xl mx-auto">
+                {currentCatalog.description}
+              </p>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCatalogClick(currentCatalog);
+                }}
+                className="bg-furniture-yellow hover:bg-furniture-yellow/90 text-black text-sm md:text-base px-6 py-2"
+              >
+                Ver Catálogo
+              </Button>
+            </div>
+
             {/* Dots indicator - Responsive */}
-            <div className="flex justify-center mt-4 md:mt-6">
+            <div className="flex justify-center mt-6 md:mt-8">
               {catalogsData.map((_, index) => (
                 <button
                   key={index}
