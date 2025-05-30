@@ -20,14 +20,16 @@ export const useDragHandlers = ({ onPrevious, onNext }: UseDragHandlersProps) =>
   const handleMove = (clientX: number) => {
     if (!isDragging) return;
     const diff = clientX - startX;
-    setTranslateX(diff);
+    // Limit the drag distance to provide visual feedback
+    const limitedDiff = Math.max(-150, Math.min(150, diff));
+    setTranslateX(limitedDiff);
   };
 
   const handleEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
     
-    const threshold = 50;
+    const threshold = 80;
     
     if (translateX > threshold) {
       onPrevious();
@@ -49,6 +51,7 @@ export const useDragHandlers = ({ onPrevious, onNext }: UseDragHandlersProps) =>
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
     handleMove(e.touches[0].clientX);
   };
 
@@ -56,7 +59,7 @@ export const useDragHandlers = ({ onPrevious, onNext }: UseDragHandlersProps) =>
     handleEnd();
   };
 
-  // Add global mouse event listeners
+  // Add global mouse event listeners for drag completion
   useEffect(() => {
     if (isDragging) {
       const handleGlobalMouseMove = (e: MouseEvent) => {
@@ -75,7 +78,7 @@ export const useDragHandlers = ({ onPrevious, onNext }: UseDragHandlersProps) =>
         document.removeEventListener('mouseup', handleGlobalMouseUp);
       };
     }
-  }, [isDragging, startX]);
+  }, [isDragging, startX, translateX]);
 
   return {
     isDragging,
