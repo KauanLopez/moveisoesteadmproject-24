@@ -27,14 +27,15 @@ interface CatalogModalProps {
 const CatalogModal: React.FC<CatalogModalProps> = ({ catalog, isOpen, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  if (!catalog) return null;
-
   // Reset index when catalog changes or when modal opens
   React.useEffect(() => {
     if (isOpen) {
       setCurrentImageIndex(0);
     }
   }, [isOpen, catalog?.id]);
+
+  // Early returns after all hooks are called
+  if (!catalog) return null;
 
   // Check if images exist and are not empty
   const hasImages = catalog.images && catalog.images.length > 0;
