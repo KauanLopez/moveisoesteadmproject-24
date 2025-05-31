@@ -1,5 +1,19 @@
-// src/components/featured/ModernProductCarousel.tsx
-// ... (imports)
+
+import React from 'react';
+import { useCarouselLogic } from './hooks/useCarouselLogic';
+import CarouselItem from './CarouselItem';
+import NavigationDots from './NavigationDots';
+
+interface Product {
+  id: string;
+  title: string;
+  image: string;
+}
+
+interface ModernProductCarouselProps {
+  products: Product[];
+  onImageClick: (imageUrl: string) => void;
+}
 
 const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({ 
   products, 
@@ -30,7 +44,6 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
     <div className="relative w-full group/carousel">
       <div 
         ref={carouselRef}
-        // REMOVA snap-x e snap-mandatory daqui para controle JS total do snap
         className={`flex overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing active:cursor-grabbing' : 'cursor-grab'} `}
         onScroll={handleScroll}
         onMouseDown={handleMouseDown}
@@ -53,7 +66,6 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
         totalItems={totalItems}
         onDotClick={handleDotClick}
       />
-      {/* ItemCounter opcional */}
     </div>
   );
 };
