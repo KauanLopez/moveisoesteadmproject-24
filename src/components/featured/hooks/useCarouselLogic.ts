@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useMobileDetection } from './useMobileDetection';
 import { useAutoScroll } from './useAutoScroll';
@@ -28,7 +29,6 @@ export const useCarouselLogic = (products: Product[]) => {
   // Ref para controlar se um teletransporte/snap programático está em andamento
   const isProgrammaticScrollRef = useRef(false);
   const scrollEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
 
   const updateDimensions = useCallback(() => {
     if (carouselRef.current) {
@@ -100,7 +100,6 @@ export const useCarouselLogic = (products: Product[]) => {
 
   }, [totalItems, calculateScrollLeftForCenter, currentIndex ]);
 
-
   const onDragStart = useCallback((clientX: number) => {
     if (!carouselRef.current || totalItems === 0 || !itemWidthRef.current) return;
     handleUserInteraction();
@@ -153,7 +152,6 @@ export const useCarouselLogic = (products: Product[]) => {
       const centerViewportScroll = currentScroll + (containerWidthRef.current / 2);
       closestPhysicalIndex = Math.round(centerViewportScroll / itemWidthRef.current) -1;
 
-
       let logicalIndexToSnap = closestPhysicalIndex % totalItems;
       if (logicalIndexToSnap < 0) logicalIndexToSnap += totalItems;
 
@@ -182,11 +180,10 @@ export const useCarouselLogic = (products: Product[]) => {
   }, [isDragging, onDragMove, onDragEnd]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => onDragStart(e.pageX), [onDragStart]);
-  const handleTouchStartCallback = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     // e.preventDefault(); // Pode ser necessário para prevenir scroll nativo enquanto arrasta
     onDragStart(e.touches[0].clientX);
   }, [onDragStart]);
-
 
   const handleScroll = useCallback(() => {
     if (isProgrammaticScrollRef.current || isDragging || !carouselRef.current || totalItems === 0 || itemWidthRef.current === 0) {
@@ -243,5 +240,13 @@ export const useCarouselLogic = (products: Product[]) => {
   return {
     carouselRef,
     currentIndex,
-    // setCurrentIndex, // snapToItem atualiza o currentIndex
     isMobile,
+    extendedProducts,
+    totalItems,
+    snapToItem,
+    handleScroll,
+    handleMouseDown,
+    handleTouchStart,
+    isDragging
+  };
+};
