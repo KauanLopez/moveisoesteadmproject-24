@@ -19,7 +19,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fecha o menu ao redimensionar para desktop
+  // Fecha o menu ao redimensionar para desktop e gerencia o overflow do body
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -28,8 +28,19 @@ const Navbar = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
+    // Gerenciar o overflow do body quando o menu mobile é aberto/fechado
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.body.style.overflow = 'unset'; // Garante que o overflow seja resetado
+    };
+  }, [isMenuOpen]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -39,7 +50,11 @@ const Navbar = () => {
   const filteredRoutes = navRoutes.filter(route => route.path !== '/catalogo');
 
   return (
-    <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'}`}>
+    <header 
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        isScrolled || isMenuOpen ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
+      }`}
+    >
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center">
           {/* Logo - Left Side with increased padding */}
@@ -59,7 +74,9 @@ const Navbar = () => {
               <Link
                 key={route.path}
                 to={route.path}
-                className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-primary transition-colors font-medium`}
+                className={`${
+                  isScrolled || isMenuOpen ? 'text-gray-700' : 'text-white'
+                } hover:text-primary transition-colors font-medium`}
               >
                 {route.label}
               </Link>
@@ -76,7 +93,7 @@ const Navbar = () => {
           {/* Menu Hambúrguer para Mobile */}
           <button
             onClick={toggleMenu}
-            className="md:hidden text-gray-700 hover:text-primary transition-colors"
+            className={`md:hidden ${ isScrolled || isMenuOpen ? 'text-gray-700' : 'text-white'} hover:text-primary transition-colors`}
             aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -86,7 +103,10 @@ const Navbar = () => {
 
       {/* Menu Mobile */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-md py-4 px-6 transition-all duration-300">
+        <div 
+          className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-4 px-6 transition-all duration-300 ease-in-out"
+          // Adicionado shadow-lg para consistência com o header quando isMenuOpen
+        >
           <nav className="flex flex-col space-y-4">
             {filteredRoutes.map((route) => (
               <Link
@@ -101,7 +121,16 @@ const Navbar = () => {
             <Button
               asChild
               className="w-full mt-2"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={() => {
+                setIsMenuOpen(false);
+                // Adiciona um pequeno delay para garantir que o menu fechou antes do scroll
+                setTimeout(() => {
+                  const contactSection = document.getElementById('contato'); // Supondo que sua seção de contato tenha id="contato"
+                  if (contactSection) {
+                    contactSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }, 100);
+              }}
             >
               <a href="#contato">Contato</a>
             </Button>
