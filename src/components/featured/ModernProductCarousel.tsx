@@ -1,5 +1,18 @@
-// src/components/featured/ModernProductCarousel.tsx
-// ... (imports)
+import React from 'react';
+import { useCarouselLogic } from './hooks/useCarouselLogic';
+import CarouselItem from './CarouselItem';
+import NavigationDots from './NavigationDots';
+
+interface Product {
+  id: string;
+  title: string;
+  image: string;
+}
+
+interface ModernProductCarouselProps {
+  products: Product[];
+  onImageClick: (imageUrl: string) => void;
+}
 
 const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({ 
   products, 
