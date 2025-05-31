@@ -3,8 +3,8 @@ import { useCallback, useRef } from 'react';
 
 export const useSnapLogic = (
   totalItems: number,
-  itemWidthRef: React.RefObject<number>,
-  containerWidthRef: React.RefObject<number>,
+  itemWidthRef: { current: number },
+  containerWidthRef: { current: number },
   carouselRef: React.RefObject<HTMLDivElement>,
   setCurrentIndex: (index: number) => void
 ) => {

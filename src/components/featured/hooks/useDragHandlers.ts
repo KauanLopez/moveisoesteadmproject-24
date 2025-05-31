@@ -3,12 +3,12 @@ import { useState, useCallback, useEffect } from 'react';
 
 export const useDragHandlers = (
   totalItems: number,
-  itemWidthRef: React.RefObject<number>,
-  containerWidthRef: React.RefObject<number>,
+  itemWidthRef: { current: number },
+  containerWidthRef: { current: number },
   carouselRef: React.RefObject<HTMLDivElement>,
   snapToItem: (index: number, smooth?: boolean) => void,
   handleUserInteraction: () => void,
-  isProgrammaticScrollRef: React.RefObject<boolean>
+  isProgrammaticScrollRef: { current: boolean }
 ) => {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);

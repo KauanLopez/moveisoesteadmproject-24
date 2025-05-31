@@ -4,11 +4,11 @@ import { useCallback, useRef } from 'react';
 export const useScrollHandlers = (
   totalItems: number,
   extendedProductsLength: number,
-  itemWidthRef: React.RefObject<number>,
-  containerWidthRef: React.RefObject<number>,
+  itemWidthRef: { current: number },
+  containerWidthRef: { current: number },
   carouselRef: React.RefObject<HTMLDivElement>,
   snapToItem: (index: number, smooth?: boolean) => void,
-  isProgrammaticScrollRef: React.RefObject<boolean>,
+  isProgrammaticScrollRef: { current: boolean },
   isDragging: boolean
 ) => {
   const scrollEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
