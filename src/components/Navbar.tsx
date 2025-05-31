@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -60,7 +59,7 @@ const Navbar = () => {
           <div className="flex-shrink-0 pl-2">
             <Link to="/" className="flex items-center">
               <img
-                src="/LogoNavBar.svg"
+                src="/LogoNavBar.svg" {/* CAMINHO DA LOGO ATUALIZADO */}
                 alt="Móveis Oeste"
                 className="h-10 w-auto object-contain" 
               />
