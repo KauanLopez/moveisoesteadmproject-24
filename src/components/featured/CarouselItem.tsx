@@ -1,4 +1,3 @@
-// src/components/featured/CarouselItem.tsx
 import React from 'react';
 import { Expand } from 'lucide-react';
 
@@ -53,7 +52,6 @@ const CarouselItem: React.FC<CarouselItemProps> = ({
             className={`absolute top-3 right-3 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full transition-opacity duration-200 focus:opacity-100 z-10 ${
               isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'
             }`}
-            // Adicionado focus-within:opacity-100 para acessibilidade com teclado no desktop
             aria-label="Ver em tela cheia"
           >
             <Expand className="h-4 w-4" />
