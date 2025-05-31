@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useMobileDetection } from './useMobileDetection';
 import { useAutoScroll } from './useAutoScroll';
@@ -213,7 +214,7 @@ export const useCarouselLogic = (products: Product[]) => {
             setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
             return; 
         // Se o início do carrossel visível está no último terço do último conjunto de clones (buffer da direita)
-        } else if (physicalIndexAtScroll > (totalItems * 2) - (totalItems * 0.25) ) { 
+        } else if (physicalIndexAtScrollStart > (totalItems * 2) - (totalItems * 0.25) ) { 
             isProgrammaticScrollRef.current = true;
             container.scrollLeft -= oneSetWidth;
             setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
