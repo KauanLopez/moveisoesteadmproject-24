@@ -9,7 +9,7 @@ interface Product {
 }
 
 export const useCarouselLogic = (products: Product[]) => {
-  const [currentIndex, setCurrentIndex] = useState(0); // Índice lógico (0 a totalItems-1)
+  const [currentIndex, setCurrentIndex] = useState(0);
   const isMobile = useMobileDetection();
   
   const extendedProducts = products.length > 0 ? [...products, ...products, ...products] : [];
@@ -28,7 +28,6 @@ export const useCarouselLogic = (products: Product[]) => {
   const isProgrammaticScrollRef = useRef(false);
   const scrollEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const initialSnapDoneRef = useRef(false);
-
 
   const updateDimensions = useCallback(() => {
     if (carouselRef.current) {
@@ -81,17 +80,24 @@ export const useCarouselLogic = (products: Product[]) => {
   }, []);
 
   const snapToItem = useCallback((logicalIndexToSnap: number, smooth = true) => {
-    if (!carouselRef.current || totalItems === 0 || itemWidthRef.current === 0) return;
+    if (!carouselRef.current || totalItems === 0 || itemWidthRef.current === 0) {
+        if (isProgrammaticScrollRef.current) isProgrammaticScrollRef.current = false; // Ensure reset if returning early
+        return;
+    }
     
     const newLogicalIndex = (logicalIndexToSnap % totalItems + totalItems) % totalItems;
 
-    isProgrammaticScrollRef.current = true;
+    isProgrammaticScrollRef.current = true; 
     const targetPhysicalIndex = newLogicalIndex + totalItems;
     const targetScrollLeft = calculateScrollLeftForCenter(targetPhysicalIndex);
     
     const currentScroll = carouselRef.current.scrollLeft;
+    // Evita scroll desnecessário se já estiver muito próximo E o índice lógico for o mesmo.
+    // Isso ajuda a prevenir "jumps" ou scrolls redundantes se o item já estiver posicionado.
     if (Math.abs(currentScroll - targetScrollLeft) < 2 && currentIndex === newLogicalIndex && smooth) {
         isProgrammaticScrollRef.current = false;
+        // Se o índice lógico mudou, mesmo que o scroll seja mínimo, atualiza o estado
+        if (currentIndex !== newLogicalIndex) setCurrentIndex(newLogicalIndex);
         return;
     }
     
@@ -100,10 +106,13 @@ export const useCarouselLogic = (products: Product[]) => {
       behavior: smooth ? 'smooth' : 'auto',
     });
     
-    setCurrentIndex(newLogicalIndex);
+    setCurrentIndex(newLogicalIndex); // Atualiza o estado para refletir o item alvo
     
-    const timeoutDuration = smooth ? 400 : 60; 
-    setTimeout(() => { isProgrammaticScrollRef.current = false; }, timeoutDuration);
+    const timeoutDuration = smooth ? 500 : 70; // Aumentado para smooth para cobrir a animação
+    if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current); // Limpa qualquer snap pendente do handleScroll
+    setTimeout(() => { 
+      isProgrammaticScrollRef.current = false; 
+    }, timeoutDuration);
 
   }, [totalItems, calculateScrollLeftForCenter, currentIndex]);
 
@@ -116,7 +125,7 @@ export const useCarouselLogic = (products: Product[]) => {
     if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current);
     isProgrammaticScrollRef.current = true; 
 
-    handleUserInteraction();
+    handleUserInteraction(); // Pausa o auto-scroll
     setIsDragging(true);
     setStartX(clientX);
     setInitialScrollLeft(carouselRef.current.scrollLeft);
@@ -137,13 +146,12 @@ export const useCarouselLogic = (products: Product[]) => {
     if (!carouselRef.current || totalItems === 0 || !itemWidthRef.current) {
       if (isDragging) setIsDragging(false);
       if (carouselRef.current) carouselRef.current.style.cursor = 'grab';
-      isProgrammaticScrollRef.current = false;
+      isProgrammaticScrollRef.current = false; 
       return;
     }
     if (!isDragging) return;
 
     const finalScrollLeft = carouselRef.current.scrollLeft;
-    const scrollDelta = finalScrollLeft - initialScrollLeft; 
     
     setIsDragging(false); 
     if (carouselRef.current) {
@@ -151,19 +159,14 @@ export const useCarouselLogic = (products: Product[]) => {
         carouselRef.current.style.cursor = 'grab';
     }
 
-    let logicalIndexToSnap = currentIndex; 
-    const itemW = itemWidthRef.current;
-    const dragThreshold = itemW * 0.4; 
-
-    if (scrollDelta < -dragThreshold) { 
-      logicalIndexToSnap = currentIndex - 1;
-    } else if (scrollDelta > dragThreshold) { 
-      logicalIndexToSnap = currentIndex + 1;
-    }
+    const centerOfViewport = finalScrollLeft + containerWidthRef.current / 2;
+    const physicalIndexWhoseSlotContainsCenter = Math.floor(centerOfViewport / itemWidthRef.current);
+    let logicalIndexToSnap = (physicalIndexWhoseSlotContainsCenter % totalItems + totalItems) % totalItems;
     
     snapToItem(logicalIndexToSnap, true);
+    // isProgrammaticScrollRef será resetado dentro de snapToItem após a animação
 
-  }, [isDragging, totalItems, snapToItem, itemWidthRef, initialScrollLeft, currentIndex, containerWidthRef]);
+  }, [isDragging, totalItems, snapToItem, itemWidthRef, containerWidthRef]);
 
 
   useEffect(() => {
@@ -200,17 +203,17 @@ export const useCarouselLogic = (products: Product[]) => {
     const currentScroll = container.scrollLeft;
     const oneSetWidth = totalItems * itemWidthRef.current;
 
-    if (!isDragging) {
+    // Lógica de teletransporte (apenas se não estiver arrastando ativamente)
+    if (!isDragging) { 
         const physicalIndexAtScrollStart = currentScroll / itemWidthRef.current;
-        
-        // CORREÇÃO AQUI: Usar physicalIndexAtScrollStart em vez de physicalIndexAtScroll
-        if (physicalIndexAtScrollStart < (totalItems - 0.9) && currentScroll > itemWidthRef.current * 0.05) { 
+        const safeThreshold = 0.2; // Considera 20% da largura de um item como buffer para evitar teleporte durante snap
+
+        if (physicalIndexAtScrollStart < (totalItems - 1 + safeThreshold) && currentScroll > itemWidthRef.current * safeThreshold) { 
             isProgrammaticScrollRef.current = true;
             container.scrollLeft += oneSetWidth;
             setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
             return; 
-        // CORREÇÃO AQUI: Usar physicalIndexAtScrollStart em vez de physicalIndexAtScroll
-        } else if (physicalIndexAtScrollStart > (totalItems * 2 - 0.1) ) { 
+        } else if (physicalIndexAtScrollStart > (totalItems * 2 - safeThreshold) ) { 
             isProgrammaticScrollRef.current = true;
             container.scrollLeft -= oneSetWidth;
             setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
@@ -218,29 +221,30 @@ export const useCarouselLogic = (products: Product[]) => {
         }
     }
     
-    if (!isDragging) {
+    // Atualiza o currentIndex apenas se não for um scroll programático ou arraste
+    // Isso mantém os dots e auto-scroll sincronizados com a visualização.
+    if (!isDragging && !isProgrammaticScrollRef.current) {
         const centerOfViewport = currentScroll + containerWidthRef.current / 2;
         const physicalIndexAtCenter = Math.round(centerOfViewport / itemWidthRef.current) -1;
         let newLogicalIndex = (physicalIndexAtCenter % totalItems + totalItems) % totalItems;
         
         if (currentIndex !== newLogicalIndex) {
-            // Comentado para evitar atualizações de estado conflitantes durante o scroll
-            // setCurrentIndex(newLogicalIndex); 
+             setCurrentIndex(newLogicalIndex);
         }
     }
 
     if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current);
     scrollEndTimeoutRef.current = setTimeout(() => {
       if (!isDragging && !isProgrammaticScrollRef.current && carouselRef.current && itemWidthRef.current > 0) {
+        // Este snap é para scrolls manuais (roda do mouse, scrollbar) que não são drag.
+        // O onDragEnd já cuida do snap após o drag.
         const finalScroll = carouselRef.current.scrollLeft;
         const centerOfViewport = finalScroll + containerWidthRef.current / 2;
         const physicalIndexAtCenter = Math.round(centerOfViewport / itemWidthRef.current) -1;
-        
         let finalLogicalIndex = (physicalIndexAtCenter % totalItems + totalItems) % totalItems;
-        
         snapToItem(finalLogicalIndex, true);
       }
-    }, 250); 
+    }, 250);
 
   }, [isDragging, totalItems, itemWidthRef, containerWidthRef, snapToItem, currentIndex, calculateScrollLeftForCenter]);
 
