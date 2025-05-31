@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { useCarouselLogic } from './hooks/useCarouselLogic';
 import CarouselItem from './CarouselItem';
 import NavigationDots from './NavigationDots';
-import ItemCounter from './ItemCounter';
+// import ItemCounter from './ItemCounter'; // Opcional
 
 interface Product {
   id: string;
@@ -29,32 +28,37 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
     totalItems,
     scrollToIndex,
     handleScroll,
-    handleTouchStart,
     handleMouseDown,
-    handleUserInteraction
+    handleTouchStart,
+    isDragging // Pode ser usado para adicionar classes CSS durante o arraste
   } = useCarouselLogic(products);
 
   const handleDotClick = (index: number) => {
-    handleUserInteraction();
-    const targetIndex = totalItems + index;
-    scrollToIndex(targetIndex);
-    setCurrentIndex(index);
+    // A interação do usuário já é tratada em onDragStart (dentro de handleMouseDown/TouchStart)
+    const targetPhysicalIndex = totalItems + index; 
+    scrollToIndex(targetPhysicalIndex, true);
+    setCurrentIndex(index); 
   };
 
+  if (!products || products.length === 0) {
+    return <div className="text-center py-8">Nenhum produto em destaque no momento.</div>;
+  }
+
   return (
-    <div className="relative w-full">
+    <div className="relative w-full group/carousel">
       <div 
         ref={carouselRef}
-        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        className={`flex overflow-x-auto scrollbar-hide snap-x snap-mandatory ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         onScroll={handleScroll}
-        onTouchStart={handleTouchStart}
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        // onTouchMove e onTouchEnd são gerenciados globalmente pelo hook
       >
-        {extendedProducts.map((product, index) => (
+        {extendedProducts.map((product, physicalIndex) => (
           <CarouselItem
-            key={`${product.id}-${index}`}
+            key={`${product.id}-loop-${Math.floor(physicalIndex / totalItems)}-${physicalIndex % totalItems}`} 
             product={product}
-            index={index}
+            index={physicalIndex % totalItems} // Passa o índice lógico para o item
             isMobile={isMobile}
             onImageClick={onImageClick}
           />
@@ -68,10 +72,11 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
         onDotClick={handleDotClick}
       />
 
-      <ItemCounter
+      {/* <ItemCounter
         currentIndex={currentIndex}
         totalItems={totalItems}
       />
+      */}
     </div>
   );
 };
