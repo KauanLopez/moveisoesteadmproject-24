@@ -9,7 +9,7 @@ interface Product {
 }
 
 export const useCarouselLogic = (products: Product[]) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0); // Índice lógico (0 a totalItems-1)
   const isMobile = useMobileDetection();
   
   const extendedProducts = products.length > 0 ? [...products, ...products, ...products] : [];
@@ -25,9 +25,14 @@ export const useCarouselLogic = (products: Product[]) => {
   const [startX, setStartX] = useState(0);
   const [initialScrollLeft, setInitialScrollLeft] = useState(0);
   
+  // Flag para indicar que um scroll programático (snap, teleporte) está em andamento.
+  // Isso ajuda a handleScroll a não interferir.
   const isProgrammaticScrollRef = useRef(false);
+  // Timeout para o debounce do snap no handleScroll
   const scrollEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Flag para controlar o snap inicial
   const initialSnapDoneRef = useRef(false);
+
 
   const updateDimensions = useCallback(() => {
     if (carouselRef.current) {
@@ -58,6 +63,9 @@ export const useCarouselLogic = (products: Product[]) => {
             if (scrollEndTimeoutRef.current) {
                 clearTimeout(scrollEndTimeoutRef.current);
             }
+            if (userInteractionTimeoutRef.current) { // Limpa o timeout de interação também
+                clearTimeout(userInteractionTimeoutRef.current);
+            }
         };
     }
   }, [updateDimensions, totalItems]);
@@ -67,10 +75,9 @@ export const useCarouselLogic = (products: Product[]) => {
     if (userInteractionTimeoutRef.current) {
       clearTimeout(userInteractionTimeoutRef.current);
     }
-    // Delay para o auto-scroll reiniciar após a última interação do usuário
     userInteractionTimeoutRef.current = setTimeout(() => {
       setIsUserInteracting(false); 
-    }, 2000); // 2 segundos de delay, conforme solicitado anteriormente
+    }, 2000); // Delay de 2 segundos para reiniciar auto-scroll após interação
   }, []);
   
   const calculateScrollLeftForCenter = useCallback((physicalIndex: number) => {
@@ -89,15 +96,17 @@ export const useCarouselLogic = (products: Product[]) => {
     const newLogicalIndex = (logicalIndexToSnap % totalItems + totalItems) % totalItems;
 
     isProgrammaticScrollRef.current = true; 
-    const targetPhysicalIndex = newLogicalIndex + totalItems;
+    const targetPhysicalIndex = newLogicalIndex + totalItems; // Sempre mira o conjunto do meio
     const targetScrollLeft = calculateScrollLeftForCenter(targetPhysicalIndex);
     
     const currentScroll = carouselRef.current.scrollLeft;
-    // Evita scrollTo se já estiver muito próximo E o índice lógico for o mesmo (para scrolls suaves)
+    // Evita scrollTo se já estiver muito próximo E o índice lógico já for o alvo (para scrolls suaves)
     if (smooth && Math.abs(currentScroll - targetScrollLeft) < 2 && currentIndex === newLogicalIndex) {
-        // Se o índice mudou mas o scroll não precisa, atualiza o índice e reseta a flag
+        // Se o índice mudou, mas o scroll não precisa, atualiza o índice
         if (currentIndex !== newLogicalIndex) setCurrentIndex(newLogicalIndex);
-        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 50); // Reset rápido da flag
+        // Mesmo assim, é um scroll "programático" no sentido de que foi uma decisão lógica,
+        // então resetamos a flag após um curto delay.
+        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 50);
         return;
     }
     
@@ -106,41 +115,42 @@ export const useCarouselLogic = (products: Product[]) => {
       behavior: smooth ? 'smooth' : 'auto',
     });
     
-    // Atualiza o currentIndex para refletir o item alvo do snap
-    // Esta é a principal fonte de verdade para o currentIndex
-    if (currentIndex !== newLogicalIndex) { // Apenas atualiza se realmente mudou
+    // Atualiza o currentIndex para refletir o item que está sendo centralizado.
+    // Esta é a principal fonte de verdade para o currentIndex.
+    if (currentIndex !== newLogicalIndex) {
         setCurrentIndex(newLogicalIndex);
     }
     
     const timeoutDuration = smooth ? 500 : 70; 
+    // Limpa qualquer snap pendente do handleScroll ANTES de iniciar um novo timer para resetar a flag
     if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current); 
     setTimeout(() => { 
       isProgrammaticScrollRef.current = false; 
     }, timeoutDuration);
 
-  }, [totalItems, calculateScrollLeftForCenter, currentIndex]); // currentIndex é necessário para a otimização de <2px
+  }, [totalItems, calculateScrollLeftForCenter, currentIndex]);
 
   const onDragStart = useCallback((clientX: number, event?: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (event?.type === 'mousedown') {
         (event as React.MouseEvent<HTMLDivElement>).preventDefault();
     }
-    if (!carouselRef.current || totalItems === 0 || !itemWidthRef.current) return;
+    if (!carouselRef.current || totalItems === 0 || !itemWidthRef.current || isDragging) return; // Impede novo drag se já estiver arrastando
     
-    if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current);
-    isProgrammaticScrollRef.current = true; 
+    if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current); // Cancela snap pendente do handleScroll
+    isProgrammaticScrollRef.current = true; // Indica que o scroll inicial do drag é "controlado"
 
     handleUserInteraction(); // Pausa/reseta timer do auto-scroll
     setIsDragging(true); 
     setStartX(clientX);
     setInitialScrollLeft(carouselRef.current.scrollLeft);
     if (carouselRef.current) {
-      carouselRef.current.style.scrollBehavior = 'auto';
+      carouselRef.current.style.scrollBehavior = 'auto'; // Drag precisa de update instantâneo
       carouselRef.current.style.cursor = 'grabbing';
     }
-  }, [handleUserInteraction, totalItems]);
+  }, [handleUserInteraction, totalItems, isDragging]); // Adicionado isDragging à dependência
 
   const onDragMove = useCallback((clientX: number) => {
-    if (!isDragging || !carouselRef.current) return; // Só move se isDragging for true
+    if (!isDragging || !carouselRef.current) return;
     const x = clientX;
     const walk = (x - startX);
     carouselRef.current.scrollLeft = initialScrollLeft - walk;
@@ -148,25 +158,18 @@ export const useCarouselLogic = (products: Product[]) => {
 
   const onDragEnd = useCallback(() => {
     if (!isDragging || !carouselRef.current || totalItems === 0 || !itemWidthRef.current) {
-      if (isDragging) setIsDragging(false); 
+      // Se não estava realmente arrastando, mas por algum motivo onDragEnd foi chamado,
+      // garante que isDragging seja false e o cursor restaurado.
       if (carouselRef.current) carouselRef.current.style.cursor = 'grab';
-      // Se o drag não era válido, mas isProgrammaticScrollRef foi setado em onDragStart,
-      // é importante que snapToItem (que não será chamado) ou outra lógica o resete.
-      // No entanto, snapToItem chamado abaixo cuidará de isProgrammaticScrollRef.
-      // Se retornarmos aqui, e onDragStart setou isProgrammaticScrollRef, ele pode ficar preso.
-      // A lógica de snapToItem já lida com resetar isProgrammaticScrollRef.
-      // Mas para segurança, se sairmos aqui e isProgrammaticScrollRef era true de onDragStart,
-      // pode ser um problema. O fluxo normal é chamar snapToItem.
-      // Se retornamos cedo, e isProgrammaticScrollRef foi setado em onDragStart, ele deve ser resetado.
-      if(isProgrammaticScrollRef.current && !isDragging) isProgrammaticScrollRef.current = false;
+      setIsDragging(false); // Garante o reset
+      isProgrammaticScrollRef.current = false; // Reseta se saiu cedo e onDragStart setou para true
       return;
     }
 
     const finalScrollLeft = carouselRef.current.scrollLeft;
     
-    // É importante que isDragging seja resetado ANTES de chamar snapToItem,
-    // para que o scroll do snapToItem não seja considerado um novo drag.
-    setIsDragging(false); 
+    // Importante: setIsDragging(false) é chamado DEPOIS do snapToItem ser chamado.
+    // O snapToItem em si gerencia isProgrammaticScrollRef.
     
     if (carouselRef.current) {
         carouselRef.current.style.scrollBehavior = 'smooth';
@@ -178,10 +181,9 @@ export const useCarouselLogic = (products: Product[]) => {
     let logicalIndexToSnap = (physicalIndexWhoseSlotContainsCenter % totalItems + totalItems) % totalItems;
     
     snapToItem(logicalIndexToSnap, true);
-    // handleUserInteraction() NÃO é chamado aqui de novo, pois já foi chamado no onDragStart.
-    // O timer de 2s começa a contar do início do último arraste.
+    setIsDragging(false); // Resetar isDragging DEPOIS de iniciar o snap
 
-  }, [isDragging, totalItems, snapToItem, itemWidthRef, containerWidthRef]);
+  }, [isDragging, totalItems, snapToItem, itemWidthRef, containerWidthRef]); // initialScrollLeft e currentIndex não são mais necessários aqui para a decisão
 
 
   useEffect(() => {
@@ -218,8 +220,6 @@ export const useCarouselLogic = (products: Product[]) => {
   }, [onDragStart]);
 
   const handleScroll = useCallback(() => {
-    // Ignora o evento de scroll se for um scroll programático (snap, teleporte)
-    // ou se o usuário estiver arrastando (onDragEnd cuidará do snap).
     if (isProgrammaticScrollRef.current || isDragging || !carouselRef.current || totalItems === 0 || itemWidthRef.current === 0) {
       return;
     }
@@ -230,23 +230,39 @@ export const useCarouselLogic = (products: Product[]) => {
 
     // Lógica de teletransporte para scroll infinito
     const physicalIndexAtScrollStart = currentScroll / itemWidthRef.current;
-    const teleportBuffer = itemWidthRef.current * 0.15; // Buffer para evitar teleporte durante snap suave
+    // Define um buffer para o teletransporte, ex: 10% da largura de um item
+    const teleportBuffer = itemWidthRef.current * 0.1; 
     
-    if (currentScroll < (totalItems * itemWidthRef.current - oneSetWidth + teleportBuffer) && currentScroll > teleportBuffer ) { 
+    // Condição para teletransportar da esquerda para o meio
+    // Se o scroll está no primeiro conjunto de clones e se moveu para além de um pequeno buffer inicial
+    if (physicalIndexAtScrollStart < (totalItems - 0.85) && currentScroll > teleportBuffer) { 
         isProgrammaticScrollRef.current = true;
         container.scrollLeft += oneSetWidth;
-        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
+        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70); // Curto delay para o scroll "assentar"
         return; 
-    } else if (currentScroll > (totalItems * 2 * itemWidthRef.current - teleportBuffer) && physicalIndexAtScrollStart < extendedProducts.length - 0.5 ) { 
+    // Condição para teletransportar da direita para o meio
+    // Se o scroll está no terceiro conjunto de clones e se moveu para além de um pequeno buffer final
+    } else if (physicalIndexAtScrollStart > (totalItems * 2 - 0.15) && physicalIndexAtScrollStart < extendedProducts.length - 0.05) { 
         isProgrammaticScrollRef.current = true;
         container.scrollLeft -= oneSetWidth;
         setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
         return;
     }
     
-    // NÃO atualiza currentIndex aqui diretamente. Deixa o snapToItem do debounce fazer isso.
-    // Isso garante que currentIndex só mude quando um item é definitivamente centralizado.
+    // Atualiza o currentIndex apenas se não for um scroll programático e não estiver arrastando.
+    // Isso mantém os dots e o auto-scroll sincronizados com a visualização durante scrolls manuais.
+    if (!isProgrammaticScrollRef.current && !isDragging) {
+        const centerOfViewport = currentScroll + containerWidthRef.current / 2;
+        const physicalIndexAtCenter = Math.floor(centerOfViewport / itemWidthRef.current);
+        let newLogicalIndex = (physicalIndexAtCenter % totalItems + totalItems) % totalItems;
+        
+        if (currentIndex !== newLogicalIndex) {
+             setCurrentIndex(newLogicalIndex); // Atualiza o estado
+        }
+    }
 
+    // Debounce para o snap magnético após scroll manual (roda do mouse, scrollbar etc.)
+    // Só ativa se não estiver arrastando e não for um scroll programático.
     if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current);
     scrollEndTimeoutRef.current = setTimeout(() => {
       if (!isDragging && !isProgrammaticScrollRef.current && carouselRef.current && itemWidthRef.current > 0) {
@@ -257,9 +273,9 @@ export const useCarouselLogic = (products: Product[]) => {
         
         snapToItem(finalLogicalIndex, true);
       }
-    }, 300); // Debounce aumentado para permitir que o scroll "assente"
+    }, 250); // Reduzido debounce para resposta mais rápida
 
-  }, [isDragging, totalItems, itemWidthRef, containerWidthRef, extendedProducts.length, snapToItem, calculateScrollLeftForCenter]); // Removido currentIndex das dependências principais do handleScroll
+  }, [isDragging, totalItems, itemWidthRef, containerWidthRef, extendedProducts.length, snapToItem, currentIndex, calculateScrollLeftForCenter]);
 
   useAutoScroll(isUserInteracting, totalItems, currentIndex, snapToItem);
 
@@ -271,10 +287,10 @@ export const useCarouselLogic = (products: Product[]) => {
                 snapToItem(0, false); 
                 initialSnapDoneRef.current = true;
             } else {
-                setTimeout(initSetup, 150); 
+                setTimeout(initSetup, 200); // Aumentado o retry
             }
         };
-        const initTimeout = setTimeout(initSetup, 200); 
+        const initTimeout = setTimeout(initSetup, 250); // Aumentado o delay inicial
         return () => clearTimeout(initTimeout);
     }
   }, [totalItems, snapToItem, updateDimensions]);
