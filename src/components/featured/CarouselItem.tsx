@@ -1,3 +1,4 @@
+// src/components/featured/CarouselItem.tsx
 import React from 'react';
 import { Expand } from 'lucide-react';
 
@@ -16,43 +17,43 @@ interface CarouselItemProps {
 
 const CarouselItem: React.FC<CarouselItemProps> = ({ 
   product, 
-  // index, // index não é usado diretamente aqui para renderização, apenas para key no map
   isMobile, 
   onImageClick 
 }) => {
   return (
     <div
-      className={`flex-shrink-0 px-2 pb-3 ${ // Mantido pb-3 para espaço da sombra
+      className={`flex-shrink-0 px-2 pb-3 ${ 
         isMobile ? 'w-full' : 'w-1/3' 
       }`}
       style={{ 
-        // Para garantir que os itens flex não encolham além do basis especificado pelas classes w-full/w-1/3
         flexBasis: isMobile ? '100%' : '33.3333%', 
       }}
     >
-      <div className="relative group rounded-lg shadow-lg bg-gray-100 h-full flex flex-col"> {/* bg-gray-100 e h-full */}
-        {/* Container da imagem com aspect-square. A imagem deve cobrir este container. */}
+      <div className="relative group rounded-lg shadow-lg bg-gray-100 h-full flex flex-col">
         <div className="aspect-square overflow-hidden rounded-lg">
           <img
             src={product.image}
             alt={product.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            draggable="false" // IMPEDE o comportamento nativo de arrastar imagem do navegador
+            draggable="false" 
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/placeholder.svg';
               target.alt = 'Erro ao carregar imagem';
-              target.style.objectFit = 'contain'; // Para placeholder não distorcer
+              target.style.objectFit = 'contain'; 
             }}
           />
           
           <button
             onClick={(e) => {
-                e.stopPropagation(); // Previne que o clique no botão acione o arraste do carrossel
+                e.stopPropagation(); 
                 onImageClick(product.image);
             }}
-            className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 focus:opacity-100 z-10"
+            className={`absolute top-3 right-3 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full transition-opacity duration-200 focus:opacity-100 z-10 ${
+              isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'
+            }`}
+            // Adicionado focus-within:opacity-100 para acessibilidade com teclado no desktop
             aria-label="Ver em tela cheia"
           >
             <Expand className="h-4 w-4" />
