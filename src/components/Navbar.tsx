@@ -46,7 +46,7 @@ const Navbar = () => {
   };
 
   const filteredRoutes = navRoutes.filter(route => route.path !== '/catalogo');
-  const whatsappLink = "https://wa.me/554435321521"; // Defina o link do WhatsApp aqui
+  const whatsappLink = "https://wa.me/554435321521"; 
 
   return (
     <header 
@@ -59,9 +59,8 @@ const Navbar = () => {
           <div className="flex-shrink-0 pl-2">
             <Link to="/" className="flex items-center">
               <img
-                src="/lovable-uploads/636b600d-cab1-4922-9a44-7868ac3d73e5.png"
+                src="/LogoNavBar.svg" {/* CAMINHO DA LOGO ATUALIZADO */}
                 alt="Móveis Oeste"
-                // Altura da logo ajustada para h-10 (40px) em todas as telas para corresponder ao botão
                 className="h-10 w-auto object-contain" 
               />
             </Link>
@@ -83,7 +82,6 @@ const Navbar = () => {
 
           <div className="hidden md:flex flex-shrink-0 pr-2">
             <Button asChild>
-              {/* Link e texto do botão da navbar atualizados */}
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
                 WhatsApp
               </a>
@@ -118,9 +116,8 @@ const Navbar = () => {
             <Button
               asChild
               className="w-full mt-2"
-              onClick={() => setIsMenuOpen(false)} // Apenas fecha o menu, o link <a> cuidará da navegação
+              onClick={() => setIsMenuOpen(false)} 
             >
-              {/* Link e texto do botão do menu mobile atualizados */}
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
                 WhatsApp
               </a>
