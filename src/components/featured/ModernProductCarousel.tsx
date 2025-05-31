@@ -1,19 +1,5 @@
-
-import React from 'react';
-import { useCarouselLogic } from './hooks/useCarouselLogic';
-import CarouselItem from './CarouselItem';
-import NavigationDots from './NavigationDots';
-
-interface Product {
-  id: string;
-  title: string;
-  image: string;
-}
-
-interface ModernProductCarouselProps {
-  products: Product[];
-  onImageClick: (imageUrl: string) => void;
-}
+// src/components/featured/ModernProductCarousel.tsx
+// ... (imports)
 
 const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({ 
   products, 
@@ -44,7 +30,10 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
     <div className="relative w-full group/carousel">
       <div 
         ref={carouselRef}
-        className={`flex overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing active:cursor-grabbing' : 'cursor-grab'} `}
+        className={`flex overflow-x-auto scrollbar-hide ${
+          isDragging ? 'cursor-grabbing active:cursor-grabbing' : 'cursor-grab'
+        } `} // Adicionado espaço ao final da string de classes
+        style={{ touchAction: 'pan-y' }} // Ajuda a separar scroll horizontal do carrossel e vertical da página
         onScroll={handleScroll}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
