@@ -22,43 +22,45 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
   const {
     carouselRef,
     currentIndex,
-    setCurrentIndex,
     isMobile,
     extendedProducts,
     totalItems,
-    scrollToIndex,
+    snapToItem, // Agora usamos snapToItem para os dots
     handleScroll,
     handleMouseDown,
     handleTouchStart,
-    isDragging // Pode ser usado para adicionar classes CSS durante o arraste
+    isDragging 
   } = useCarouselLogic(products);
 
   const handleDotClick = (index: number) => {
-    // A interação do usuário já é tratada em onDragStart (dentro de handleMouseDown/TouchStart)
-    const targetPhysicalIndex = totalItems + index; 
-    scrollToIndex(targetPhysicalIndex, true);
-    setCurrentIndex(index); 
+    // handleUserInteraction é chamado dentro de onDragStart, que é parte de handleMouseDown/TouchStart
+    // Se o clique no dot não deve ser considerado uma "interação que pausa o auto-scroll" da mesma forma,
+    // você pode querer chamar handleUserInteraction() aqui explicitamente.
+    // Mas geralmente, clicar nos dots é uma interação do usuário.
+    snapToItem(index, true); 
   };
 
   if (!products || products.length === 0) {
-    return <div className="text-center py-8">Nenhum produto em destaque no momento.</div>;
+    return <div className="text-center py-8 text-gray-600">Nenhum produto em destaque no momento.</div>;
   }
 
   return (
     <div className="relative w-full group/carousel">
       <div 
         ref={carouselRef}
-        className={`flex overflow-x-auto scrollbar-hide snap-x snap-mandatory ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        // Removido snap-x snap-mandatory para dar controle ao JS
+        className={`flex overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'}`}
         onScroll={handleScroll}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        // onTouchMove e onTouchEnd são gerenciados globalmente pelo hook
+        // onTouchMove e onTouchEnd são gerenciados globalmente pelo hook quando isDragging é true
       >
         {extendedProducts.map((product, physicalIndex) => (
           <CarouselItem
-            key={`${product.id}-loop-${Math.floor(physicalIndex / totalItems)}-${physicalIndex % totalItems}`} 
+            // Chave mais robusta para loops com itens repetidos
+            key={`${product.id}-idx-${physicalIndex}`} 
             product={product}
-            index={physicalIndex % totalItems} // Passa o índice lógico para o item
+            index={physicalIndex % totalItems} 
             isMobile={isMobile}
             onImageClick={onImageClick}
           />
@@ -66,7 +68,7 @@ const ModernProductCarousel: React.FC<ModernProductCarouselProps> = ({
       </div>
 
       <NavigationDots
-        products={products}
+        products={products} 
         currentIndex={currentIndex}
         totalItems={totalItems}
         onDotClick={handleDotClick}
