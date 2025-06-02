@@ -19,14 +19,14 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a 
-                href="#" 
+                href="https://www.facebook.com/moveisoestemoreira" 
                 className="bg-gray-800 p-2 rounded-full hover:bg-furniture-yellow hover:text-gray-900 transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a 
-                href="#" 
+                href="https://www.instagram.com/moveisoestemoreira/" 
                 className="bg-gray-800 p-2 rounded-full hover:bg-furniture-yellow hover:text-gray-900 transition-colors"
                 aria-label="Instagram"
               >
