@@ -55,7 +55,7 @@ const Navbar = () => {
               <img
                 src="/LogoNavBar.svg" 
                 alt="Móveis Oeste"
-                className="h-10 w-auto object-contain" 
+                className="h-13 w-auto object-contain" 
               />
             </Link>
           </div>
