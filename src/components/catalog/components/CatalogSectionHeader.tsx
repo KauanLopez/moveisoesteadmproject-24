@@ -1,14 +1,32 @@
-
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
-const CatalogSectionHeader: React.FC = () => {
+interface CatalogSectionHeaderProps {
+  title: string;
+  showViewAllButton?: boolean;
+  viewAllLink?: string;
+  buttonText?: string;
+}
+
+const CatalogSectionHeader: React.FC<CatalogSectionHeaderProps> = ({
+  title,
+  showViewAllButton = false,
+  viewAllLink = "/catalogo",
+  buttonText = "Ver Todos"
+}) => {
   return (
-    <div className="mb-8 md:mb-12 text-center">
-      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">Nossos Catálogos</h2>
-      <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-6 md:mb-8"></div>
-      <p className="max-w-2xl mx-auto text-gray-600 text-sm md:text-base">
-        Navegue por nossos catálogos e veja como nossos móveis transformam espaços.
-      </p>
+    <div className="text-center mb-10 md:mb-12"> {/* Centraliza o título e ajusta margem */}
+      <h2 className="text-3xl md:text-4xl font-display font-bold text-furniture-green">
+        {title}
+      </h2>
+      {showViewAllButton && (
+        <div className="mt-6">
+          <Button asChild variant="outline" size="lg" className="border-furniture-green text-furniture-green hover:bg-furniture-green hover:text-white">
+            <Link to={viewAllLink || "/catalogo"}>{buttonText}</Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
