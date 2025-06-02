@@ -1,7 +1,15 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  scroll-behavior: smooth; /* Adicione esta linha */
+}
+
+body {
+  @apply bg-background text-foreground;
+  font-family: 'Inter', sans-serif; /* Exemplo de fonte */
+}
 
 @layer base {
   :root {

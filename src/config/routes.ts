@@ -2,26 +2,26 @@
 export interface NavRoute {
   path: string;
   label: string;
-  isExternal?: boolean; // Para links externos, se houver
+  isExternal?: boolean;
 }
 
 export const navRoutes: NavRoute[] = [
   {
-    path: '/#hero', // Ou simplesmente '/', assumindo que a seção Hero está no topo.
-                     // Se sua seção Hero tiver um ID específico, como 'hero-section', use '/#hero-section'
+    path: '/#hero', // Leva para a seção com id="hero"
     label: 'Início'
   },
   {
-    path: '/#catalogs', // Alterado para apontar para a seção de catálogos
+    path: '/#catalogs', // Leva para a seção com id="catalogs"
     label: 'Produtos'
   },
   {
-    path: '/#about', // Alterado para apontar para a seção Sobre
+    path: '/#about', // Leva para a seção com id="about"
     label: 'Sobre'
   },
-  // A rota /catalogo (página separada) será filtrada na Navbar, conforme já implementado.
+  // Mantém a rota para a página de catálogo completo, que é filtrada na navbar
+  // para não aparecer como um link de navegação principal, mas pode ser usada em outros lugares.
   {
-    path: '/catalogo',
-    label: 'Catálogo Completo' 
+    path: '/catalogo', 
+    label: 'Catálogo Completo'
   }
 ];
