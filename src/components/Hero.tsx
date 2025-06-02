@@ -29,7 +29,6 @@ const Hero = () => {
               variant="outline" 
               className="text-lg py-6 px-8 bg-transparent border-2 border-white text-white hover:bg-white/20 w-full sm:w-auto"
             >
-              <a href=https://api.whatsapp.com/send/?phone=554435321521&text&type=phone_number&app_absent=0 target="_blank" rel="noopener noreferrer">
               Fale Conosco
             </Button>
           </div>
