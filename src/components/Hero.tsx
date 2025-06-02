@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router-dom'; // IMPORTAÇÃO ADICIONAD
 const Hero = () => {
   // Links definidos para fácil manutenção
   const whatsappLink = "https://api.whatsapp.com/send/?phone=554435321521"; // Link do WhatsApp conforme solicitado
-  const catalogsSectionLink = "/#catalogs"; // Link para a seção de catálogos
+  const catalogsSectionLink = "/catalogo"; // ALTERADO AQUI: Link para a página de Catálogos
 
   return (
     <section id="hero" className="relative h-screen w-full overflow-hidden"> {/* Adicionado id="hero" para o link da navbar */}
