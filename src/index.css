@@ -1,123 +1,87 @@
+/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html {
-  scroll-behavior: smooth; /* Adicione esta linha */
-}
-
-body {
-  @apply bg-background text-foreground;
-  font-family: 'Inter', sans-serif; /* Exemplo de fonte */
-}
-
 @layer base {
   :root {
-    --background: 0 0% 98%;
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
+ 
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 142 84% 31%;
+ 
+    --primary: 142.1 70.6% 40.0%; /* Ajustado para um tom de furniture-green (ex: HSL de #2E7D32) */
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 54 96% 54%;
+ 
+    --secondary: 45 93.4% 47.5%; /* Ajustado para um tom de furniture-yellow (ex: HSL de #FFC107) */
     --secondary-foreground: 222.2 47.4% 11.2%;
-
+ 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 54 96% 54%;
+ 
+    --accent: 45 93.4% 47.5%; /* Pode ser o mesmo que o secundário ou outra cor de destaque */
     --accent-foreground: 222.2 47.4% 11.2%;
-
+ 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 84% 31%;
-
+    --ring: 142.1 70.6% 40.0%; /* Anel de foco usando a cor primária */
+ 
     --radius: 0.5rem;
   }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 142.1 70.6% 45.1%; /* Primário um pouco mais claro no modo escuro */
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 45 93.4% 52.5%; /* Secundário um pouco mais claro no modo escuro */
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 45 93.4% 52.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.1 70.6% 45.1%;
+  }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground font-sans; /* Usa a família 'sans' (Inter) do Tailwind como padrão */
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
+  /* Aplicar a fonte de display aos títulos globalmente */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-primary font-medium;
-  }
-}
-
-@layer utilities {
-  .transition-transform {
-    transition-property: transform;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-  }
-  
-  .hover-scale {
-    @apply transition-transform duration-300 hover:scale-105;
-  }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.carousel-container {
-  overflow: hidden;
-  position: relative;
-  width: 100%;
-}
-
-.carousel {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-}
-
-.carousel-item {
-  flex: 0 0 100%;
-}
-
-@media (min-width: 768px) {
-  .carousel-item {
-    flex: 0 0 50%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .carousel-item {
-    flex: 0 0 33.333333%;
-  }
-}
-
-.auto-carousel {
-  animation: scroll 30s linear infinite;
-  display: flex;
-}
-
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
+    @apply font-display; /* Aplica Playfair Display a todos os elementos de título */
   }
 }
