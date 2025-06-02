@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import CatalogModal from './catalog/CatalogModal';
 import CatalogSectionHeader from './catalog/components/CatalogSectionHeader';
@@ -325,7 +326,7 @@ const CatalogSection: React.FC = () => {
     <>
       <section id="catalogs" className="py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <CatalogSectionHeader />
+          <CatalogSectionHeader title="Catálogos" />
           <CatalogCarouselContainer
             catalogs={catalogsData}
             onCatalogClick={handleCatalogClick}
