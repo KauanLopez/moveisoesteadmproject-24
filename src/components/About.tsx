@@ -11,12 +11,6 @@ const About = () => {
           <p className="text-lg text-gray-700 leading-relaxed mb-6">
             Com 22 anos de experiência, a Móveis Oeste oferece móveis planejados e peças avulsas que unem elegância, funcionalidade e qualidade. Nosso compromisso é transformar ambientes em espaços únicos, com produtos selecionados cuidadosamente para refletir o estilo e as necessidades de cada cliente. Mais do que móveis, entregamos confiança, bom gosto e um atendimento próximo, construído ao longo de duas décadas de dedicação.
           </p>
-          <p className="text-lg text-gray-700 leading-relaxed mb-6">
-            Nossa equipe é formada por artesãos dedicados e designers experientes que trabalham em colaboração para transformar matérias-primas selecionadas em móveis que não apenas embelezam, mas também enriquecem o dia a dia dos nossos clientes. Do clássico ao contemporâneo, buscamos sempre a excelência em cada detalhe.
-          </p>
-          <p className="text-lg text-gray-700 leading-relaxed">
-            Visite nosso showroom em Moreira Sales, Paraná, e descubra como podemos ajudar a criar o espaço dos seus sonhos.
-          </p>
         </div>
         {/* Você pode adicionar imagens ou outros elementos visuais aqui se desejar */}
         {/* Exemplo:
