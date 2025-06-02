@@ -11,7 +11,7 @@ const Location = () => {
   // 3. Clique em "Compartilhar".
   // 4. Clique na aba "Incorporar um mapa".
   // 5. Copie o SRC do iframe.
-  const mapEmbedUrl = "COLE_A_URL_DE_INCORPORACAO_DO_SEU_MAPA_AQUI"; // Ex: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d..."
+  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3643.4426449052667!2d-53.0109939!3d-24.050711999999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94f292fb07fc4d27%3A0x17c5c4cfdf3c3cb3!2sAv.%20Jo%C3%A3o%20Teot%C3%B4nio%20Moreira%20S%C3%A1les%20Neto%2C%20877%20-%20Moreira%20Sales%2C%20PR%2C%2087370-000!5e0!3m2!1spt-BR!2sbr!4v1748903878106!5m2!1spt-BR!2sbr"; // Ex: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d..."
 
   return (
     <section id="location" className="py-16 bg-gray-50"> {/* Mantido py-16 do seu original */}
