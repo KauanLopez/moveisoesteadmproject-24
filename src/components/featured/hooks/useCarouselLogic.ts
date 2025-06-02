@@ -9,7 +9,7 @@ interface Product {
 }
 
 export const useCarouselLogic = (products: Product[]) => {
-  const [currentIndex, setCurrentIndex] = useState(0); // Índice lógico (0 a totalItems-1)
+  const [currentIndex, setCurrentIndex] = useState(0);
   const isMobile = useMobileDetection();
   
   const extendedProducts = products.length > 0 ? [...products, ...products, ...products] : [];
@@ -139,8 +139,9 @@ export const useCarouselLogic = (products: Product[]) => {
     if (!carouselRef.current || totalItems === 0 || !itemWidthRef.current || isDragging) return;
     
     if (scrollEndDebounceTimeoutRef.current) clearTimeout(scrollEndDebounceTimeoutRef.current);
-    // Não seta isProgrammaticScrollRef aqui, pois o drag em si não é um "snap"
-    // A flag isDragging impedirá o handleScroll.
+    // O arraste em si não é "programático" no sentido de snap/teleporte ainda.
+    // A flag isDragging cuidará de ignorar handleScroll.
+    // isProgrammaticScrollRef será setado por snapToItem no onDragEnd.
     
     handleUserInteraction();
     setIsDragging(true); 
@@ -186,9 +187,9 @@ export const useCarouselLogic = (products: Product[]) => {
 
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => { if(isDragging) onDragMove(e.pageX); };
-    const handleGlobalMouseUp = () => { if(isDragging) onDragEnd(); }; 
+    const handleGlobalMouseUp = () => { if(isDragging) { onDragEnd(); } }; 
     const handleGlobalTouchMove = (e: TouchEvent) => { if (isDragging) onDragMove(e.touches[0].clientX); };
-    const handleGlobalTouchEnd = () => { if(isDragging) onDragEnd(); };
+    const handleGlobalTouchEnd = () => { if(isDragging) { onDragEnd(); } };
 
     if (isDragging) {
       document.addEventListener('mousemove', handleGlobalMouseMove);
@@ -220,28 +221,47 @@ export const useCarouselLogic = (products: Product[]) => {
     const oneSetWidth = totalItems * itemWidthRef.current;
 
     // Lógica de Teletransporte (para scrolls manuais que atingem os clones)
-    const physicalIndexAtScrollStart = currentScroll / itemWidthRef.current;
-    
-    // Thresholds para o teletransporte: definem quão "dentro" da zona de clone precisamos estar.
-    // Ex: 0.5 = metade de um item para dentro da zona de clone.
-    const leftTeleportBoundary = totalItems - 0.5; // Limite para o conjunto de clones da esquerda
-    const rightTeleportBoundary = totalItems * 2 - 0.5; // Limite para o conjunto de clones da direita
+    // O índice físico é calculado pela borda esquerda da área visível.
+    const physicalIndexAtViewportStart = Math.round(currentScroll / itemWidthRef.current);
 
-    if (physicalIndexAtScrollStart < leftTeleportBoundary && currentScroll > itemWidthRef.current * 0.1) { 
-        // Se o scroll está no PRIMEIRO conjunto de clones (à esquerda do conjunto do meio)
-        isProgrammaticScrollRef.current = true;
-        container.scrollLeft = currentScroll + oneSetWidth; // Salta para a posição correspondente no conjunto do MEIO
-        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
-        return; 
-    } else if (physicalIndexAtScrollStart >= rightTeleportBoundary && physicalIndexAtScrollStart < extendedProducts.length - 0.1) { 
-        // Se o scroll está no TERCEIRO conjunto de clones (à direita do conjunto do meio)
-        isProgrammaticScrollRef.current = true;
-        container.scrollLeft = currentScroll - oneSetWidth; // Salta para a posição correspondente no conjunto do MEIO
-        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 70);
-        return;
+    // Estamos no conjunto de clones da ESQUERDA se o índice físico é menor que `totalItems`.
+    // Ex: totalItems = 5. Clones da esquerda são índices 0-4. Conjunto do meio 5-9.
+    // Se estamos vendo o item físico 4 (final do clone da esquerda) e rolamos mais para a esquerda,
+    // o physicalIndexAtViewportStart pode se tornar 3, 2, etc.
+    // Precisamos teleportar quando o usuário está prestes a sair do conjunto do meio para a esquerda.
+    // O conjunto do meio começa no physicalIndex `totalItems`.
+    // Se o physicalIndexAtViewportStart é, por exemplo, `totalItems - 1` (último item do clone da esquerda),
+    // significa que o início da viewport está no último item do clone da esquerda.
+    // Se o physicalIndexAtViewportStart < totalItems (estamos em algum lugar no primeiro clone)
+    // E não estamos muito próximos do início absoluto do carrossel (currentScroll > buffer pequeno)
+    if (physicalIndexAtViewportStart < totalItems && currentScroll > itemWidthRef.current * 0.1) {
+        // Se o item centralizado logicamente (currentIndex) NÃO está no primeiro terço dos itens lógicos
+        // E o scroll está efetivamente mostrando o primeiro conjunto de clones
+        if (currentIndex >= 0 && physicalIndexAtViewportStart < totalItems - 0.5 /* está bem dentro do clone esquerdo */) {
+            isProgrammaticScrollRef.current = true;
+            container.scrollLeft = currentScroll + oneSetWidth; // Salta para a posição correspondente no conjunto do MEIO
+            // Após o teletransporte, o currentIndex ainda é o antigo. 
+            // O próximo snap (do auto-scroll ou debounce) deve usar o currentIndex correto.
+            // O snapToItem chamado pelo auto-scroll ou debounce já fará setCurrentIndex.
+            setTimeout(() => { isProgrammaticScrollRef.current = false; }, 100); // Aumentar um pouco o delay
+            return; 
+        }
+    } 
+    // Estamos no conjunto de clones da DIREITA se o índice físico é `totalItems * 2` ou maior.
+    // Ex: totalItems = 5. Conjunto do meio 5-9. Clones da direita 10-14.
+    // Se estamos vendo o item físico 10 (início do clone da direita) e rolamos mais para a direita.
+    else if (physicalIndexAtViewportStart >= totalItems * 2 && physicalIndexAtViewportStart < extendedProducts.length - 0.1) {
+        // Se o item centralizado logicamente (currentIndex) NÃO está no último terço dos itens lógicos
+        // E o scroll está efetivamente mostrando o terceiro conjunto de clones
+         if (currentIndex <= totalItems -1 && physicalIndexAtViewportStart >= totalItems * 2 + 0.5 /* bem dentro do clone direito */ ) {
+            isProgrammaticScrollRef.current = true;
+            container.scrollLeft = currentScroll - oneSetWidth; // Salta para a posição correspondente no conjunto do MEIO
+            setTimeout(() => { isProgrammaticScrollRef.current = false; }, 100); // Aumentar um pouco o delay
+            return;
+        }
     }
     
-    // Debounce para o snap magnético para scrolls manuais (scrollbar, etc.)
+    // Debounce para o snap magnético APENAS para scrolls manuais (scrollbar, etc.)
     if (scrollEndDebounceTimeoutRef.current) clearTimeout(scrollEndDebounceTimeoutRef.current);
     scrollEndDebounceTimeoutRef.current = setTimeout(() => {
       if (!isDragging && !isProgrammaticScrollRef.current && 
@@ -255,7 +275,7 @@ export const useCarouselLogic = (products: Product[]) => {
       }
     }, 250); 
 
-  }, [isDragging, totalItems, itemWidthRef, containerWidthRef, extendedProducts.length, snapToItem, calculateScrollLeftForCenter, currentIndex /* Adicionado currentIndex para o debounce poder ler o valor atual se necessário para seu próprio snap */]);
+  }, [isDragging, totalItems, itemWidthRef, containerWidthRef, extendedProducts.length, snapToItem, calculateScrollLeftForCenter, currentIndex]);
 
   useAutoScroll(isUserInteracting, totalItems, currentIndex, snapToItem);
 
