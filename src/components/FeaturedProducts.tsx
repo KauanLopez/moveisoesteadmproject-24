@@ -49,7 +49,7 @@ const FeaturedProducts = () => {
     <section id="featured-products" className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Produtos em Destaque</h2>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-12 text-furniture-green">Produtos em Destaque</h2>
           <div className="w-20 h-1 bg-furniture-yellow mx-auto mb-8"></div>
         </div>
 
