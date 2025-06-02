@@ -104,7 +104,7 @@ const Location = () => {
               className="w-full mt-8 bg-furniture-yellow text-green-900 hover:bg-yellow-400 font-semibold"
               onClick={() => window.open('https://wa.me/554435321521', '_blank')} // Exemplo: Agendar via WhatsApp
             >
-              Agendar uma Visita via WhatsApp
+              Agendar visita
             </Button>
           </div>
         </div>
