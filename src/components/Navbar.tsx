@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { navRoutes } from '@/config/routes';
+import { handleHashNavigation } from '@/utils/scrollUtils';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,6 +41,13 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleNavClick = (route: any) => {
+    if (route.isHashLink) {
+      handleHashNavigation(route.path);
+      setIsMenuOpen(false);
+    }
+  };
+
   const filteredRoutes = navRoutes.filter(route => route.path !== '/catalogo');
   const whatsappLink = "https://wa.me/554435321521"; 
 
@@ -60,19 +69,30 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* SEÇÃO DE NAVEGAÇÃO CENTRAL RESTAURADA/VERIFICADA */}
+          {/* SEÇÃO DE NAVEGAÇÃO CENTRAL COM SMOOTH SCROLLING */}
           <nav className="hidden md:flex items-center justify-center flex-1 space-x-8">
             {filteredRoutes.map((route) => (
-              <Link
-                key={route.path}
-                to={route.path}
-                className={`${
-                  // Lógica de cor dos links baseada no scroll e no menu mobile aberto
-                  isScrolled || isMenuOpen ? 'text-gray-700' : 'text-white'
-                } hover:text-primary transition-colors font-medium`}
-              >
-                {route.label}
-              </Link>
+              route.isHashLink ? (
+                <button
+                  key={route.path}
+                  onClick={() => handleNavClick(route)}
+                  className={`${
+                    isScrolled || isMenuOpen ? 'text-gray-700' : 'text-white'
+                  } hover:text-primary transition-colors font-medium cursor-pointer`}
+                >
+                  {route.label}
+                </button>
+              ) : (
+                <Link
+                  key={route.path}
+                  to={route.path}
+                  className={`${
+                    isScrolled || isMenuOpen ? 'text-gray-700' : 'text-white'
+                  } hover:text-primary transition-colors font-medium`}
+                >
+                  {route.label}
+                </Link>
+              )
             ))}
           </nav>
 
@@ -87,7 +107,6 @@ const Navbar = () => {
           <button
             onClick={toggleMenu}
             className={`md:hidden ${ 
-              // Lógica de cor do ícone do menu mobile
               isScrolled || isMenuOpen ? 'text-gray-700' : 'text-white'
             } hover:text-primary transition-colors`}
             aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
@@ -103,14 +122,24 @@ const Navbar = () => {
         >
           <nav className="flex flex-col space-y-4">
             {filteredRoutes.map((route) => (
-              <Link
-                key={route.path}
-                to={route.path}
-                className="text-gray-700 hover:text-primary transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {route.label}
-              </Link>
+              route.isHashLink ? (
+                <button
+                  key={route.path}
+                  onClick={() => handleNavClick(route)}
+                  className="text-gray-700 hover:text-primary transition-colors py-2 text-left"
+                >
+                  {route.label}
+                </button>
+              ) : (
+                <Link
+                  key={route.path}
+                  to={route.path}
+                  className="text-gray-700 hover:text-primary transition-colors py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {route.label}
+                </Link>
+              )
             ))}
             <Button
               asChild
