@@ -7,6 +7,8 @@ import ExternalCatalogManagement from '../external-catalog/ExternalCatalogManage
 import PdfCatalogManagement from '../pdf-catalog/PdfCatalogManagement';
 import MessageManagement from '../MessageManagement';
 import UserManagement from '../user-management';
+import CatalogManagement from '../CatalogManagement';
+import FeaturedProductsView from '../FeaturedProductsView';
 
 interface AdminContentProps {
   activeTab: string;
@@ -15,6 +17,14 @@ interface AdminContentProps {
 const AdminContent: React.FC<AdminContentProps> = ({ activeTab }) => {
   return (
     <>
+      <TabsContent value="catalog-management" className="mt-6">
+        <CatalogManagement />
+      </TabsContent>
+
+      <TabsContent value="featured-products" className="mt-6">
+        <FeaturedProductsView />
+      </TabsContent>
+
       <TabsContent value="projects" className="mt-6">
         <ContentSection title="Capas de Catálogos" section="projects" />
       </TabsContent>

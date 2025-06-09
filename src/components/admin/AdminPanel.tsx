@@ -6,9 +6,11 @@ import AdminTabs from './panel/AdminTabs';
 import AdminContent from './panel/AdminContent';
 
 const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('projects');
+  const [activeTab, setActiveTab] = useState('catalog-management');
 
   const adminTabs = [
+    { id: 'catalog-management', label: 'Gerenciar Catálogos' },
+    { id: 'featured-products', label: 'Ver Produtos em Destaque' },
     { id: 'projects', label: 'Capas de Catálogos' },
     { id: 'external-catalogs', label: 'Catálogos URLs Externas' },
     { id: 'pdf-catalogs', label: 'Catálogos PDF' },

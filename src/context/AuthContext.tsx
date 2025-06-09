@@ -36,12 +36,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Simple check for demo purposes (in real app, you'd validate against stored credentials)
-      if (email === 'admin@example.com' && password === 'password') {
+      // Simple check for demo purposes
+      if (email === 'admin@moveisOeste.com' && password === 'admin123') {
         localStorage.setItem('frontend_auth', 'true');
         setIsAuthenticated(true);
-        setUser({ id: 'mock-user', email: 'admin@example.com' });
-        setSession({ user: { id: 'mock-user', email: 'admin@example.com' } });
+        setUser({ id: 'mock-user', email: 'admin@moveisOeste.com' });
+        setSession({ user: { id: 'mock-user', email: 'admin@moveisOeste.com' } });
         return true;
       }
       

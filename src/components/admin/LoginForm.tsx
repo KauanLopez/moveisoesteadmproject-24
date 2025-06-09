@@ -18,7 +18,7 @@ const LoginForm = () => {
     if (!email.trim() || !password.trim()) {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, preencha e-mail e senha",
+        description: "Por favor, preencha usuário e senha",
         variant: "destructive"
       });
       return;
@@ -31,7 +31,7 @@ const LoginForm = () => {
       if (!success) {
         toast({
           title: "Falha no login",
-          description: "E-mail ou senha incorretos",
+          description: "Usuário ou senha incorretos",
           variant: "destructive"
         });
       } else {
@@ -63,7 +63,7 @@ const LoginForm = () => {
         <div className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              E-mail
+              Usuário
             </label>
             <Input
               id="email"
@@ -72,7 +72,7 @@ const LoginForm = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="mt-1"
-              placeholder="Digite seu e-mail"
+              placeholder="admin@moveisOeste.com"
               autoComplete="email"
             />
           </div>
@@ -88,7 +88,7 @@ const LoginForm = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1"
-              placeholder="Digite sua senha"
+              placeholder="admin123"
               autoComplete="current-password"
             />
           </div>
@@ -104,7 +104,9 @@ const LoginForm = () => {
         
         <div className="text-sm text-center mt-4">
           <p className="text-gray-600">
-            Para criar conta de administrador, use o console Supabase
+            <strong>Credenciais de teste:</strong><br/>
+            Usuário: admin@moveisOeste.com<br/>
+            Senha: admin123
           </p>
         </div>
       </form>
