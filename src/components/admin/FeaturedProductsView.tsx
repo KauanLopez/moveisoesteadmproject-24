@@ -8,6 +8,10 @@ import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 const FeaturedProductsView = () => {
   const { products: featuredProducts, loading } = useFeaturedProducts();
 
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -31,7 +35,7 @@ const FeaturedProductsView = () => {
             Esta é uma visualização espelho de como a seção "Produtos em Destaque" aparece na página principal do site
           </p>
         </div>
-        <Button onClick={() => window.location.reload()} variant="outline" className="flex items-center gap-2">
+        <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4" />
           Atualizar Preview
         </Button>
@@ -41,7 +45,7 @@ const FeaturedProductsView = () => {
         <p className="text-blue-800 text-sm">
           <strong>ℹ️ Sincronização:</strong> Esta galeria exibe exatamente as mesmas imagens que aparecem 
           na seção "Produtos em Destaque" da página principal do site. Os dados são carregados diretamente 
-          do sistema usado pela página principal.
+          do localStorage usado pela página principal.
         </p>
       </div>
 
@@ -102,19 +106,20 @@ const FeaturedProductsView = () => {
             <Star className="h-12 w-12 text-gray-300" />
           </div>
           <h3 className="text-xl font-medium text-gray-900 mb-3">
-            Nenhum produto em destaque configurado
+            Nenhum produto em destaque encontrado
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            No momento, não há produtos configurados para aparecer na seção "Produtos em Destaque" 
-            da página principal. Esta seção reflete o conteúdo real do site.
+            No momento, não há produtos marcados como favoritos. Para adicionar produtos à seção de destaque, 
+            acesse "Gerenciar Catálogos" e clique na estrela das imagens que deseja destacar.
           </p>
           
           <div className="bg-blue-50 rounded-lg p-6 max-w-lg mx-auto border border-blue-200">
-            <h4 className="font-medium text-blue-900 mb-3">Como os produtos em destaque são gerenciados:</h4>
+            <h4 className="font-medium text-blue-900 mb-3">Como adicionar produtos em destaque:</h4>
             <div className="text-sm text-blue-800 text-left space-y-2">
-              <p>• Os produtos em destaque são carregados automaticamente do sistema de conteúdo do site</p>
-              <p>• Esta seção exibe o mesmo conteúdo que aparece na página principal</p>
-              <p>• Para modificar os produtos, seria necessário integrar com o sistema de favoritos</p>
+              <p>• Acesse a seção "Gerenciar Catálogos"</p>
+              <p>• Clique em "Ver Imagens do Catálogo" em qualquer catálogo</p>
+              <p>• Clique no ícone da estrela (⭐) nas imagens que deseja destacar</p>
+              <p>• Volte a esta seção para ver os produtos destacados</p>
             </div>
           </div>
         </div>

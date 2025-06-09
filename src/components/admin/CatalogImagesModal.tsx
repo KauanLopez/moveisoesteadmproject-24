@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { X, Star, Trash2 } from 'lucide-react';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
-import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import ImageUploadOptions from './ImageUploadOptions';
 
 interface CatalogImagesModalProps {
@@ -17,7 +16,6 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { products: featuredProducts } = useFeaturedProducts();
 
   useEffect(() => {
     loadCatalogImages();
@@ -26,19 +24,28 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
   const loadCatalogImages = async () => {
     setLoading(true);
     try {
-      // For external catalogs, we need to check if there are images in the PDF or other sources
-      // For now, we'll show a placeholder since external catalogs use PDF URLs
-      console.log('Loading images for external catalog:', catalog.title);
+      console.log('CatalogImagesModal: Loading images for catalog:', catalog.title);
       
-      // Check if this catalog has any featured products
-      const catalogFeaturedImages = featuredProducts.filter(product => 
-        product.title?.toLowerCase().includes(catalog.title.toLowerCase()) ||
-        product.description?.toLowerCase().includes(catalog.title.toLowerCase())
-      );
-      
-      setImages(catalogFeaturedImages);
+      // For external catalogs, show the content images from the external_content_image_urls
+      if (catalog.external_content_image_urls && catalog.external_content_image_urls.length > 0) {
+        const catalogImages = catalog.external_content_image_urls.map((url, index) => ({
+          id: `${catalog.id}-${index}`,
+          image: url,
+          title: `Imagem ${index + 1} - ${catalog.title}`,
+          description: `Imagem do catálogo ${catalog.title}`,
+          section: 'catalog',
+          catalog_id: catalog.id
+        }));
+        
+        console.log('CatalogImagesModal: Loaded catalog images:', catalogImages);
+        setImages(catalogImages);
+      } else {
+        console.log('CatalogImagesModal: No content images found for catalog');
+        setImages([]);
+      }
     } catch (error) {
-      console.error('Error loading catalog images:', error);
+      console.error('CatalogImagesModal: Error loading catalog images:', error);
+      setImages([]);
     } finally {
       setLoading(false);
     }
@@ -52,12 +59,65 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
     });
   };
 
-  const toggleFavorite = (imageId: string) => {
-    toast({
-      title: "Funcionalidade em desenvolvimento", 
-      description: "O sistema de favoritos será implementado em breve.",
-      variant: "destructive"
-    });
+  const toggleFavorite = async (imageId: string) => {
+    try {
+      console.log('CatalogImagesModal: Toggling favorite for image:', imageId);
+      
+      // Get current content from localStorage
+      const storedContent = localStorage.getItem('moveis_oeste_content');
+      let allContent = storedContent ? JSON.parse(storedContent) : [];
+      
+      // Find the image in the content
+      const imageIndex = images.findIndex(img => img.id === imageId);
+      if (imageIndex === -1) {
+        throw new Error('Imagem não encontrada');
+      }
+      
+      const image = images[imageIndex];
+      
+      // Create a new content item or update existing one
+      const contentItem = {
+        id: `featured-${imageId}`,
+        image_url: image.image,
+        image: image.image,
+        title: image.title,
+        description: image.description,
+        section: 'products',
+        eh_favorito: true,
+        isFeatured: true,
+        created_at: new Date().toISOString()
+      };
+      
+      // Check if already exists in content
+      const existingIndex = allContent.findIndex((item: any) => 
+        item.id === contentItem.id || 
+        (item.image_url === image.image && item.section === 'products')
+      );
+      
+      if (existingIndex >= 0) {
+        // Toggle the favorite status
+        allContent[existingIndex].eh_favorito = !allContent[existingIndex].eh_favorito;
+        allContent[existingIndex].isFeatured = !allContent[existingIndex].isFeatured;
+      } else {
+        // Add as new featured item
+        allContent.push(contentItem);
+      }
+      
+      // Save back to localStorage
+      localStorage.setItem('moveis_oeste_content', JSON.stringify(allContent));
+      
+      toast({
+        title: "Produto destacado",
+        description: "Item adicionado à seção 'Produtos em Destaque' da página inicial.",
+      });
+    } catch (error) {
+      console.error('CatalogImagesModal: Error toggling favorite:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status de destaque do item.",
+        variant: "destructive"
+      });
+    }
   };
 
   const deleteImage = (imageId: string) => {
@@ -82,11 +142,10 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
         </CardHeader>
         <CardContent className="overflow-y-auto">
           <div className="space-y-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-yellow-800 text-sm">
-                <strong>📋 Informação:</strong> Este é um catálogo externo (PDF). 
-                As imagens são carregadas automaticamente do arquivo PDF hospedado externamente.
-                Para gerenciar produtos em destaque, utilize a seção "Ver Produtos em Destaque".
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-blue-800 text-sm">
+                <strong>💡 Dica:</strong> Clique no ícone da estrela para adicionar uma imagem à seção 
+                "Produtos em Destaque" da página principal do site.
               </p>
             </div>
 
@@ -100,17 +159,16 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
 
             <div>
               <h3 className="text-lg font-medium mb-4">
-                Imagens Relacionadas ({images.length})
+                Imagens do Catálogo ({images.length})
               </h3>
               
               {loading ? (
                 <p className="text-gray-500">Carregando imagens...</p>
               ) : images.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 mb-2">Nenhuma imagem relacionada encontrada.</p>
+                  <p className="text-gray-500 mb-2">Nenhuma imagem encontrada neste catálogo.</p>
                   <p className="text-sm text-gray-400">
-                    Este catálogo usa um arquivo PDF externo. 
-                    As imagens são extraídas automaticamente do PDF.
+                    Este catálogo não possui imagens de conteúdo configuradas.
                   </p>
                 </div>
               ) : (
@@ -133,6 +191,7 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
                             size="sm"
                             onClick={() => toggleFavorite(image.id)}
                             className="w-8 h-8 p-0 bg-white/80 hover:bg-white"
+                            title="Adicionar aos produtos em destaque"
                           >
                             <Star className="h-4 w-4 text-yellow-500" />
                           </Button>
