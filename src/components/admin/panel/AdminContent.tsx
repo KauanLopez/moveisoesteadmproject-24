@@ -2,7 +2,6 @@
 import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import ContentSection from '../ContentSection';
-import CatalogManagement from '../catalog/CatalogManagement';
 import ExternalCatalogManagement from '../external-catalog/ExternalCatalogManagement';
 import PdfCatalogManagement from '../pdf-catalog/PdfCatalogManagement';
 import MessageManagement from '../MessageManagement';
