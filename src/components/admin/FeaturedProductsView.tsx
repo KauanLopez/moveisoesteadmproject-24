@@ -1,35 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Star, RefreshCw, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getFeaturedImages, AdminCatalogImage, getCatalogs } from '@/services/adminCatalogService';
+import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 
 const FeaturedProductsView = () => {
-  const [featuredImages, setFeaturedImages] = useState<AdminCatalogImage[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadFeaturedImages();
-  }, []);
-
-  const loadFeaturedImages = () => {
-    setLoading(true);
-    try {
-      const images = getFeaturedImages();
-      setFeaturedImages(images);
-    } catch (error) {
-      console.error('Error loading featured images:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getCatalogName = (catalogId: string): string => {
-    const catalogs = getCatalogs();
-    const catalog = catalogs.find(c => c.id === catalogId);
-    return catalog?.name || 'Catálogo não encontrado';
-  };
+  const { products: featuredProducts, loading } = useFeaturedProducts();
 
   if (loading) {
     return (
@@ -54,19 +31,27 @@ const FeaturedProductsView = () => {
             Esta é uma visualização espelho de como a seção "Produtos em Destaque" aparece na página principal do site
           </p>
         </div>
-        <Button onClick={loadFeaturedImages} variant="outline" className="flex items-center gap-2">
+        <Button onClick={() => window.location.reload()} variant="outline" className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4" />
           Atualizar Preview
         </Button>
       </div>
 
-      {featuredImages.length > 0 ? (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <p className="text-blue-800 text-sm">
+          <strong>ℹ️ Sincronização:</strong> Esta galeria exibe exatamente as mesmas imagens que aparecem 
+          na seção "Produtos em Destaque" da página principal do site. Os dados são carregados diretamente 
+          do sistema usado pela página principal.
+        </p>
+      </div>
+
+      {featuredProducts.length > 0 ? (
         <>
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2">
               <Star className="h-5 w-5 text-green-600 fill-current" />
               <p className="text-green-800 font-medium">
-                {featuredImages.length} {featuredImages.length === 1 ? 'produto está sendo exibido' : 'produtos estão sendo exibidos'} na seção de destaque da página principal.
+                {featuredProducts.length} {featuredProducts.length === 1 ? 'produto está sendo exibido' : 'produtos estão sendo exibidos'} na seção de destaque da página principal.
               </p>
             </div>
           </div>
@@ -79,12 +64,12 @@ const FeaturedProductsView = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {featuredImages.map((image) => (
-                <Card key={image.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              {featuredProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="aspect-square relative group">
                     <img
-                      src={image.url}
-                      alt={image.title || 'Produto em destaque'}
+                      src={product.image}
+                      alt={product.title || 'Produto em destaque'}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -96,14 +81,14 @@ const FeaturedProductsView = () => {
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    {image.title && (
-                      <h4 className="font-medium text-lg mb-2">{image.title}</h4>
+                    {product.title && (
+                      <h4 className="font-medium text-lg mb-2">{product.title}</h4>
                     )}
-                    <p className="text-sm text-gray-600 mb-2">
-                      Catálogo: {getCatalogName(image.catalogId)}
-                    </p>
+                    {product.description && (
+                      <p className="text-sm text-gray-600 mb-2">{product.description}</p>
+                    )}
                     <p className="text-xs text-gray-400">
-                      Destacado em {new Date(image.createdAt).toLocaleDateString('pt-BR')}
+                      Seção: {product.section}
                     </p>
                   </CardContent>
                 </Card>
@@ -120,19 +105,17 @@ const FeaturedProductsView = () => {
             Nenhum produto em destaque configurado
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Para configurar produtos em destaque, vá para "Gerenciar Catálogos", 
-            adicione imagens aos seus catálogos e marque-as como favoritas clicando na estrela ⭐️
+            No momento, não há produtos configurados para aparecer na seção "Produtos em Destaque" 
+            da página principal. Esta seção reflete o conteúdo real do site.
           </p>
           
           <div className="bg-blue-50 rounded-lg p-6 max-w-lg mx-auto border border-blue-200">
-            <h4 className="font-medium text-blue-900 mb-3">Como adicionar produtos em destaque:</h4>
-            <ol className="text-sm text-blue-800 text-left space-y-2">
-              <li>1. Acesse a aba "Gerenciar Catálogos"</li>
-              <li>2. Clique em "Adicionar/Ver Imagens" em um catálogo</li>
-              <li>3. Adicione imagens usando upload ou URL</li>
-              <li>4. Clique na estrela ⭐️ das imagens que deseja destacar</li>
-              <li>5. Volte aqui para visualizar o resultado</li>
-            </ol>
+            <h4 className="font-medium text-blue-900 mb-3">Como os produtos em destaque são gerenciados:</h4>
+            <div className="text-sm text-blue-800 text-left space-y-2">
+              <p>• Os produtos em destaque são carregados automaticamente do sistema de conteúdo do site</p>
+              <p>• Esta seção exibe o mesmo conteúdo que aparece na página principal</p>
+              <p>• Para modificar os produtos, seria necessário integrar com o sistema de favoritos</p>
+            </div>
           </div>
         </div>
       )}

@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Plus, Image, Star, Trash2 } from 'lucide-react';
-import { getCatalogs, createCatalog, deleteCatalog, AdminCatalog } from '@/services/adminCatalogService';
+import { fetchExternalCatalogs } from '@/services/externalCatalogService';
+import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 import CreateCatalogModal from './CreateCatalogModal';
 import CatalogImagesModal from './CatalogImagesModal';
 
 const CatalogManagement = () => {
-  const [catalogs, setCatalogs] = useState<AdminCatalog[]>([]);
+  const [catalogs, setCatalogs] = useState<ExternalUrlCatalog[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedCatalog, setSelectedCatalog] = useState<AdminCatalog | null>(null);
+  const [selectedCatalog, setSelectedCatalog] = useState<ExternalUrlCatalog | null>(null);
   const [showImagesModal, setShowImagesModal] = useState(false);
   const { toast } = useToast();
 
@@ -19,51 +21,44 @@ const CatalogManagement = () => {
     loadCatalogs();
   }, []);
 
-  const loadCatalogs = () => {
-    const catalogsData = getCatalogs();
-    setCatalogs(catalogsData);
+  const loadCatalogs = async () => {
+    setLoading(true);
+    try {
+      console.log('CatalogManagement: Loading external catalogs from main site...');
+      const catalogsData = await fetchExternalCatalogs();
+      console.log('CatalogManagement: Loaded catalogs:', catalogsData);
+      setCatalogs(catalogsData);
+    } catch (error) {
+      console.error('CatalogManagement: Error loading catalogs:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os catálogos do site.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateCatalog = (catalogData: { name: string; description: string; coverImage: string }) => {
-    try {
-      createCatalog(catalogData);
-      loadCatalogs();
-      setShowCreateModal(false);
-      toast({
-        title: "Catálogo criado",
-        description: "O catálogo foi criado com sucesso."
-      });
-    } catch (error) {
-      console.error('Error creating catalog:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível criar o catálogo.",
-        variant: "destructive"
-      });
-    }
+    // This would need to integrate with the external catalog service
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "A criação de novos catálogos será implementada em breve.",
+      variant: "destructive"
+    });
   };
 
   const handleDeleteCatalog = (catalogId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este catálogo?')) {
-      try {
-        deleteCatalog(catalogId);
-        loadCatalogs();
-        toast({
-          title: "Catálogo excluído",
-          description: "O catálogo foi excluído com sucesso."
-        });
-      } catch (error) {
-        console.error('Error deleting catalog:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível excluir o catálogo.",
-          variant: "destructive"
-        });
-      }
-    }
+    // This would need to integrate with the external catalog service
+    toast({
+      title: "Funcionalidade em desenvolvimento", 
+      description: "A exclusão de catálogos será implementada em breve.",
+      variant: "destructive"
+    });
   };
 
-  const handleOpenImagesModal = (catalog: AdminCatalog) => {
+  const handleOpenImagesModal = (catalog: ExternalUrlCatalog) => {
     setSelectedCatalog(catalog);
     setShowImagesModal(true);
   };
@@ -73,6 +68,19 @@ const CatalogManagement = () => {
     setSelectedCatalog(null);
     loadCatalogs(); // Reload to get updated data
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Gerenciar Catálogos</h2>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-gray-500">Carregando catálogos do site...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -84,13 +92,20 @@ const CatalogManagement = () => {
         </Button>
       </div>
 
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <p className="text-blue-800 text-sm">
+          <strong>ℹ️ Informação:</strong> Esta seção exibe os catálogos que estão atualmente publicados no site principal. 
+          Os dados são sincronizados automaticamente com o carrossel de catálogos da página inicial.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {catalogs.map((catalog) => (
           <Card key={catalog.id} className="overflow-hidden">
             <div className="aspect-video relative">
               <img
-                src={catalog.coverImage}
-                alt={catalog.name}
+                src={catalog.external_cover_image_url}
+                alt={catalog.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -99,7 +114,7 @@ const CatalogManagement = () => {
               />
             </div>
             <CardHeader>
-              <CardTitle className="text-lg">{catalog.name}</CardTitle>
+              <CardTitle className="text-lg">{catalog.title}</CardTitle>
               <p className="text-sm text-gray-600">{catalog.description}</p>
             </CardHeader>
             <CardContent>
@@ -110,18 +125,19 @@ const CatalogManagement = () => {
                   className="flex items-center gap-2"
                 >
                   <Image className="h-4 w-4" />
-                  Adicionar/Ver Imagens ({catalog.images.length})
+                  Ver Imagens do Catálogo
                 </Button>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500 flex items-center gap-1">
                     <Star className="h-3 w-3" />
-                    {catalog.images.filter(img => img.isFeatured).length} em destaque
+                    Catálogo do site principal
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDeleteCatalog(catalog.id)}
                     className="text-red-600 hover:text-red-700"
+                    disabled
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -134,7 +150,7 @@ const CatalogManagement = () => {
 
       {catalogs.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">Nenhum catálogo encontrado.</p>
+          <p className="text-gray-500 mb-4">Nenhum catálogo encontrado no site principal.</p>
           <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Criar Primeiro Catálogo
