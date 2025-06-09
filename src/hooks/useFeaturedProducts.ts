@@ -54,6 +54,25 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
     };
     
     loadProducts();
+
+    // Listen for localStorage changes to update the view
+    const handleStorageChange = () => {
+      loadProducts();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events when localStorage is updated programmatically
+    const handleLocalUpdate = () => {
+      setTimeout(loadProducts, 100); // Small delay to ensure localStorage is updated
+    };
+    
+    window.addEventListener('localStorageUpdated', handleLocalUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('localStorageUpdated', handleLocalUpdate);
+    };
   }, []);
 
   return { products, loading };

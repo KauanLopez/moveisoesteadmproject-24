@@ -60,6 +60,9 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
         updatedImages[imageIndex] = { ...image, isFavorite: newFavoriteStatus };
         setImages(updatedImages);
         
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new CustomEvent('localStorageUpdated'));
+        
         toast({
           title: newFavoriteStatus ? "Produto destacado" : "Produto removido dos destaques",
           description: newFavoriteStatus 

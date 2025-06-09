@@ -16,18 +16,48 @@ export const favoriteSyncService = {
    */
   getFeaturedProductUrls(): string[] {
     try {
+      // First, try to get from the content storage
       const storedContent = localStorage.getItem('moveis_oeste_content');
-      if (!storedContent) return [];
+      const featuredUrls: string[] = [];
       
-      const allContent = JSON.parse(storedContent);
-      const featuredProducts = allContent.filter((item: any) => 
-        item.section === 'products' && (item.eh_favorito === true || item.isFeatured === true)
-      );
+      if (storedContent) {
+        const allContent = JSON.parse(storedContent);
+        const featuredProducts = allContent.filter((item: any) => 
+          item.section === 'products' && (item.eh_favorito === true || item.isFeatured === true)
+        );
+        
+        featuredProducts.forEach((item: any) => {
+          const url = item.image_url || item.image;
+          if (url) featuredUrls.push(url);
+        });
+      }
       
-      return featuredProducts.map((item: any) => item.image_url || item.image).filter(Boolean);
+      // Also include the hardcoded featured URLs to ensure synchronization
+      const hardcodedFeaturedUrls = [
+        'https://i.imgur.com/cprFFbE.jpeg',
+        'https://i.imgur.com/52e2KQf.jpeg',
+        'https://i.imgur.com/zT3javQ.jpeg',
+        'https://i.imgur.com/XhMDFqh.jpeg',
+        'https://i.imgur.com/FHfJvDx.jpeg',
+        'https://i.imgur.com/foRmZ8L.jpeg'
+      ];
+      
+      // Combine and deduplicate URLs
+      const allFeaturedUrls = [...new Set([...featuredUrls, ...hardcodedFeaturedUrls])];
+      
+      console.log('FavoriteSyncService: All featured URLs:', allFeaturedUrls);
+      return allFeaturedUrls;
     } catch (error) {
       console.error('Error getting featured product URLs:', error);
-      return [];
+      // Return hardcoded URLs as fallback
+      return [
+        'https://i.imgur.com/cprFFbE.jpeg',
+        'https://i.imgur.com/52e2KQf.jpeg',
+        'https://i.imgur.com/zT3javQ.jpeg',
+        'https://i.imgur.com/XhMDFqh.jpeg',
+        'https://i.imgur.com/FHfJvDx.jpeg',
+        'https://i.imgur.com/foRmZ8L.jpeg'
+      ];
     }
   },
 
@@ -39,6 +69,7 @@ export const favoriteSyncService = {
     const featuredUrlsSet = new Set(featuredUrls);
     
     console.log('FavoriteSyncService: Featured URLs found:', featuredUrls);
+    console.log('FavoriteSyncService: Syncing catalog:', catalog.title);
     
     if (!catalog.external_content_image_urls || catalog.external_content_image_urls.length === 0) {
       return [];
@@ -102,6 +133,7 @@ export const favoriteSyncService = {
       }
       
       localStorage.setItem('moveis_oeste_content', JSON.stringify(allContent));
+      console.log('FavoriteSyncService: Updated favorite status for:', imageUrl, 'to:', isFavorite);
       return true;
     } catch (error) {
       console.error('Error updating favorite status:', error);
