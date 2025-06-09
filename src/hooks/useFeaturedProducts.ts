@@ -12,42 +12,84 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
       try {
         console.log('useFeaturedProducts: Loading featured products...');
         
+        // Get the hardcoded featured URLs that are displayed on the main page
+        const hardcodedFeaturedUrls = [
+          'https://i.imgur.com/cprFFbE.jpeg',
+          'https://i.imgur.com/52e2KQf.jpeg',
+          'https://i.imgur.com/zT3javQ.jpeg',
+          'https://i.imgur.com/XhMDFqh.jpeg',
+          'https://i.imgur.com/FHfJvDx.jpeg',
+          'https://i.imgur.com/foRmZ8L.jpeg'
+        ];
+        
         // Load from localStorage where the main site stores content
         const storedContent = localStorage.getItem('moveis_oeste_content');
         console.log('useFeaturedProducts: Raw localStorage content:', storedContent);
+        
+        let featuredProducts: ImageContent[] = [];
         
         if (storedContent) {
           const allContent = JSON.parse(storedContent);
           console.log('useFeaturedProducts: Parsed content:', allContent);
           
           // Filter for products section and items marked as featured
-          const featuredProducts = allContent.filter((item: any) => {
+          const storedFeaturedProducts = allContent.filter((item: any) => {
             const isProductSection = item.section === 'products';
             const isFeatured = item.eh_favorito === true || item.isFeatured === true;
             console.log(`useFeaturedProducts: Item ${item.id} - section: ${item.section}, eh_favorito: ${item.eh_favorito}, isFeatured: ${item.isFeatured}`);
             return isProductSection && isFeatured;
           });
           
-          console.log('useFeaturedProducts: Filtered featured products:', featuredProducts);
+          console.log('useFeaturedProducts: Filtered featured products from localStorage:', storedFeaturedProducts);
           
-          // Map to ImageContent format
-          const mappedProducts: ImageContent[] = featuredProducts.map((item: any) => ({
+          // Map stored products to ImageContent format
+          featuredProducts = storedFeaturedProducts.map((item: any) => ({
             id: item.id,
             image: item.image_url || item.image,
             title: item.title,
             description: item.description,
             section: item.section
           }));
-          
-          console.log('useFeaturedProducts: Mapped products:', mappedProducts);
-          setProducts(mappedProducts);
-        } else {
-          console.log('useFeaturedProducts: No content found in localStorage');
-          setProducts([]);
         }
+        
+        // Always include hardcoded featured products to ensure they appear in the admin view
+        hardcodedFeaturedUrls.forEach((url, index) => {
+          // Check if this URL is already in the featured products from localStorage
+          const existsInStored = featuredProducts.some(product => product.image === url);
+          
+          if (!existsInStored) {
+            featuredProducts.push({
+              id: `hardcoded-featured-${index}`,
+              image: url,
+              title: `Produto em Destaque ${index + 1}`,
+              description: 'Produto exibido na página principal',
+              section: 'products'
+            });
+          }
+        });
+        
+        console.log('useFeaturedProducts: Final featured products (including hardcoded):', featuredProducts);
+        setProducts(featuredProducts);
       } catch (error) {
         console.error('useFeaturedProducts: Error loading products:', error);
-        setProducts([]);
+        
+        // Fallback to hardcoded featured products if there's an error
+        const fallbackProducts: ImageContent[] = [
+          'https://i.imgur.com/cprFFbE.jpeg',
+          'https://i.imgur.com/52e2KQf.jpeg',
+          'https://i.imgur.com/zT3javQ.jpeg',
+          'https://i.imgur.com/XhMDFqh.jpeg',
+          'https://i.imgur.com/FHfJvDx.jpeg',
+          'https://i.imgur.com/foRmZ8L.jpeg'
+        ].map((url, index) => ({
+          id: `fallback-featured-${index}`,
+          image: url,
+          title: `Produto em Destaque ${index + 1}`,
+          description: 'Produto exibido na página principal',
+          section: 'products'
+        }));
+        
+        setProducts(fallbackProducts);
       } finally {
         setLoading(false);
       }
