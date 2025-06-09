@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { X, Star, Trash2 } from 'lucide-react';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
@@ -130,8 +130,8 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-6xl max-h-[90vh] overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="w-full max-w-6xl h-[90vh] flex flex-col">
+        <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
           <div>
             <CardTitle>Imagens do Catálogo: {catalog.title}</CardTitle>
             <p className="text-sm text-gray-600 mt-1">{catalog.description}</p>
@@ -140,85 +140,88 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent className="overflow-y-auto">
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-blue-800 text-sm">
-                <strong>💡 Dica:</strong> Clique no ícone da estrela para adicionar uma imagem à seção 
-                "Produtos em Destaque" da página principal do site.
-              </p>
-            </div>
+        
+        <CardContent className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1">
+            <div className="space-y-6 pr-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-blue-800 text-sm">
+                  <strong>💡 Dica:</strong> Clique no ícone da estrela para adicionar uma imagem à seção 
+                  "Produtos em Destaque" da página principal do site.
+                </p>
+              </div>
 
-            <div>
-              <h3 className="text-lg font-medium mb-4">Adicionar Novas Imagens</h3>
-              <ImageUploadOptions
-                title="Imagem do Produto"
-                onImageSelect={handleImageSelect}
-              />
-            </div>
+              <div>
+                <h3 className="text-lg font-medium mb-4">Adicionar Novas Imagens</h3>
+                <ImageUploadOptions
+                  title="Imagem do Produto"
+                  onImageSelect={handleImageSelect}
+                />
+              </div>
 
-            <div>
-              <h3 className="text-lg font-medium mb-4">
-                Imagens do Catálogo ({images.length})
-              </h3>
-              
-              {loading ? (
-                <p className="text-gray-500">Carregando imagens...</p>
-              ) : images.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-2">Nenhuma imagem encontrada neste catálogo.</p>
-                  <p className="text-sm text-gray-400">
-                    Este catálogo não possui imagens de conteúdo configuradas.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {images.map((image) => (
-                    <Card key={image.id} className="overflow-hidden group">
-                      <div className="aspect-square relative">
-                        <img
-                          src={image.image}
-                          alt={image.title || 'Imagem do catálogo'}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'https://via.placeholder.com/300x300?text=Erro+ao+carregar';
-                          }}
-                        />
-                        <div className="absolute top-2 right-2 flex gap-1">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => toggleFavorite(image.id)}
-                            className="w-8 h-8 p-0 bg-white/80 hover:bg-white"
-                            title="Adicionar aos produtos em destaque"
-                          >
-                            <Star className="h-4 w-4 text-yellow-500" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteImage(image.id)}
-                            className="w-8 h-8 p-0 bg-white/80 hover:bg-red-100"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
+              <div>
+                <h3 className="text-lg font-medium mb-4">
+                  Imagens do Catálogo ({images.length})
+                </h3>
+                
+                {loading ? (
+                  <p className="text-gray-500">Carregando imagens...</p>
+                ) : images.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-2">Nenhuma imagem encontrada neste catálogo.</p>
+                    <p className="text-sm text-gray-400">
+                      Este catálogo não possui imagens de conteúdo configuradas.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {images.map((image) => (
+                      <Card key={image.id} className="overflow-hidden group">
+                        <div className="aspect-square relative">
+                          <img
+                            src={image.image}
+                            alt={image.title || 'Imagem do catálogo'}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = 'https://via.placeholder.com/300x300?text=Erro+ao+carregar';
+                            }}
+                          />
+                          <div className="absolute top-2 right-2 flex gap-1">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => toggleFavorite(image.id)}
+                              className="w-8 h-8 p-0 bg-white/80 hover:bg-white"
+                              title="Adicionar aos produtos em destaque"
+                            >
+                              <Star className="h-4 w-4 text-yellow-500" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deleteImage(image.id)}
+                              className="w-8 h-8 p-0 bg-white/80 hover:bg-red-100"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <CardContent className="p-3">
-                        {image.title && (
-                          <p className="font-medium text-sm mb-1">{image.title}</p>
-                        )}
-                        {image.description && (
-                          <p className="text-xs text-gray-500 line-clamp-2">{image.description}</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                        <CardContent className="p-3">
+                          {image.title && (
+                            <p className="font-medium text-sm mb-1">{image.title}</p>
+                          )}
+                          {image.description && (
+                            <p className="text-xs text-gray-500 line-clamp-2">{image.description}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>
