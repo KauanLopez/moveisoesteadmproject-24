@@ -5,12 +5,14 @@ import { Star, Trash2 } from 'lucide-react';
 
 interface CatalogImageActionsProps {
   imageId: string;
+  isFavorite?: boolean;
   onToggleFavorite: (imageId: string) => void;
   onDeleteImage: (imageId: string) => void;
 }
 
 const CatalogImageActions: React.FC<CatalogImageActionsProps> = ({
   imageId,
+  isFavorite = false,
   onToggleFavorite,
   onDeleteImage
 }) => {
@@ -21,9 +23,11 @@ const CatalogImageActions: React.FC<CatalogImageActionsProps> = ({
         size="sm"
         onClick={() => onToggleFavorite(imageId)}
         className="w-8 h-8 p-0 bg-white/80 hover:bg-white"
-        title="Adicionar aos produtos em destaque"
+        title={isFavorite ? "Remover dos produtos em destaque" : "Adicionar aos produtos em destaque"}
       >
-        <Star className="h-4 w-4 text-yellow-500" />
+        <Star 
+          className={`h-4 w-4 ${isFavorite ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'}`} 
+        />
       </Button>
       <Button
         variant="destructive"

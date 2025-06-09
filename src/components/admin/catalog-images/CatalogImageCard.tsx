@@ -9,6 +9,7 @@ interface CatalogImageCardProps {
     image: string;
     title?: string;
     description?: string;
+    isFavorite?: boolean;
   };
   onToggleFavorite: (imageId: string) => void;
   onDeleteImage: (imageId: string) => void;
@@ -33,6 +34,7 @@ const CatalogImageCard: React.FC<CatalogImageCardProps> = ({
         />
         <CatalogImageActions
           imageId={image.id}
+          isFavorite={image.isFavorite}
           onToggleFavorite={onToggleFavorite}
           onDeleteImage={onDeleteImage}
         />
@@ -43,6 +45,9 @@ const CatalogImageCard: React.FC<CatalogImageCardProps> = ({
         )}
         {image.description && (
           <p className="text-xs text-gray-500 line-clamp-2">{image.description}</p>
+        )}
+        {image.isFavorite && (
+          <p className="text-xs text-yellow-600 font-medium mt-1">⭐ Em destaque</p>
         )}
       </CardContent>
     </Card>

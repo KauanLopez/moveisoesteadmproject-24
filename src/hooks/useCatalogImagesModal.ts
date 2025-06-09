@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { favoriteSyncService, SyncedCatalogImage } from '@/services/favoriteSyncService';
 
 export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
-  const [images, setImages] = useState<any[]>([]);
+  const [images, setImages] = useState<SyncedCatalogImage[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -17,22 +18,11 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     try {
       console.log('CatalogImagesModal: Loading images for catalog:', catalog.title);
       
-      if (catalog.external_content_image_urls && catalog.external_content_image_urls.length > 0) {
-        const catalogImages = catalog.external_content_image_urls.map((url, index) => ({
-          id: `${catalog.id}-${index}`,
-          image: url,
-          title: `Imagem ${index + 1} - ${catalog.title}`,
-          description: `Imagem do catálogo ${catalog.title}`,
-          section: 'catalog',
-          catalog_id: catalog.id
-        }));
-        
-        console.log('CatalogImagesModal: Loaded catalog images:', catalogImages);
-        setImages(catalogImages);
-      } else {
-        console.log('CatalogImagesModal: No content images found for catalog');
-        setImages([]);
-      }
+      // Use the sync service to get images with favorite status
+      const syncedImages = favoriteSyncService.syncCatalogImagesWithFavorites(catalog);
+      
+      console.log('CatalogImagesModal: Loaded synced images:', syncedImages);
+      setImages(syncedImages);
     } catch (error) {
       console.error('CatalogImagesModal: Error loading catalog images:', error);
       setImages([]);
@@ -53,46 +43,32 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     try {
       console.log('CatalogImagesModal: Toggling favorite for image:', imageId);
       
-      const storedContent = localStorage.getItem('moveis_oeste_content');
-      let allContent = storedContent ? JSON.parse(storedContent) : [];
-      
       const imageIndex = images.findIndex(img => img.id === imageId);
       if (imageIndex === -1) {
         throw new Error('Imagem não encontrada');
       }
       
       const image = images[imageIndex];
+      const newFavoriteStatus = !image.isFavorite;
       
-      const contentItem = {
-        id: `featured-${imageId}`,
-        image_url: image.image,
-        image: image.image,
-        title: image.title,
-        description: image.description,
-        section: 'products',
-        eh_favorito: true,
-        isFeatured: true,
-        created_at: new Date().toISOString()
-      };
+      // Update in the sync service
+      const success = favoriteSyncService.updateImageFavoriteStatus(image.image, newFavoriteStatus);
       
-      const existingIndex = allContent.findIndex((item: any) => 
-        item.id === contentItem.id || 
-        (item.image_url === image.image && item.section === 'products')
-      );
-      
-      if (existingIndex >= 0) {
-        allContent[existingIndex].eh_favorito = !allContent[existingIndex].eh_favorito;
-        allContent[existingIndex].isFeatured = !allContent[existingIndex].isFeatured;
+      if (success) {
+        // Update local state
+        const updatedImages = [...images];
+        updatedImages[imageIndex] = { ...image, isFavorite: newFavoriteStatus };
+        setImages(updatedImages);
+        
+        toast({
+          title: newFavoriteStatus ? "Produto destacado" : "Produto removido dos destaques",
+          description: newFavoriteStatus 
+            ? "Item adicionado à seção 'Produtos em Destaque' da página inicial."
+            : "Item removido da seção 'Produtos em Destaque' da página inicial.",
+        });
       } else {
-        allContent.push(contentItem);
+        throw new Error('Falha ao atualizar status de favorito');
       }
-      
-      localStorage.setItem('moveis_oeste_content', JSON.stringify(allContent));
-      
-      toast({
-        title: "Produto destacado",
-        description: "Item adicionado à seção 'Produtos em Destaque' da página inicial.",
-      });
     } catch (error) {
       console.error('CatalogImagesModal: Error toggling favorite:', error);
       toast({
