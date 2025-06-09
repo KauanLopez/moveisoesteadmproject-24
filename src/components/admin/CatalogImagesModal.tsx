@@ -1,12 +1,11 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Upload, Link, Plus, Star, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { X, Star, Trash2, Plus } from 'lucide-react';
+import { AdminCatalog, AdminCatalogImage, updateImageInCatalog, addImageToCatalog, deleteImageFromCatalog } from '@/services/adminCatalogService';
 import { useToast } from '@/components/ui/use-toast';
-import { AdminCatalog, AdminCatalogImage, addImageToCatalog, updateImageInCatalog, deleteImageFromCatalog } from '@/services/adminCatalogService';
+import ImageUploadOptions from './ImageUploadOptions';
 
 interface CatalogImagesModalProps {
   catalog: AdminCatalog;
@@ -14,58 +13,29 @@ interface CatalogImagesModalProps {
 }
 
 const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClose }) => {
-  const [images, setImages] = useState<AdminCatalogImage[]>(catalog.images);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newImageUrl, setNewImageUrl] = useState('');
-  const [newImageTitle, setNewImageTitle] = useState('');
-  const [useUrl, setUseUrl] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showUpload, setShowUpload] = useState(false);
+  const [images, setImages] = useState(catalog.images);
   const { toast } = useToast();
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+  const handleImageSelect = (imageData: { file?: File; url?: string }) => {
+    let imageUrl = '';
     
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+    if (imageData.file) {
+      // Create a mock URL for the file
+      imageUrl = URL.createObjectURL(imageData.file);
+    } else if (imageData.url) {
+      imageUrl = imageData.url;
     }
-  };
 
-  const handleFile = (file: File) => {
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setNewImageUrl(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAddImage = () => {
-    if (newImageUrl.trim()) {
+    if (imageUrl) {
       const newImage = addImageToCatalog(catalog.id, {
-        url: newImageUrl.trim(),
-        title: newImageTitle.trim() || undefined,
+        url: imageUrl,
         isFeatured: false
       });
 
       if (newImage) {
         setImages([...images, newImage]);
-        setNewImageUrl('');
-        setNewImageTitle('');
-        setShowAddForm(false);
+        setShowUpload(false);
         toast({
           title: "Imagem adicionada",
           description: "A imagem foi adicionada ao catálogo com sucesso."
@@ -74,7 +44,7 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
     }
   };
 
-  const handleToggleFeatured = (imageId: string) => {
+  const toggleFavorite = (imageId: string) => {
     const image = images.find(img => img.id === imageId);
     if (!image) return;
 
@@ -83,17 +53,21 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
     });
 
     if (updatedImage) {
-      setImages(images.map(img => img.id === imageId ? updatedImage : img));
+      setImages(images.map(img => 
+        img.id === imageId ? updatedImage : img
+      ));
+      
       toast({
-        title: updatedImage.isFeatured ? "Adicionado aos destaques" : "Removido dos destaques",
-        description: `A imagem foi ${updatedImage.isFeatured ? 'marcada como destaque' : 'removida dos destaques'}.`
+        title: updatedImage.isFeatured ? "Adicionado aos favoritos" : "Removido dos favoritos",
+        description: `A imagem foi ${updatedImage.isFeatured ? 'marcada como destaque' : 'removida do destaque'}.`
       });
     }
   };
 
-  const handleDeleteImage = (imageId: string) => {
+  const deleteImage = (imageId: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta imagem?')) {
       const success = deleteImageFromCatalog(catalog.id, imageId);
+      
       if (success) {
         setImages(images.filter(img => img.id !== imageId));
         toast({
@@ -105,179 +79,104 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
   };
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Gerenciar Imagens - {catalog.name}</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-600">
-              Total: {images.length} imagens | Em destaque: {images.filter(img => img.isFeatured).length}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Imagens do Catálogo: {catalog.name}</CardTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              {images.length} {images.length === 1 ? 'imagem' : 'imagens'} • {images.filter(img => img.isFeatured).length} em destaque
             </p>
-            <Button onClick={() => setShowAddForm(!showAddForm)} className="flex items-center gap-2">
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Add Images Button */}
+          {!showUpload && (
+            <Button onClick={() => setShowUpload(true)} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Novas Imagens
             </Button>
-          </div>
-
-          {showAddForm && (
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <h3 className="font-medium mb-4">Adicionar Nova Imagem</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="imageTitle">Título da Imagem (opcional)</Label>
-                  <Input
-                    id="imageTitle"
-                    value={newImageTitle}
-                    onChange={(e) => setNewImageTitle(e.target.value)}
-                    placeholder="Ex: Sofá Moderno"
-                  />
-                </div>
-
-                <div>
-                  <Label>Fonte da Imagem</Label>
-                  <div className="flex gap-2 mb-2">
-                    <Button
-                      type="button"
-                      variant={!useUrl ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setUseUrl(false)}
-                    >
-                      <Upload className="h-4 w-4 mr-1" />
-                      Upload
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={useUrl ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setUseUrl(true)}
-                    >
-                      <Link className="h-4 w-4 mr-1" />
-                      URL
-                    </Button>
-                  </div>
-
-                  {useUrl ? (
-                    <Input
-                      type="url"
-                      value={newImageUrl}
-                      onChange={(e) => setNewImageUrl(e.target.value)}
-                      placeholder="https://exemplo.com/imagem.jpg"
-                    />
-                  ) : (
-                    <div
-                      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                        dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                        className="hidden"
-                      />
-                      {newImageUrl ? (
-                        <div>
-                          <img src={newImageUrl} alt="Preview" className="max-h-32 mx-auto mb-2 rounded" />
-                          <p className="text-sm text-green-600">Imagem carregada!</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                          <p className="text-sm text-gray-600">
-                            Arraste imagens aqui ou clique para selecionar
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {newImageUrl && useUrl && (
-                    <div className="mt-2">
-                      <img src={newImageUrl} alt="Preview" className="max-h-32 mx-auto rounded" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleAddImage} disabled={!newImageUrl.trim()}>
-                    Adicionar Imagem
-                  </Button>
-                </div>
-              </div>
-            </div>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map((image) => (
-              <div key={image.id} className="relative group">
-                <div className="aspect-square relative overflow-hidden rounded-lg border">
-                  <img
-                    src={image.url}
-                    alt={image.title || 'Imagem do catálogo'}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://via.placeholder.com/200x200?text=Erro';
-                    }}
-                  />
-                  
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+          {/* Upload Form */}
+          {showUpload && (
+            <Card className="border-2 border-dashed border-gray-300">
+              <CardContent className="pt-6">
+                <ImageUploadOptions
+                  title="Adicionar Nova Imagem ao Catálogo"
+                  onImageSelect={handleImageSelect}
+                />
+                <div className="flex gap-2 mt-4">
+                  <Button type="button" variant="outline" onClick={() => setShowUpload(false)}>
+                    Cancelar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Images Gallery */}
+          {images.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {images.map((image) => (
+                <Card key={image.id} className="overflow-hidden">
+                  <div className="aspect-square relative">
+                    <img
+                      src={image.url}
+                      alt={image.title || 'Imagem do catálogo'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://via.placeholder.com/300x300?text=Erro+ao+carregar';
+                      }}
+                    />
+                    <div className="absolute top-2 right-2 flex gap-1">
                       <Button
                         size="sm"
                         variant={image.isFeatured ? "default" : "outline"}
-                        onClick={() => handleToggleFeatured(image.id)}
-                        className={image.isFeatured ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                        onClick={() => toggleFavorite(image.id)}
+                        className="p-1 h-8 w-8"
                       >
-                        <Star className={`h-4 w-4 ${image.isFeatured ? 'fill-current' : ''}`} />
+                        <Star 
+                          className={`h-4 w-4 ${image.isFeatured ? 'fill-yellow-400 text-yellow-400' : ''}`} 
+                        />
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteImage(image.id)}
-                        className="text-red-600 hover:text-red-700"
+                        variant="destructive"
+                        onClick={() => deleteImage(image.id)}
+                        className="p-1 h-8 w-8"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-
-                  {image.isFeatured && (
-                    <div className="absolute top-2 right-2">
-                      <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                    </div>
-                  )}
-                </div>
-                
-                {image.title && (
-                  <p className="text-sm font-medium mt-2 truncate">{image.title}</p>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {images.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Nenhuma imagem adicionada a este catálogo.</p>
+                  <CardContent className="p-3">
+                    {image.title && (
+                      <p className="font-medium truncate">{image.title}</p>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      {image.isFeatured ? '⭐️ Em destaque' : 'Não destacado'}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">Nenhuma imagem adicionada ainda.</p>
+              <Button onClick={() => setShowUpload(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Primeira Imagem
+              </Button>
             </div>
           )}
-        </div>
-      </DialogContent>
-    </Dialog>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
