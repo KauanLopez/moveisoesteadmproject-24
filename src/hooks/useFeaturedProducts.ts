@@ -48,7 +48,9 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
             image: item.image_url || item.image,
             title: item.title,
             description: item.description,
-            section: item.section
+            section: item.section,
+            objectPosition: item.object_position || 'center',
+            scale: item.scale || 1
           }));
         }
         
@@ -63,7 +65,9 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
               image: url,
               title: `Produto em Destaque ${index + 1}`,
               description: 'Produto exibido na página principal',
-              section: 'products'
+              section: 'products',
+              objectPosition: 'center',
+              scale: 1
             });
           }
         });
@@ -86,7 +90,9 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
           image: url,
           title: `Produto em Destaque ${index + 1}`,
           description: 'Produto exibido na página principal',
-          section: 'products'
+          section: 'products',
+          objectPosition: 'center',
+          scale: 1
         }));
         
         setProducts(fallbackProducts);
