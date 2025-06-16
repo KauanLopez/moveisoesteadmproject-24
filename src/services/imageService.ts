@@ -8,22 +8,36 @@ const generateUUID = () => {
 // Mock upload function for frontend-only implementation
 export const uploadCatalogImage = async (file: File, folder: string = 'catalog-covers'): Promise<string> => {
   return await authService.withValidSession(async () => {
-    try {
-      console.log(`Mock upload for file: ${file.name}, size: ${file.size} bytes`);
-      
-      // Validate file first
-      validateImageFile(file);
-      
-      // <-- MUDANÇA: Em vez de criar uma URL falsa, criamos uma URL de objeto (blob)
-      // que o navegador pode ler diretamente da memória.
-      const blobUrl = URL.createObjectURL(file);
-      
-      console.log('Blob URL created successfully:', blobUrl);
-      return blobUrl;
-    } catch (error: any) {
-      console.error('Exception while uploading image:', error);
-      throw error;
-    }
+    // <-- MUDANÇA: A função agora retorna uma Promise que resolve com a Data URL.
+    return new Promise((resolve, reject) => {
+      try {
+        console.log(`Processing file for Data URL: ${file.name}`);
+        
+        // Valida o arquivo antes de processar
+        validateImageFile(file);
+
+        const reader = new FileReader();
+        
+        // Quando a leitura do arquivo for concluída
+        reader.onload = () => {
+          console.log('Data URL created successfully.');
+          resolve(reader.result as string); // Retorna a string base64 (Data URL)
+        };
+
+        // Em caso de erro na leitura
+        reader.onerror = (error) => {
+          console.error('Error reading file as Data URL:', error);
+          reject(new Error('Não foi possível ler o arquivo para gerar a URL.'));
+        };
+
+        // Inicia a leitura do arquivo para convertê-lo em Data URL
+        reader.readAsDataURL(file);
+
+      } catch (error: any) {
+        console.error('Exception while preparing image upload:', error);
+        reject(error);
+      }
+    });
   });
 };
 
