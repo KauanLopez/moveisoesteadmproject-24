@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
 import AdminHeader from './panel/AdminHeader';
 import AdminTabs from './panel/AdminTabs';
-import ExternalCatalogManagement from './external-catalog/ExternalCatalogManagement'; // Importação correta
-import FeaturedProductsView from './FeaturedProductsView';
+import AdminContent from './panel/AdminContent';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('catalog-management');
@@ -24,14 +23,7 @@ const AdminPanel = () => {
           onTabChange={setActiveTab}
         />
         
-        {/* Renderiza o conteúdo da aba diretamente aqui */}
-        <TabsContent value="catalog-management" className="mt-6">
-          <ExternalCatalogManagement />
-        </TabsContent>
-
-        <TabsContent value="featured-products" className="mt-6">
-          <FeaturedProductsView />
-        </TabsContent>
+        <AdminContent activeTab={activeTab} />
       </Tabs>
     </div>
   );
