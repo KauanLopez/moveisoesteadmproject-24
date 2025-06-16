@@ -1,15 +1,33 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, RefreshCw, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
+import { favoriteSyncService } from '@/services/favoriteSyncService';
+import { useToast } from '@/components/ui/use-toast';
 
 const FeaturedProductsView = () => {
   const { products: featuredProducts, loading } = useFeaturedProducts();
+  const { toast } = useToast();
 
   const handleRefresh = () => {
     window.location.reload();
+  };
+
+  const handleRemoveFavorite = (productImage: string) => {
+    const success = favoriteSyncService.updateImageFavoriteStatus(productImage, false);
+    if (success) {
+      toast({
+        title: "Destaque removido",
+        description: "O produto foi removido dos destaques.",
+      });
+    } else {
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o destaque do produto.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -80,8 +98,16 @@ const FeaturedProductsView = () => {
                         target.src = 'https://via.placeholder.com/300x300?text=Erro+ao+carregar';
                       }}
                     />
-                    <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                    <div className="absolute top-2 right-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => handleRemoveFavorite(product.image)}
+                        className="w-8 h-8 p-0 bg-white/80 hover:bg-white rounded-full shadow-md"
+                        title="Remover dos produtos em destaque"
+                      >
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      </Button>
                     </div>
                   </div>
                   <CardContent className="p-4">
