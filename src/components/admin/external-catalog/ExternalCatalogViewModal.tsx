@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog } from '@/types/customTypes';
 import CatalogImageCarousel from '@/components/catalog/CatalogImageCarousel';
 
 interface ExternalCatalogViewModalProps {

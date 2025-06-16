@@ -8,6 +8,14 @@ export type Profile = Tables['profiles']['Row'];
 export type ExternalUrlCatalog = Tables['external_url_catalogs']['Row'];
 export type FeaturedProduct = Tables['featured_products']['Row'];
 
+// Form data interface for external catalogs
+export interface ExternalUrlCatalogFormData {
+  title: string;
+  description?: string;
+  external_cover_image_url: string;
+  external_content_image_urls?: string[];
+}
+
 // Custom types that extend database types
 export type ImageContent = {
   id: string;

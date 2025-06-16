@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { ExternalUrlCatalog, ExternalUrlCatalogFormData } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog, ExternalUrlCatalogFormData } from '@/types/customTypes';
 import { saveExternalCatalog } from '@/services/externalCatalogService';
 
 interface ExternalCatalogFormProps {

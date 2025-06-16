@@ -9,10 +9,14 @@ type AuthContextType = {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  createUser: (email: string, password: string) => Promise<boolean>;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  isAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,6 +64,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const result = await authService.signIn(email, password);
+      return !result.error;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await authService.signOut();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      // Force page refresh for clean state
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const createUser = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const result = await authService.signUp(email, password);
+      return !result.error;
+    } catch (error) {
+      console.error('Create user error:', error);
+      return false;
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       const result = await authService.signIn(email, password);
@@ -97,6 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const isAuthenticated = !!user;
   const isAdmin = profile?.role === 'admin';
 
   return (
@@ -105,10 +143,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       profile,
       session,
       loading,
+      login,
+      logout,
+      createUser,
+      isAuthenticated,
+      isAdmin,
       signIn,
       signUp,
-      signOut,
-      isAdmin
+      signOut
     }}>
       {children}
     </AuthContext.Provider>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog } from '@/types/customTypes';
 import { fetchExternalCatalogs, deleteExternalCatalog } from '@/services/externalCatalogService';
 import ExternalCatalogForm from './ExternalCatalogForm';
 import ExternalCatalogViewModal from './ExternalCatalogViewModal';

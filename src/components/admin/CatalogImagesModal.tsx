@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog } from '@/types/customTypes';
 import { useCatalogImagesModal } from '@/hooks/useCatalogImagesModal';
 import CatalogModalHeader from './catalog-images/CatalogModalHeader';
 import CatalogImageGallery from './catalog-images/CatalogImageGallery';
