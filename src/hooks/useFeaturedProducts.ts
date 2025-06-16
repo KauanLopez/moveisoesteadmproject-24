@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ImageContent } from '@/types/customTypes';
 
@@ -11,16 +10,6 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
       setLoading(true);
       try {
         console.log('useFeaturedProducts: Loading featured products...');
-        
-        // Get the hardcoded featured URLs that are displayed on the main page
-        const hardcodedFeaturedUrls = [
-          'https://i.imgur.com/cprFFbE.jpeg',
-          'https://i.imgur.com/52e2KQf.jpeg',
-          'https://i.imgur.com/zT3javQ.jpeg',
-          'https://i.imgur.com/XhMDFqh.jpeg',
-          'https://i.imgur.com/FHfJvDx.jpeg',
-          'https://i.imgur.com/foRmZ8L.jpeg'
-        ];
         
         // Load from localStorage where the main site stores content
         const storedContent = localStorage.getItem('moveis_oeste_content');
@@ -54,48 +43,11 @@ export const useFeaturedProducts = (): { products: ImageContent[], loading: bool
           }));
         }
         
-        // Always include hardcoded featured products to ensure they appear in the admin view
-        hardcodedFeaturedUrls.forEach((url, index) => {
-          // Check if this URL is already in the featured products from localStorage
-          const existsInStored = featuredProducts.some(product => product.image === url);
-          
-          if (!existsInStored) {
-            featuredProducts.push({
-              id: `hardcoded-featured-${index}`,
-              image: url,
-              title: `Produto em Destaque ${index + 1}`,
-              description: 'Produto exibido na página principal',
-              section: 'products',
-              objectPosition: 'center',
-              scale: 1
-            });
-          }
-        });
-        
-        console.log('useFeaturedProducts: Final featured products (including hardcoded):', featuredProducts);
+        console.log('useFeaturedProducts: Final featured products:', featuredProducts);
         setProducts(featuredProducts);
       } catch (error) {
         console.error('useFeaturedProducts: Error loading products:', error);
-        
-        // Fallback to hardcoded featured products if there's an error
-        const fallbackProducts: ImageContent[] = [
-          'https://i.imgur.com/cprFFbE.jpeg',
-          'https://i.imgur.com/52e2KQf.jpeg',
-          'https://i.imgur.com/zT3javQ.jpeg',
-          'https://i.imgur.com/XhMDFqh.jpeg',
-          'https://i.imgur.com/FHfJvDx.jpeg',
-          'https://i.imgur.com/foRmZ8L.jpeg'
-        ].map((url, index) => ({
-          id: `fallback-featured-${index}`,
-          image: url,
-          title: `Produto em Destaque ${index + 1}`,
-          description: 'Produto exibido na página principal',
-          section: 'products',
-          objectPosition: 'center',
-          scale: 1
-        }));
-        
-        setProducts(fallbackProducts);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
