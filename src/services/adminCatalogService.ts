@@ -21,52 +21,7 @@ const CATALOGS_KEY = 'admin_catalogs';
 
 // Initialize with some default catalogs if none exist
 const initializeDefaultCatalogs = (): AdminCatalog[] => {
-  return [
-    {
-      id: '1',
-      name: 'Móveis de Sala',
-      description: 'Sofás, mesas de centro e estantes modernas',
-      coverImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop',
-      images: [
-        {
-          id: '1-1',
-          catalogId: '1',
-          url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop',
-          title: 'Sofá Moderno',
-          isFeatured: true,
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '1-2',
-          catalogId: '1',
-          url: 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?q=80&w=800&auto=format&fit=crop',
-          title: 'Mesa de Centro',
-          isFeatured: false,
-          createdAt: new Date().toISOString()
-        }
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: '2',
-      name: 'Móveis de Quarto',
-      description: 'Camas, guarda-roupas e cômodas elegantes',
-      coverImage: 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?q=80&w=800&auto=format&fit=crop',
-      images: [
-        {
-          id: '2-1',
-          catalogId: '2',
-          url: 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?q=80&w=800&auto=format&fit=crop',
-          title: 'Cama Box',
-          isFeatured: true,
-          createdAt: new Date().toISOString()
-        }
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
+  return [];
 };
 
 export const getCatalogs = (): AdminCatalog[] => {
