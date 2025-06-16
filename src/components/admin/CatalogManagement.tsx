@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Plus, Image, Star, Trash2 } from 'lucide-react';
-import { fetchExternalCatalogs } from '@/services/externalCatalogService';
+import { fetchExternalCatalogs, deleteExternalCatalog } from '@/services/externalCatalogService';
+import { localStorageService, StoredExternalCatalog } from '@/services/localStorageService'; // <-- MUDANÇA: Importando o localStorageService
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 import CreateCatalogModal from './CreateCatalogModal';
 import CatalogImagesModal from './CatalogImagesModal';
@@ -24,15 +24,13 @@ const CatalogManagement = () => {
   const loadCatalogs = async () => {
     setLoading(true);
     try {
-      console.log('CatalogManagement: Loading external catalogs from main site...');
       const catalogsData = await fetchExternalCatalogs();
-      console.log('CatalogManagement: Loaded catalogs:', catalogsData);
       setCatalogs(catalogsData);
     } catch (error) {
       console.error('CatalogManagement: Error loading catalogs:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível carregar os catálogos do site.",
+        description: "Não foi possível carregar os catálogos.",
         variant: "destructive"
       });
     } finally {
@@ -40,22 +38,55 @@ const CatalogManagement = () => {
     }
   };
 
+  // <-- MUDANÇA: Função de criar catálogo foi implementada para usar o localStorage
   const handleCreateCatalog = (catalogData: { name: string; description: string; coverImage: string }) => {
-    // This would need to integrate with the external catalog service
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A criação de novos catálogos será implementada em breve.",
-      variant: "destructive"
-    });
+    try {
+      const newCatalog: StoredExternalCatalog = {
+        id: crypto.randomUUID(),
+        title: catalogData.name,
+        description: catalogData.description,
+        external_cover_image_url: catalogData.coverImage,
+        external_content_image_urls: [],
+        created_at: new Date().toISOString()
+      };
+
+      localStorageService.addExternalCatalog(newCatalog);
+      
+      toast({
+        title: "Sucesso!",
+        description: `Catálogo "${catalogData.name}" criado com sucesso.`,
+      });
+
+      setShowCreateModal(false);
+      loadCatalogs(); 
+    } catch (error) {
+      console.error('Error creating catalog:', error);
+      toast({
+        title: "Erro ao criar catálogo",
+        description: "Ocorreu um erro ao tentar salvar o catálogo.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteCatalog = (catalogId: string) => {
-    // This would need to integrate with the external catalog service
-    toast({
-      title: "Funcionalidade em desenvolvimento", 
-      description: "A exclusão de catálogos será implementada em breve.",
-      variant: "destructive"
-    });
+  // <-- MUDANÇA: Função de deletar catálogo foi implementada
+  const handleDeleteCatalog = async (catalogId: string, catalogTitle: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir o catálogo "${catalogTitle}"?`)) {
+        try {
+            await deleteExternalCatalog(catalogId);
+            toast({
+                title: "Catálogo Excluído",
+                description: `O catálogo "${catalogTitle}" foi excluído com sucesso.`
+            });
+            loadCatalogs();
+        } catch (error) {
+            toast({
+                title: "Erro ao Excluir",
+                description: "Não foi possível remover o catálogo.",
+                variant: "destructive"
+            });
+        }
+    }
   };
 
   const handleOpenImagesModal = (catalog: ExternalUrlCatalog) => {
@@ -66,7 +97,7 @@ const CatalogManagement = () => {
   const handleCloseImagesModal = () => {
     setShowImagesModal(false);
     setSelectedCatalog(null);
-    loadCatalogs(); // Reload to get updated data
+    loadCatalogs();
   };
 
   if (loading) {
@@ -76,7 +107,7 @@ const CatalogManagement = () => {
           <h2 className="text-2xl font-bold">Gerenciar Catálogos</h2>
         </div>
         <div className="text-center py-8">
-          <p className="text-gray-500">Carregando catálogos do site...</p>
+          <p className="text-gray-500">Carregando catálogos...</p>
         </div>
       </div>
     );
@@ -115,7 +146,7 @@ const CatalogManagement = () => {
             </div>
             <CardHeader>
               <CardTitle className="text-lg">{catalog.title}</CardTitle>
-              <p className="text-sm text-gray-600">{catalog.description}</p>
+              <p className="text-sm text-gray-600 truncate">{catalog.description}</p>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2">
@@ -132,12 +163,12 @@ const CatalogManagement = () => {
                     <Star className="h-3 w-3" />
                     Catálogo do site principal
                   </span>
+                  {/* <-- MUDANÇA: Botão de deletar agora chama a função correta e está habilitado */}
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => handleDeleteCatalog(catalog.id)}
-                    className="text-red-600 hover:text-red-700"
-                    disabled
+                    onClick={() => handleDeleteCatalog(catalog.id, catalog.title)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -150,7 +181,7 @@ const CatalogManagement = () => {
 
       {catalogs.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">Nenhum catálogo encontrado no site principal.</p>
+          <p className="text-gray-500 mb-4">Nenhum catálogo encontrado.</p>
           <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Criar Primeiro Catálogo
