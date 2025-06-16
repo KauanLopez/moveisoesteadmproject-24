@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload, Link, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { validateImageUrl } from '@/services/urlImageService';
 
 interface ImageUploadOptionsProps {
   onFileSubmit: (file: File) => void;
@@ -32,60 +33,60 @@ const ImageUploadOptions: React.FC<ImageUploadOptionsProps> = ({ onFileSubmit, o
     }
   };
 
-  const handleFileFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFileButtonClick = () => {
     if (selectedFile) {
       onFileSubmit(selectedFile);
-      setSelectedFile(null); // Reset after submit
+      setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    } else {
+        toast({ title: "Nenhum arquivo", description: "Por favor, selecione um arquivo para enviar.", variant: "destructive" });
     }
   };
 
-  const handleUrlFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!imageUrl.trim()) {
-      toast({ title: "Erro", description: "Por favor, insira uma URL válida.", variant: "destructive" });
+  const handleUrlButtonClick = () => {
+    if (!validateImageUrl(imageUrl)) {
+      toast({ title: "URL Inválida", description: "Por favor, insira uma URL de imagem válida que termine com .jpg, .png, etc.", variant: "destructive" });
       return;
     }
-    try {
-      new URL(imageUrl);
-      onUrlSubmit(imageUrl.trim());
-      setImageUrl(''); // Reset after submit
-    } catch {
-      toast({ title: "Erro", description: "Por favor, insira uma URL válida.", variant: "destructive" });
-    }
+    onUrlSubmit(imageUrl.trim());
+    setImageUrl('');
   };
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleFileFormSubmit} className="border rounded-lg p-4 space-y-3">
+      <div className="border rounded-lg p-4 space-y-3">
         <h5 className="font-medium flex items-center gap-2"><Upload className="h-4 w-4" />Opção A: Fazer Upload do Dispositivo</h5>
         <div className="flex gap-2 items-center">
             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="flex-1">
                 <Upload className="h-4 w-4 mr-2" />
-                Escolher Arquivo
+                {selectedFile ? 'Trocar Arquivo' : 'Escolher Arquivo'}
             </Button>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="file-upload-revised" />
-            <Button type="submit" disabled={!selectedFile || isUploading} className="flex-shrink-0">
+            <Button onClick={handleFileButtonClick} disabled={!selectedFile || isUploading} className="flex-shrink-0">
                 <Send className="h-4 w-4 mr-2" />
-                Enviar
+                Enviar Arquivo
             </Button>
         </div>
-        {selectedFile && <p className="text-sm text-green-600 mt-2">✓ Arquivo selecionado: {selectedFile.name}</p>}
-      </form>
+        {selectedFile && (
+            <div className="p-2 border rounded-md bg-gray-50">
+                <p className="text-sm text-gray-700">Pré-visualização:</p>
+                <img src={URL.createObjectURL(selectedFile)} alt="Preview" className="mt-2 rounded-md max-h-40 mx-auto" />
+            </div>
+        )}
+      </div>
       
-      <form onSubmit={handleUrlFormSubmit} className="border rounded-lg p-4 space-y-3">
+      <div className="border rounded-lg p-4 space-y-3">
         <h5 className="font-medium flex items-center gap-2"><Link className="h-4 w-4" />Opção B: Inserir a partir de URL</h5>
         <div className="flex gap-2">
           <Input type="url" placeholder="https://exemplo.com/imagem.jpg" value={imageUrl} onChange={(e) => { setImageUrl(e.target.value); setSelectedFile(null); }} disabled={isUploading} className="flex-1" />
-          <Button type="submit" disabled={!imageUrl || isUploading}>
+          <Button onClick={handleUrlButtonClick} disabled={!imageUrl || isUploading}>
             <Send className="h-4 w-4 mr-2" />
-            Enviar
+            Enviar URL
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

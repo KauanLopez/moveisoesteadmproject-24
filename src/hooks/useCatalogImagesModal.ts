@@ -63,20 +63,17 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
       if (!file) return;
       setIsUploading(true);
       try {
-          // A função uploadCatalogImage retorna uma URL local (base64)
           const uploadedUrl = await uploadCatalogImage(file, 'catalog-images');
           await addImageUrlToCatalog(uploadedUrl);
       } catch(error: any) {
           console.error("Error uploading file:", error);
           toast({ title: "Erro de Upload", description: error.message || "Não foi possível fazer o upload do arquivo.", variant: "destructive" });
-      } finally {
-        setIsUploading(false);
+          setIsUploading(false);
       }
   };
 
   const handleUrlSubmit = async (url: string) => {
       if (!url) return;
-      // Trata a URL como a URL final da imagem
       await addImageUrlToCatalog(url);
   };
 
