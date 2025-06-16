@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,7 +16,9 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
   const {
     images,
     loading,
-    handleImageSelect,
+    isUploading,
+    handleFileSubmit,
+    handleUrlSubmit,
     toggleFavorite,
     deleteImage
   } = useCatalogImagesModal(catalog);
@@ -40,8 +41,9 @@ const CatalogImagesModal: React.FC<CatalogImagesModalProps> = ({ catalog, onClos
               <div>
                 <h3 className="text-lg font-medium mb-4">Adicionar Novas Imagens</h3>
                 <ImageUploadOptions
-                  title="Imagem do Produto"
-                  onImageSelect={handleImageSelect}
+                  onFileSubmit={handleFileSubmit}
+                  onUrlSubmit={handleUrlSubmit}
+                  isUploading={isUploading}
                 />
               </div>
 
