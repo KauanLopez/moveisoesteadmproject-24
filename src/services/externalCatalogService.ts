@@ -4,45 +4,11 @@ import { localStorageService } from './localStorageService';
 export const externalCatalogService = {
   async getAllCatalogs(): Promise<ExternalUrlCatalog[]> {
     try {
-      console.log('externalCatalogService: Getting all catalogs...');
       const catalogs = localStorageService.getExternalCatalogs();
-      console.log('externalCatalogService: Found', catalogs.length, 'catalogs');
       
-      // If no catalogs exist, ensure default catalogs are loaded
       if (catalogs.length === 0) {
-        console.log('externalCatalogService: No catalogs found, initializing defaults...');
-        // Try to get default catalogs from localStorage or create sample data
-        const defaultCatalogs = [
-          {
-            id: '1',
-            title: 'Catálogo Móveis Planejados',
-            description: 'Móveis sob medida para sua casa',
-            external_cover_image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop',
-            external_content_image_urls: [
-              'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?q=80&w=800&auto=format&fit=crop',
-              'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=800&auto=format&fit=crop'
-            ],
-            created_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            title: 'Cozinhas Modulares',
-            description: 'Projetos exclusivos para sua cozinha',
-            external_cover_image_url: 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?q=80&w=800&auto=format&fit=crop',
-            external_content_image_urls: [
-              'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop'
-            ],
-            created_at: new Date().toISOString()
-          }
-        ];
-        
-        // Add default catalogs to localStorage
-        defaultCatalogs.forEach(catalog => {
-          localStorageService.addExternalCatalog(catalog);
-        });
-        
-        console.log('externalCatalogService: Added default catalogs');
-        return defaultCatalogs;
+        localStorageService.initializeDefaultData();
+        return localStorageService.getExternalCatalogs();
       }
       
       return catalogs.map(catalog => ({
@@ -50,7 +16,7 @@ export const externalCatalogService = {
         title: catalog.title,
         description: catalog.description,
         external_cover_image_url: catalog.external_cover_image_url,
-        external_content_image_urls: catalog.external_content_image_urls,
+        external_content_image_urls: catalog.external_content_image_urls || [],
         created_at: catalog.created_at
       }));
     } catch (error) {
@@ -66,7 +32,7 @@ export const externalCatalogService = {
         title: catalogData.title,
         description: catalogData.description || '',
         external_cover_image_url: catalogData.external_cover_image_url,
-        external_content_image_urls: catalogData.external_content_image_urls,
+        external_content_image_urls: catalogData.external_content_image_urls || [],
         created_at: new Date().toISOString()
       };
       
@@ -90,7 +56,8 @@ export const externalCatalogService = {
       const updatedCatalog = {
         ...existingCatalog,
         ...catalogData,
-        description: catalogData.description || existingCatalog.description
+        description: catalogData.description || existingCatalog.description,
+        external_content_image_urls: catalogData.external_content_image_urls || existingCatalog.external_content_image_urls,
       };
       
       localStorageService.addExternalCatalog(updatedCatalog);
@@ -101,12 +68,41 @@ export const externalCatalogService = {
     }
   },
 
+  // <-- MUDANÇA: Lógica de exclusão foi aprimorada
   async deleteCatalog(id: string): Promise<void> {
     try {
+      // Pega todos os catálogos e o conteúdo antes de deletar
+      const allCatalogs = localStorageService.getExternalCatalogs();
+      const allContent = localStorageService.getContent();
+      
+      const catalogToDelete = allCatalogs.find(c => c.id === id);
+      
+      if (!catalogToDelete) {
+        console.warn("Catálogo a ser deletado não encontrado.");
+        return;
+      }
+      
+      // Cria um Set com todas as URLs do catálogo a ser deletado para busca rápida
+      const urlsToDelete = new Set(catalogToDelete.external_content_image_urls);
+      
+      // Filtra o conteúdo, mantendo apenas os itens que NÃO estão na lista de URLs a serem deletadas
+      const updatedContent = allContent.filter(contentItem => {
+        // Mantém o item se ele não for um produto ou se a URL dele não estiver na lista de exclusão
+        return contentItem.section !== 'products' || !urlsToDelete.has(contentItem.image_url);
+      });
+      
+      // Salva o conteúdo atualizado (sem os favoritos do catálogo deletado)
+      localStorageService.setContent(updatedContent);
+      
+      // Deleta o catálogo em si
       localStorageService.deleteExternalCatalog(id);
+
+      // Dispara um evento para notificar outras partes da aplicação (como a lista de favoritos)
+      window.dispatchEvent(new CustomEvent('localStorageUpdated'));
+
     } catch (error) {
-      console.error('Error deleting external catalog:', error);
-      throw new Error('Erro ao deletar catálogo externo');
+      console.error('Error deleting external catalog and its content:', error);
+      throw new Error('Erro ao deletar catálogo e limpar favoritos.');
     }
   }
 };
