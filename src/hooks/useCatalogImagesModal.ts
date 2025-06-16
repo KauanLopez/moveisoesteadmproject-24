@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // <-- MUDANÇA: useCallback foi adicionado aqui
 import { useToast } from '@/hooks/use-toast';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 import { favoriteSyncService, SyncedCatalogImage } from '@/services/favoriteSyncService';
-import { uploadCatalogImage } from '@/services/imageService'; // <-- MUDANÇA: Importado o serviço de upload
-import { externalCatalogService } from '@/services/externalCatalogService'; // <-- MUDANÇA: Importado o serviço de catálogo
+import { uploadCatalogImage } from '@/services/imageService';
+import { externalCatalogService } from '@/services/externalCatalogService';
 
 export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
   const [images, setImages] = useState<SyncedCatalogImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false); // <-- MUDANÇA: Adicionado estado de upload
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-  const loadCatalogImages = useCallback(async () => { // <-- MUDANÇA: Envolvido em useCallback para ser estável
+  const loadCatalogImages = useCallback(async () => {
     setLoading(true);
     try {
       // Recarrega o catálogo para obter a lista de imagens mais recente
@@ -35,7 +35,6 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     loadCatalogImages();
   }, [loadCatalogImages]);
 
-  // <-- MUDANÇA: Lógica de upload implementada
   const handleImageSelect = async (imageData: { file?: File; url?: string }) => {
     if (!imageData.file && !imageData.url) return;
     
@@ -116,7 +115,6 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     }
   };
 
-  // <-- MUDANÇA: Lógica de deleção implementada
   const deleteImage = async (imageId: string) => {
     if (!window.confirm("Tem certeza que deseja remover esta imagem do catálogo?")) return;
 
@@ -124,12 +122,10 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
         const imageToDelete = images.find(img => img.id === imageId);
         if (!imageToDelete) throw new Error("Imagem não encontrada para exclusão.");
 
-        // Filtra para remover a URL da imagem
         const updatedUrls = catalog.external_content_image_urls.filter(
             url => url !== imageToDelete.image
         );
 
-        // Atualiza o catálogo no localStorage
         await externalCatalogService.updateCatalog(catalog.id, {
             external_content_image_urls: updatedUrls
         });
@@ -139,7 +135,6 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
             description: "A imagem foi removida do catálogo com sucesso.",
         });
 
-        // Recarrega as imagens
         await loadCatalogImages();
 
     } catch (error: any) {
@@ -155,7 +150,7 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
   return {
     images,
     loading,
-    isUploading, // <-- MUDANÇA: Retornado para o componente usar
+    isUploading, 
     handleImageSelect,
     toggleFavorite,
     deleteImage
