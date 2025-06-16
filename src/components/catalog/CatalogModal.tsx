@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,17 +26,29 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // <-- MUDANÇA: Lógica para combinar a capa com as outras imagens
+  const allImages = React.useMemo(() => {
+    if (!catalog) return [];
+    // Sempre começa com a imagem de capa
+    const imagesToShow = [{ url: catalog.coverImage, title: 'Capa do Catálogo' }];
+    // Adiciona as imagens de conteúdo, se existirem
+    if (catalog.images && catalog.images.length > 0) {
+      imagesToShow.push(...catalog.images);
+    }
+    return imagesToShow;
+  }, [catalog]);
+
   const handlePrevImage = () => {
     if (!catalog) return;
     setCurrentImageIndex((prev) => 
-      prev === 0 ? catalog.images.length - 1 : prev - 1
+      prev === 0 ? allImages.length - 1 : prev - 1
     );
   };
 
   const handleNextImage = () => {
     if (!catalog) return;
     setCurrentImageIndex((prev) => 
-      prev === catalog.images.length - 1 ? 0 : prev + 1
+      prev === allImages.length - 1 ? 0 : prev + 1
     );
   };
 
@@ -97,7 +108,7 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, catalog, currentImageIndex, isFullscreen]);
+  }, [isOpen, catalog, currentImageIndex, isFullscreen, handlePrevImage, handleNextImage, onClose]); // Dependências atualizadas
 
   const handleOverlayClick = (event: React.MouseEvent) => {
     if (event.target === event.currentTarget && !isFullscreen) {
@@ -113,7 +124,23 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
     return null;
   }
 
-  const currentImage = catalog.images[currentImageIndex];
+  // <-- MUDANÇA: Pega a imagem da lista combinada
+  const currentImage = allImages[currentImageIndex];
+
+  // <-- MUDANÇA: Verificação para o caso de não haver imagem
+  if (!currentImage) {
+    return (
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={handleOverlayClick}
+        >
+            <div className="bg-white p-6 rounded-lg text-center">
+                <p>Este catálogo não possui imagens para exibir.</p>
+                <Button onClick={onClose} className="mt-4">Fechar</Button>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div 
@@ -122,13 +149,11 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
       }`}
       onClick={handleOverlayClick}
     >
-      {/* Modal container */}
       <div className={`bg-white rounded-lg flex flex-col shadow-2xl relative ${
         isFullscreen 
           ? 'w-full h-full rounded-none' 
           : 'w-full h-full max-w-[90vw] max-h-[90vh]'
       }`}>
-        {/* Header - Hidden in fullscreen */}
         {!isFullscreen && (
           <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex-1 min-w-0">
@@ -150,9 +175,7 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
           </div>
         )}
 
-        {/* Image Display Area */}
         <div className="flex-1 relative bg-gray-50 min-h-0 overflow-hidden">
-          {/* Fullscreen Toggle Button */}
           <Button
             onClick={toggleFullscreen}
             className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg border"
@@ -165,7 +188,6 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
             )}
           </Button>
 
-          {/* Close button for fullscreen mode */}
           {isFullscreen && (
             <Button
               onClick={onClose}
@@ -176,12 +198,11 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
             </Button>
           )}
 
-          {/* Navigation Arrows */}
           <Button
             onClick={handlePrevImage}
             className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg border"
             size="icon"
-            disabled={catalog.images.length <= 1}
+            disabled={allImages.length <= 1}
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -190,19 +211,17 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
             onClick={handleNextImage}
             className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg border"
             size="icon"
-            disabled={catalog.images.length <= 1}
+            disabled={allImages.length <= 1}
           >
             <ChevronRight className="h-5 w-5" />
           </Button>
 
-          {/* Text-based Page Indicator */}
-          {catalog.images.length > 1 && (
+          {allImages.length > 1 && (
             <div className="absolute bottom-4 right-4 z-20 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
-              Página {currentImageIndex + 1} de {catalog.images.length}
+              Página {currentImageIndex + 1} de {allImages.length}
             </div>
           )}
 
-          {/* Image Container with drag support */}
           <div 
             className="w-full h-full flex items-center justify-center p-8 cursor-grab active:cursor-grabbing select-none"
             onMouseDown={handleMouseDown}
@@ -228,7 +247,6 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
           </div>
         </div>
 
-        {/* Footer - Hidden in fullscreen */}
         {!isFullscreen && (
           <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-white flex-shrink-0">
             <div className="text-sm text-gray-600 truncate flex-1 min-w-0">
