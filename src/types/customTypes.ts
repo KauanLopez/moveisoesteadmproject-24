@@ -1,12 +1,30 @@
 
 import { Database } from "@/integrations/supabase/types";
 
-// Export convenience types that reference the generated types
+// Since the database is empty, we'll create our own types for now
 export type Tables = Database['public']['Tables'];
-export type ContentItem = Tables['content']['Row'];
-export type Profile = Tables['profiles']['Row'];
 
-// Custom types that extend database types
+// Define our own content and profile types since they don't exist in the database yet
+export type ContentItem = {
+  id: string;
+  section: string;
+  title: string | null;
+  description: string | null;
+  image_url: string | null;
+  object_position: string | null;
+  scale: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Profile = {
+  id: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+};
+
+// Custom types that extend our defined types
 export type ImageContent = {
   id: string;
   section: string;

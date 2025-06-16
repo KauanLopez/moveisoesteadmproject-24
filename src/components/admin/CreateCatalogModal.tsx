@@ -17,15 +17,23 @@ const CreateCatalogModal: React.FC<CreateCatalogModalProps> = ({ onClose, onCrea
   const [description, setDescription] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleImageSelect = (imageData: { file?: File; url?: string }) => {
-    if (imageData.file) {
+  const handleFileSubmit = async (file: File) => {
+    setIsUploading(true);
+    try {
       // Create a mock URL for the file (in a real app, you'd upload to a server)
-      const mockUrl = URL.createObjectURL(imageData.file);
+      const mockUrl = URL.createObjectURL(file);
       setCoverImage(mockUrl);
-    } else if (imageData.url) {
-      setCoverImage(imageData.url);
+    } catch (error) {
+      console.error('Error processing file:', error);
+    } finally {
+      setIsUploading(false);
     }
+  };
+
+  const handleUrlSubmit = async (url: string) => {
+    setCoverImage(url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,11 +87,25 @@ const CreateCatalogModal: React.FC<CreateCatalogModalProps> = ({ onClose, onCrea
               />
             </div>
 
-            <ImageUploadOptions
-              title="Capa do Catálogo *"
-              onImageSelect={handleImageSelect}
-              currentImage={coverImage}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Capa do Catálogo *
+              </label>
+              <ImageUploadOptions
+                onFileSubmit={handleFileSubmit}
+                onUrlSubmit={handleUrlSubmit}
+                isUploading={isUploading}
+              />
+              {coverImage && (
+                <div className="mt-3 rounded-md overflow-hidden border border-gray-200">
+                  <img 
+                    src={coverImage} 
+                    alt="Preview da capa" 
+                    className="w-full h-32 object-cover"
+                  />
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-3 pt-4">
               <Button
