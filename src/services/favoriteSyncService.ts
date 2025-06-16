@@ -1,4 +1,3 @@
-
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 
 export interface SyncedCatalogImage {
@@ -32,32 +31,11 @@ export const favoriteSyncService = {
         });
       }
       
-      // Also include the hardcoded featured URLs to ensure synchronization
-      const hardcodedFeaturedUrls = [
-        'https://i.imgur.com/cprFFbE.jpeg',
-        'https://i.imgur.com/52e2KQf.jpeg',
-        'https://i.imgur.com/zT3javQ.jpeg',
-        'https://i.imgur.com/XhMDFqh.jpeg',
-        'https://i.imgur.com/FHfJvDx.jpeg',
-        'https://i.imgur.com/foRmZ8L.jpeg'
-      ];
-      
-      // Combine and deduplicate URLs
-      const allFeaturedUrls = [...new Set([...featuredUrls, ...hardcodedFeaturedUrls])];
-      
-      console.log('FavoriteSyncService: All featured URLs:', allFeaturedUrls);
-      return allFeaturedUrls;
+      console.log('FavoriteSyncService: All featured URLs:', featuredUrls);
+      return [...new Set(featuredUrls)];
     } catch (error) {
       console.error('Error getting featured product URLs:', error);
-      // Return hardcoded URLs as fallback
-      return [
-        'https://i.imgur.com/cprFFbE.jpeg',
-        'https://i.imgur.com/52e2KQf.jpeg',
-        'https://i.imgur.com/zT3javQ.jpeg',
-        'https://i.imgur.com/XhMDFqh.jpeg',
-        'https://i.imgur.com/FHfJvDx.jpeg',
-        'https://i.imgur.com/foRmZ8L.jpeg'
-      ];
+      return [];
     }
   },
 
