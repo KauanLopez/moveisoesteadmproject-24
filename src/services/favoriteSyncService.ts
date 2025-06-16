@@ -112,6 +112,10 @@ export const favoriteSyncService = {
       
       localStorage.setItem('moveis_oeste_content', JSON.stringify(allContent));
       console.log('FavoriteSyncService: Updated favorite status for:', imageUrl, 'to:', isFavorite);
+      
+      // Dispara um evento para notificar outras partes da aplicação
+      window.dispatchEvent(new CustomEvent('localStorageUpdated'));
+
       return true;
     } catch (error) {
       console.error('Error updating favorite status:', error);
