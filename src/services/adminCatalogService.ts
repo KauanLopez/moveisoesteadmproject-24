@@ -1,4 +1,3 @@
-
 export interface AdminCatalog {
   id: string;
   name: string;
