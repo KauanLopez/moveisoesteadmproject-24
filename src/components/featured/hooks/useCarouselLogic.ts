@@ -12,7 +12,7 @@ export const useCarouselLogic = (products: Product[]) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const isMobile = useMobileDetection();
   
-  const extendedProducts = products.length > 0 ? [...products, ...products, ...products] : [];
+  const extendedProducts = products.length > 1 ? [...products, ...products, ...products] : products;
   const totalItems = products.length;
 
   const carouselRef = useRef<HTMLDivElement>(null);
