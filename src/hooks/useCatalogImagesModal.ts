@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'; // <-- MUDANÇA: useCallback foi adicionado aqui
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
 import { favoriteSyncService, SyncedCatalogImage } from '@/services/favoriteSyncService';
@@ -14,7 +14,6 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
   const loadCatalogImages = useCallback(async () => {
     setLoading(true);
     try {
-      // Recarrega o catálogo para obter a lista de imagens mais recente
       const updatedCatalogs = await externalCatalogService.getAllCatalogs();
       const currentCatalog = updatedCatalogs.find(c => c.id === catalog.id);
 
@@ -30,54 +29,56 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     }
   }, [catalog.id]);
 
-
   useEffect(() => {
     loadCatalogImages();
   }, [loadCatalogImages]);
 
-  const handleImageSelect = async (imageData: { file?: File; url?: string }) => {
-    if (!imageData.file && !imageData.url) return;
-    
+  const addImageUrlToCatalog = async (imageUrl: string) => {
     setIsUploading(true);
     try {
-      let uploadedUrl: string;
+        const allCatalogs = await externalCatalogService.getAllCatalogs();
+        const currentCatalogVersion = allCatalogs.find(c => c.id === catalog.id);
+        
+        if (!currentCatalogVersion) {
+            throw new Error("Catálogo não encontrado. Tente novamente.");
+        }
 
-      if (imageData.file) {
-        // O serviço de upload já é um mock que retorna uma URL local
-        uploadedUrl = await uploadCatalogImage(imageData.file, 'catalog-images');
-      } else {
-        // Se for URL, usamos a própria URL (assumindo que já está hospedada)
-        uploadedUrl = imageData.url!;
-      }
+        const updatedUrls = [...currentCatalogVersion.external_content_image_urls, imageUrl];
+        
+        await externalCatalogService.updateCatalog(catalog.id, {
+            external_content_image_urls: updatedUrls,
+        });
 
-      // Adiciona a nova URL ao array de imagens de conteúdo do catálogo
-      const updatedUrls = [...catalog.external_content_image_urls, uploadedUrl];
-
-      // Atualiza o catálogo no localStorage
-      await externalCatalogService.updateCatalog(catalog.id, {
-        external_content_image_urls: updatedUrls,
-      });
-
-      toast({
-        title: "Sucesso",
-        description: "Imagem adicionada ao catálogo.",
-      });
-
-      // Recarrega as imagens para exibir a nova
-      await loadCatalogImages();
-
+        toast({ title: "Sucesso", description: "Imagem adicionada ao catálogo." });
+        await loadCatalogImages();
     } catch (error: any) {
-      console.error("Error adding image to catalog:", error);
-      toast({
-        title: "Erro ao adicionar imagem",
-        description: error.message || "Não foi possível adicionar a imagem.",
-        variant: "destructive"
-      });
+        console.error("Error adding image to catalog:", error);
+        toast({ title: "Erro ao adicionar imagem", description: error.message || "Não foi possível adicionar a imagem.", variant: "destructive" });
     } finally {
-      setIsUploading(false);
+        setIsUploading(false);
     }
   };
 
+  const handleFileSubmit = async (file: File) => {
+      if (!file) return;
+      setIsUploading(true);
+      try {
+          // A função uploadCatalogImage retorna uma URL local (base64)
+          const uploadedUrl = await uploadCatalogImage(file, 'catalog-images');
+          await addImageUrlToCatalog(uploadedUrl);
+      } catch(error: any) {
+          console.error("Error uploading file:", error);
+          toast({ title: "Erro de Upload", description: error.message || "Não foi possível fazer o upload do arquivo.", variant: "destructive" });
+      } finally {
+        setIsUploading(false);
+      }
+  };
+
+  const handleUrlSubmit = async (url: string) => {
+      if (!url) return;
+      // Trata a URL como a URL final da imagem
+      await addImageUrlToCatalog(url);
+  };
 
   const toggleFavorite = async (imageId: string) => {
     try {
@@ -122,7 +123,11 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
         const imageToDelete = images.find(img => img.id === imageId);
         if (!imageToDelete) throw new Error("Imagem não encontrada para exclusão.");
 
-        const updatedUrls = catalog.external_content_image_urls.filter(
+        const allCatalogs = await externalCatalogService.getAllCatalogs();
+        const currentCatalogVersion = allCatalogs.find(c => c.id === catalog.id);
+        if (!currentCatalogVersion) throw new Error("Catálogo não encontrado.");
+
+        const updatedUrls = currentCatalogVersion.external_content_image_urls.filter(
             url => url !== imageToDelete.image
         );
 
@@ -151,7 +156,8 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     images,
     loading,
     isUploading, 
-    handleImageSelect,
+    handleFileSubmit,
+    handleUrlSubmit,
     toggleFavorite,
     deleteImage
   };
