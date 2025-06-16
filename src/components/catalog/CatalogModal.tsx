@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,14 +40,14 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
   }, [catalog]);
 
   const handlePrevImage = () => {
-    if (!catalog) return;
+    if (!catalog || allImages.length === 0) return;
     setCurrentImageIndex((prev) => 
       prev === 0 ? allImages.length - 1 : prev - 1
     );
   };
 
   const handleNextImage = () => {
-    if (!catalog) return;
+    if (!catalog || allImages.length === 0) return;
     setCurrentImageIndex((prev) => 
       prev === allImages.length - 1 ? 0 : prev + 1
     );
@@ -80,7 +81,7 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isOpen || !catalog) return;
+      if (!isOpen || !catalog || allImages.length === 0) return;
 
       switch (event.key) {
         case 'Escape':
@@ -108,7 +109,7 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, catalog, currentImageIndex, isFullscreen, handlePrevImage, handleNextImage, onClose]); // Dependências atualizadas
+  }, [isOpen, catalog, currentImageIndex, isFullscreen, allImages.length, handlePrevImage, handleNextImage, onClose]);
 
   const handleOverlayClick = (event: React.MouseEvent) => {
     if (event.target === event.currentTarget && !isFullscreen) {
@@ -124,11 +125,8 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
     return null;
   }
 
-  // <-- MUDANÇA: Pega a imagem da lista combinada
-  const currentImage = allImages[currentImageIndex];
-
-  // <-- MUDANÇA: Verificação para o caso de não haver imagem
-  if (!currentImage) {
+  // <-- MUDANÇA: Verificação para o caso de não haver imagem ou allImages estar vazio
+  if (allImages.length === 0) {
     return (
         <div 
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
@@ -136,6 +134,24 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose, catalog })
         >
             <div className="bg-white p-6 rounded-lg text-center">
                 <p>Este catálogo não possui imagens para exibir.</p>
+                <Button onClick={onClose} className="mt-4">Fechar</Button>
+            </div>
+        </div>
+    );
+  }
+
+  // <-- MUDANÇA: Pega a imagem da lista combinada com verificação de segurança
+  const currentImage = allImages[currentImageIndex];
+
+  // <-- MUDANÇA: Verificação adicional de segurança
+  if (!currentImage) {
+    return (
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={handleOverlayClick}
+        >
+            <div className="bg-white p-6 rounded-lg text-center">
+                <p>Erro ao carregar a imagem do catálogo.</p>
                 <Button onClick={onClose} className="mt-4">Fechar</Button>
             </div>
         </div>
