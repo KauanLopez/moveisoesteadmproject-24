@@ -1,4 +1,3 @@
-
 import { authService } from "./authService";
 
 // Helper function to generate a UUID using the crypto API
@@ -15,11 +14,12 @@ export const uploadCatalogImage = async (file: File, folder: string = 'catalog-c
       // Validate file first
       validateImageFile(file);
       
-      // Create a mock URL for the uploaded file
-      const mockUrl = `/mock-uploads/${generateUUID()}.${file.name.split('.').pop()}`;
+      // <-- MUDANÇA: Em vez de criar uma URL falsa, criamos uma URL de objeto (blob)
+      // que o navegador pode ler diretamente da memória.
+      const blobUrl = URL.createObjectURL(file);
       
-      console.log('Mock image uploaded successfully, URL:', mockUrl);
-      return mockUrl;
+      console.log('Blob URL created successfully:', blobUrl);
+      return blobUrl;
     } catch (error: any) {
       console.error('Exception while uploading image:', error);
       throw error;
