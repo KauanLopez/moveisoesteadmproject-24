@@ -1,6 +1,6 @@
 
 import { featuredProductsService } from './supabaseService';
-import { ExternalUrlCatalog } from '@/types/customTypes';
+import { ExternalUrlCatalog, getExternalContentImageUrls } from '@/types/customTypes';
 
 export interface SyncedCatalogImage {
   id: string;
@@ -11,7 +11,8 @@ export interface SyncedCatalogImage {
 
 export const favoriteSyncService = {
   syncCatalogImagesWithFavorites: (catalog: ExternalUrlCatalog): SyncedCatalogImage[] => {
-    return catalog.external_content_image_urls.map((imageUrl: string, index: number) => ({
+    const imageUrls = getExternalContentImageUrls(catalog);
+    return imageUrls.map((imageUrl: string, index: number) => ({
       id: `${catalog.id}-${index}`,
       image: imageUrl,
       isFavorite: false, // Will be updated by the hook

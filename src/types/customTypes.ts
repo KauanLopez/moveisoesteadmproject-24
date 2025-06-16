@@ -44,3 +44,24 @@ export const mapImageContentToDb = (content: ImageContent): Partial<ContentItem>
     scale: content.scale
   };
 };
+
+// Helper functions to work with ExternalUrlCatalog Json arrays
+export const getExternalContentImageUrls = (catalog: ExternalUrlCatalog): string[] => {
+  const urls = catalog.external_content_image_urls;
+  if (Array.isArray(urls)) {
+    return urls.filter((url): url is string => typeof url === 'string');
+  }
+  return [];
+};
+
+export const createExternalCatalogData = (data: {
+  title: string;
+  description?: string;
+  external_cover_image_url: string;
+  external_content_image_urls?: string[];
+}) => {
+  return {
+    ...data,
+    external_content_image_urls: data.external_content_image_urls || []
+  };
+};

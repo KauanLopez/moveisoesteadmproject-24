@@ -3,13 +3,12 @@ import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import LoginForm from '@/components/admin/LoginForm';
 import AdminPanel from '@/components/admin/AdminPanel';
-import { ContentProvider } from '@/context/ContentContext';
 
 const Admin = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, loading } = useAuth();
   
   // Show loading while checking authentication status
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -20,6 +19,8 @@ const Admin = () => {
     );
   }
   
+  const isAuthenticated = !!user;
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {!isAuthenticated ? (
@@ -27,9 +28,7 @@ const Admin = () => {
           <LoginForm />
         </div>
       ) : (
-        <ContentProvider>
-          <AdminPanel />
-        </ContentProvider>
+        <AdminPanel />
       )}
     </div>
   );

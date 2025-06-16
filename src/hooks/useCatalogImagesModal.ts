@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { ExternalUrlCatalog } from '@/types/customTypes';
+import { ExternalUrlCatalog, getExternalContentImageUrls } from '@/types/customTypes';
 import { favoriteSyncService, SyncedCatalogImage } from '@/services/favoriteSyncService';
 import { externalCatalogService } from '@/services/externalCatalogService';
 
@@ -52,7 +52,8 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
             throw new Error("Catálogo não encontrado. Tente novamente.");
         }
 
-        const updatedUrls = [...currentCatalogVersion.external_content_image_urls, imageUrl];
+        const currentUrls = getExternalContentImageUrls(currentCatalogVersion);
+        const updatedUrls = [...currentUrls, imageUrl];
         
         await externalCatalogService.updateCatalog(catalog.id, {
             external_content_image_urls: updatedUrls,
@@ -121,7 +122,7 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     }
   };
 
-  const deleteImage =async (imageId: string) => {
+  const deleteImage = async (imageId: string) => {
     if (!window.confirm("Tem certeza que deseja remover esta imagem do catálogo?")) return;
 
     try {
@@ -132,9 +133,8 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
         const currentCatalogVersion = allCatalogs.find(c => c.id === catalog.id);
         if (!currentCatalogVersion) throw new Error("Catálogo não encontrado.");
 
-        const updatedUrls = currentCatalogVersion.external_content_image_urls.filter(
-            url => url !== imageToDelete.image
-        );
+        const currentUrls = getExternalContentImageUrls(currentCatalogVersion);
+        const updatedUrls = currentUrls.filter(url => url !== imageToDelete.image);
 
         await externalCatalogService.updateCatalog(catalog.id, {
             external_content_image_urls: updatedUrls

@@ -1,6 +1,6 @@
 
 import { catalogService } from './supabaseService';
-import { ExternalUrlCatalog } from '@/types/customTypes';
+import { ExternalUrlCatalog, createExternalCatalogData } from '@/types/customTypes';
 
 export interface ExternalUrlCatalogFormData {
   title: string;
@@ -21,12 +21,8 @@ export const externalCatalogService = {
 
   async createCatalog(catalogData: ExternalUrlCatalogFormData): Promise<ExternalUrlCatalog> {
     try {
-      return await catalogService.createCatalog({
-        title: catalogData.title,
-        description: catalogData.description,
-        external_cover_image_url: catalogData.external_cover_image_url,
-        external_content_image_urls: catalogData.external_content_image_urls || []
-      });
+      const formattedData = createExternalCatalogData(catalogData);
+      return await catalogService.createCatalog(formattedData);
     } catch (error) {
       console.error('Error creating external catalog:', error);
       throw new Error('Erro ao criar catálogo externo');

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchExternalCatalogs } from '@/services/externalCatalogService';
-import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog } from '@/types/customTypes';
 import ProjectsHeader from './projects/ProjectsHeader';
 import CatalogCarousel from './projects/CatalogCarousel';
 

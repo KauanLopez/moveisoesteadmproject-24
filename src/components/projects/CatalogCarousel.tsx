@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
-import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog } from '@/types/customTypes';
 import CatalogSlide from './CatalogSlide';
 
 interface CatalogCarouselProps {
