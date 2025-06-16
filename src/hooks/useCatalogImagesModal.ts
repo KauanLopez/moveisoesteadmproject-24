@@ -1,8 +1,8 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog } from '@/types/customTypes';
 import { favoriteSyncService, SyncedCatalogImage } from '@/services/favoriteSyncService';
-import { uploadCatalogImage } from '@/services/imageService';
 import { externalCatalogService } from '@/services/externalCatalogService';
 
 export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
@@ -19,7 +19,16 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
 
       if (currentCatalog) {
         const syncedImages = favoriteSyncService.syncCatalogImagesWithFavorites(currentCatalog);
-        setImages(syncedImages);
+        
+        // Check favorite status for each image
+        const imagesWithFavoriteStatus = await Promise.all(
+          syncedImages.map(async (img) => ({
+            ...img,
+            isFavorite: await favoriteSyncService.checkIsFavorite(img.image)
+          }))
+        );
+        
+        setImages(imagesWithFavoriteStatus);
       }
     } catch (error) {
       console.error('CatalogImagesModal: Error loading catalog images:', error);
@@ -63,8 +72,9 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
       if (!file) return;
       setIsUploading(true);
       try {
-          const uploadedUrl = await uploadCatalogImage(file, 'catalog-images');
-          await addImageUrlToCatalog(uploadedUrl);
+          // For now, create a mock URL - in production you'd upload to storage
+          const mockUrl = URL.createObjectURL(file);
+          await addImageUrlToCatalog(mockUrl);
       } catch(error: any) {
           console.error("Error uploading file:", error);
           toast({ title: "Erro de Upload", description: error.message || "Não foi possível fazer o upload do arquivo.", variant: "destructive" });
@@ -85,14 +95,12 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
       const image = images[imageIndex];
       const newFavoriteStatus = !image.isFavorite;
       
-      const success = favoriteSyncService.updateImageFavoriteStatus(image.image, newFavoriteStatus);
+      const success = await favoriteSyncService.updateImageFavoriteStatus(image.image, newFavoriteStatus);
       
       if (success) {
         const updatedImages = [...images];
         updatedImages[imageIndex] = { ...image, isFavorite: newFavoriteStatus };
         setImages(updatedImages);
-        
-        window.dispatchEvent(new CustomEvent('localStorageUpdated'));
         
         toast({
           title: newFavoriteStatus ? "Produto destacado" : "Produto removido dos destaques",
@@ -113,7 +121,7 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
     }
   };
 
-  const deleteImage = async (imageId: string) => {
+  const deleteImage =async (imageId: string) => {
     if (!window.confirm("Tem certeza que deseja remover esta imagem do catálogo?")) return;
 
     try {
@@ -131,6 +139,9 @@ export const useCatalogImagesModal = (catalog: ExternalUrlCatalog) => {
         await externalCatalogService.updateCatalog(catalog.id, {
             external_content_image_urls: updatedUrls
         });
+
+        // Also remove from featured products if it exists
+        await favoriteSyncService.updateImageFavoriteStatus(imageToDelete.image, false);
 
         toast({
             title: "Imagem removida",

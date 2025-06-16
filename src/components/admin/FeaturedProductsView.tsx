@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, RefreshCw, Eye } from 'lucide-react';
@@ -5,22 +6,26 @@ import { Button } from '@/components/ui/button';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { favoriteSyncService } from '@/services/favoriteSyncService';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 const FeaturedProductsView = () => {
   const { products: featuredProducts, loading } = useFeaturedProducts();
   const { toast } = useToast();
+  const { isAdmin, loading: authLoading } = useAuth();
 
   const handleRefresh = () => {
     window.location.reload();
   };
 
-  const handleRemoveFavorite = (productImage: string) => {
-    const success = favoriteSyncService.updateImageFavoriteStatus(productImage, false);
+  const handleRemoveFavorite = async (productImage: string) => {
+    const success = await favoriteSyncService.updateImageFavoriteStatus(productImage, false);
     if (success) {
       toast({
         title: "Destaque removido",
         description: "O produto foi removido dos destaques.",
       });
+      // Refresh the page to show updated data
+      setTimeout(() => window.location.reload(), 1000);
     } else {
       toast({
         title: "Erro",
@@ -30,13 +35,22 @@ const FeaturedProductsView = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
           <p className="text-gray-600">Carregando produtos em destaque...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Acesso Restrito</h2>
+        <p className="text-gray-600">Você precisa ser um administrador para acessar esta seção.</p>
       </div>
     );
   }
@@ -63,7 +77,7 @@ const FeaturedProductsView = () => {
         <p className="text-blue-800 text-sm">
           <strong>ℹ️ Sincronização:</strong> Esta galeria exibe exatamente as mesmas imagens que aparecem 
           na seção "Produtos em Destaque" da página principal do site. Os dados são carregados diretamente 
-          do localStorage usado pela página principal.
+          do banco de dados Supabase.
         </p>
       </div>
 
@@ -78,7 +92,6 @@ const FeaturedProductsView = () => {
             </div>
           </div>
 
-          {/* Mirror of the main page layout */}
           <div className="bg-white rounded-lg border p-6">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-furniture-green mb-4">Produtos em Destaque</h3>

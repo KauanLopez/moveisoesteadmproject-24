@@ -1,11 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Plus, Image, Star, Trash2 } from 'lucide-react';
 import { fetchExternalCatalogs, deleteExternalCatalog } from '@/services/externalCatalogService';
-import { localStorageService, StoredExternalCatalog } from '@/services/localStorageService'; // <-- MUDANÇA: Importando o localStorageService
-import { ExternalUrlCatalog } from '@/types/externalCatalogTypes';
+import { ExternalUrlCatalog } from '@/types/customTypes';
+import { useAuth } from '@/context/AuthContext';
 import CreateCatalogModal from './CreateCatalogModal';
 import CatalogImagesModal from './CatalogImagesModal';
 
@@ -16,10 +17,13 @@ const CatalogManagement = () => {
   const [selectedCatalog, setSelectedCatalog] = useState<ExternalUrlCatalog | null>(null);
   const [showImagesModal, setShowImagesModal] = useState(false);
   const { toast } = useToast();
+  const { isAdmin, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    loadCatalogs();
-  }, []);
+    if (!authLoading) {
+      loadCatalogs();
+    }
+  }, [authLoading]);
 
   const loadCatalogs = async () => {
     setLoading(true);
@@ -38,19 +42,16 @@ const CatalogManagement = () => {
     }
   };
 
-  // <-- MUDANÇA: Função de criar catálogo foi implementada para usar o localStorage
-  const handleCreateCatalog = (catalogData: { name: string; description: string; coverImage: string }) => {
+  const handleCreateCatalog = async (catalogData: { name: string; description: string; coverImage: string }) => {
     try {
-      const newCatalog: StoredExternalCatalog = {
-        id: crypto.randomUUID(),
+      const { externalCatalogService } = await import('@/services/externalCatalogService');
+      
+      await externalCatalogService.createCatalog({
         title: catalogData.name,
         description: catalogData.description,
         external_cover_image_url: catalogData.coverImage,
-        external_content_image_urls: [],
-        created_at: new Date().toISOString()
-      };
-
-      localStorageService.addExternalCatalog(newCatalog);
+        external_content_image_urls: []
+      });
       
       toast({
         title: "Sucesso!",
@@ -69,7 +70,6 @@ const CatalogManagement = () => {
     }
   };
 
-  // <-- MUDANÇA: Função de deletar catálogo foi implementada
   const handleDeleteCatalog = async (catalogId: string, catalogTitle: string) => {
     if (window.confirm(`Tem certeza que deseja excluir o catálogo "${catalogTitle}"?`)) {
         try {
@@ -100,7 +100,7 @@ const CatalogManagement = () => {
     loadCatalogs();
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -109,6 +109,15 @@ const CatalogManagement = () => {
         <div className="text-center py-8">
           <p className="text-gray-500">Carregando catálogos...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Acesso Restrito</h2>
+        <p className="text-gray-600">Você precisa ser um administrador para acessar esta seção.</p>
       </div>
     );
   }
@@ -163,7 +172,6 @@ const CatalogManagement = () => {
                     <Star className="h-3 w-3" />
                     Catálogo do site principal
                   </span>
-                  {/* <-- MUDANÇA: Botão de deletar agora chama a função correta e está habilitado */}
                   <Button
                     variant="ghost"
                     size="sm"

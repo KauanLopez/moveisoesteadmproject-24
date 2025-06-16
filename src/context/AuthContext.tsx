@@ -1,110 +1,114 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { authService, profileService } from '@/services/supabaseService';
+import { Profile } from '@/types/customTypes';
 
 type AuthContextType = {
-  user: any | null;
-  session: any | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => Promise<void>;
-  createUser: (email: string, password: string) => Promise<boolean>;
-  isAuthenticated: boolean;
-  isLoading: boolean;
+  user: User | null;
+  profile: Profile | null;
+  session: Session | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
+  signOut: () => Promise<void>;
+  isAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
-  const [session, setSession] = useState<any | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is "logged in" via localStorage
-    const isLoggedIn = localStorage.getItem('frontend_auth') === 'true';
-    setIsAuthenticated(isLoggedIn);
-    
-    if (isLoggedIn) {
-      setUser({ id: 'mock-user', email: 'admin@example.com' });
-      setSession({ user: { id: 'mock-user', email: 'admin@example.com' } });
-    }
-    
-    setIsLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = authService.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Defer profile loading to prevent deadlocks
+          setTimeout(async () => {
+            try {
+              const userProfile = await profileService.getProfile(session.user.id);
+              setProfile(userProfile);
+            } catch (error) {
+              console.error('Error loading user profile:', error);
+              setProfile(null);
+            }
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    authService.getSession().then((session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const signIn = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
-      
-      // Simple check for demo purposes
-      if (email === 'admin@moveisOeste.com' && password === 'admin123') {
-        localStorage.setItem('frontend_auth', 'true');
-        setIsAuthenticated(true);
-        setUser({ id: 'mock-user', email: 'admin@moveisOeste.com' });
-        setSession({ user: { id: 'mock-user', email: 'admin@moveisOeste.com' } });
-        return true;
+      const result = await authService.signIn(email, password);
+      if (result.error) {
+        return { error: result.error };
       }
-      
-      return false;
+      return { error: null };
     } catch (error) {
-      console.error('Login exception:', error);
-      return false;
-    } finally {
-      setIsLoading(false);
+      return { error };
     }
   };
 
-  const createUser = async (email: string, password: string): Promise<boolean> => {
+  const signUp = async (email: string, password: string, fullName?: string) => {
     try {
-      // In a frontend-only app, just store user in localStorage
-      const users = JSON.parse(localStorage.getItem('moveis_oeste_users') || '[]');
-      const newUser = {
-        id: crypto.randomUUID(),
-        email,
-        password, // In real app, this should be hashed
-        isAdmin: true,
-        created_at: new Date().toISOString()
-      };
-      
-      users.push(newUser);
-      localStorage.setItem('moveis_oeste_users', JSON.stringify(users));
-      
-      return true;
+      const result = await authService.signUp(email, password, fullName);
+      if (result.error) {
+        return { error: result.error };
+      }
+      return { error: null };
     } catch (error) {
-      console.error('Create user exception:', error);
-      return false;
+      return { error };
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const signOut = async () => {
     try {
-      setIsLoading(true);
-      
-      localStorage.removeItem('frontend_auth');
-      setIsAuthenticated(false);
+      await authService.signOut();
       setUser(null);
+      setProfile(null);
       setSession(null);
-      
-      // Force page refresh to ensure clean state
-      setTimeout(() => {
-        window.location.href = '/admin';
-      }, 100);
+      // Force page refresh for clean state
+      window.location.href = '/';
     } catch (error) {
-      console.error('Logout exception:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Error signing out:', error);
     }
   };
+
+  const isAdmin = profile?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
+    <AuthContext.Provider value={{
+      user,
+      profile,
       session,
-      login, 
-      logout,
-      createUser,
-      isAuthenticated,
-      isLoading 
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      isAdmin
     }}>
       {children}
     </AuthContext.Provider>
