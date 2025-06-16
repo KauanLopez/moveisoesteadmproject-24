@@ -68,7 +68,6 @@ export const externalCatalogService = {
     }
   },
 
-  // <-- MUDANÇA: Lógica de exclusão foi aprimorada
   async deleteCatalog(id: string): Promise<void> {
     try {
       // Pega todos os catálogos e o conteúdo antes de deletar
@@ -82,8 +81,11 @@ export const externalCatalogService = {
         return;
       }
       
-      // Cria um Set com todas as URLs do catálogo a ser deletado para busca rápida
+      // Cria um Set com todas as URLs do catálogo a ser deletado (capa + conteúdo) para busca rápida
       const urlsToDelete = new Set(catalogToDelete.external_content_image_urls);
+      if (catalogToDelete.external_cover_image_url) {
+        urlsToDelete.add(catalogToDelete.external_cover_image_url);
+      }
       
       // Filtra o conteúdo, mantendo apenas os itens que NÃO estão na lista de URLs a serem deletadas
       const updatedContent = allContent.filter(contentItem => {
