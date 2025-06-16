@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 const Location = () => {
   // MUDANÇA: A URL de exemplo foi substituída pela URL de incorporação correta para o endereço da loja.
-  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3637.362943729214!2d-53.0180556238719!3d-24.2635998783247!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94921631581452cb%3A0x67332b5f63964e52!2sM%C3%B3veis%20Oeste!5e0!3m2!1spt-BR!2sbr!4v1718508000000!5m2!1spt-BR!2sbr";
+  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233180.30202952275!2d-53.31586810546876!3d-24.050726999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94f292fba2531207%3A0x646ce8edaafefdd2!2sM%C3%B3veis%20Oeste!5e0!3m2!1spt-BR!2sbr!4v1750042457944!5m2!1spt-BR!2sbr";
 
   return (
     <section id="location" className="py-16 bg-gray-50">
